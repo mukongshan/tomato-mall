@@ -21,6 +21,7 @@ import java.util.Date;
 @Component
 public class TokenUtil {
     private static final long EXPIRE_TIME = 24 * 60 * 60 * 1000;
+    private static final String SECRET_KEY = "123"; // 固定密钥
 
     @Autowired
     AccountRepository accountRepository;
@@ -34,7 +35,7 @@ public class TokenUtil {
     }
 
     public boolean verifyToken(String token) {
-        System.out.println("verifyToken: " + token);
+        System.out.println("getToken: " + token);
         try {
             System.out.println("1");
             Integer accountId=Integer.parseInt(JWT.decode(token).getAudience().get(0));

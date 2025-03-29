@@ -7,6 +7,7 @@ import com.example.tomatomall.vo.AccountVO;
 import com.example.tomatomall.vo.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 
@@ -25,30 +26,7 @@ public class AccountController {
      * 获取用户详情（需要 token）
      */
     @GetMapping("/{username}")
-    public Response<AccountVO> getAccountInfo(@RequestHeader(value = "token", required = false) String token, @PathVariable String username) {
-
-        // 1. 先检查 token 是否为空
-        if (token == null || token.isEmpty()) {
-            return Response.buildFailure("未授权", "401");
-        }
-
-        // 2. 验证 token 是否有效
-        if (!tokenUtil.verifyToken(token)) {
-            return Response.buildFailure("Token 无效", "401");
-        }
-
-        // 3. 从 token 中获取当前登录的用户
-        Account currentUser = tokenUtil.getAccount(token);
-        if (currentUser == null) {
-            return Response.buildFailure("用户不存在", "404");
-        }
-
-        // 4. 确保当前用户只能查询自己的信息，或有管理员权限
-        if (!currentUser.getUsername().equals(username) && !currentUser.getRole().equals("ADMINISTRATOR")) {
-            return Response.buildFailure("无权限访问", "403");
-        }
-
-        // 5. 通过用户名查询目标用户的信息
+    public Response<AccountVO> getAccountInfo(@PathVariable String username) {
         return Response.buildSuccess(accountService.getAccountInfo());
     }
 
@@ -66,23 +44,8 @@ public class AccountController {
      * 更新用户信息（需要 token）
      */
     @PutMapping()
-    public Response<Boolean> updateAccount(@RequestHeader(value = "token", required = false) String token, @RequestBody AccountVO accountVO) {
-
-        // 1. 先检查 token 是否为空
-        if (token == null || token.isEmpty()) {
-            return Response.buildFailure("未授权", "401");
-        }
-
-        // 2. 验证 token 是否有效
-        if (!tokenUtil.verifyToken(token)) {
-            return Response.buildFailure("Token 无效", "401");
-        }
-
-        // 3. 从 token 中获取当前登录的用户
-        Account currentUser = tokenUtil.getAccount(token);
-        if (currentUser == null) {
-            return Response.buildFailure("用户不存在", "404");
-        }
+    public Response<String> updateAccount(@RequestBody AccountVO accountVO) {
+//        accountService.updateAccount(accountVO);
         return Response.buildSuccess(accountService.updateAccount(accountVO));
     }
 
@@ -93,4 +56,15 @@ public class AccountController {
     public Response<String> login(@RequestBody AccountVO accountVO) {
         return Response.buildSuccess(accountService.login(accountVO));
     }
+
+    @PostMapping("/image")
+    public Response<String> upload(@RequestParam MultipartFile file){
+        return Response.buildSuccess(accountService.uploadImg(file));
+    }
+
+//    private Response<Boolean> checkToken(String Token){
+//
+//    }
+
+
 }
