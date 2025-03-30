@@ -18,4 +18,6 @@ public class SecurityUtil {
     public Account getCurrentAccount(){
         return (Account)httpServletRequest.getSession().getAttribute("currentAccount");
     }
+
+
 }

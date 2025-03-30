@@ -16,6 +16,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 */
 @Configuration
 public class MyWebMvcConfig implements WebMvcConfigurer {
+
     @Autowired
     LoginInterceptor loginInterceptor;
 
@@ -23,7 +24,7 @@ public class MyWebMvcConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(loginInterceptor)
                 .addPathPatterns("/**")
-                .excludePathPatterns("/api/accounts")
+                .excludePathPatterns("/api/accounts/register")
                 .excludePathPatterns("/api/accounts/login")
                 .order(1);
     }

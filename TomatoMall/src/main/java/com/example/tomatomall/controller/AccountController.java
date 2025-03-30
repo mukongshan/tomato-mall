@@ -34,7 +34,7 @@ public class AccountController {
     /**
      * 创建用户（注册）
      */
-    @PostMapping("/create")
+    @PostMapping("/register")
     public Response<String> createAccount(@RequestBody AccountVO accountVO) {
         return Response.buildSuccess(accountService.createAccount(accountVO));
     }
@@ -42,7 +42,7 @@ public class AccountController {
     /**
      * 更新用户信息（需要 token）
      */
-    @PostMapping("/update")
+    @PutMapping("/update")
     public Response<String> updateAccount(@RequestBody AccountVO accountVO) {
         return Response.buildSuccess(accountService.updateAccount(accountVO));
     }
@@ -59,10 +59,4 @@ public class AccountController {
     public Response<String> upload(@RequestParam MultipartFile file){
         return Response.buildSuccess(accountService.uploadImg(file));
     }
-
-//    private Response<Boolean> checkToken(String Token){
-//
-//    }
-
-
 }

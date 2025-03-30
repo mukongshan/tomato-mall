@@ -82,6 +82,9 @@ public class AccountServiceImpl implements AccountService {
             throw TomatoMallException.usernameOrPasswordError();
         }
 
+        request.getSession().setAttribute("currentAccount", account);
+        System.out.println("login: sessionId = " + request.getSession().getId());
+
         String loginToken = tokenUtil.getToken(account);
         return loginToken;
     }
@@ -93,16 +96,19 @@ public class AccountServiceImpl implements AccountService {
             System.out.println("null account");
             return null;
         }
+        System.out.println("getAccountInfo: get account!");
         return account.toVO();
     }
 
     @Override
     public String updateAccount(AccountVO accountVO) {
+        System.out.println("updateAccount: sessionId = " + request.getSession().getId());
         Account account = securityUtil.getCurrentAccount();
         if (account == null) {
-            System.out.println("null account");
+            System.out.println("updateAccount: null account");
             return "不存在该用户";
         }
+        System.out.println("updateAccount: get account!");
         boolean needNewToken = false;
 
         if (!accountVO.getPassword().isEmpty()) {
@@ -149,5 +155,7 @@ public class AccountServiceImpl implements AccountService {
             throw TomatoMallException.fileUploadFail();
         }
     }
+
+
 
 }
