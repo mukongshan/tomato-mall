@@ -58,7 +58,7 @@ public class AccountController {
     }
 
     @PostMapping("/image")
-    public Response<String> upload(@RequestParam MultipartFile file){
+    public Response<String> uploadImg(@RequestParam MultipartFile file){
         return Response.buildSuccess(accountService.uploadImg(file));
     }
 

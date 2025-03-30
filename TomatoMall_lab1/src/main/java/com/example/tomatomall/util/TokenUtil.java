@@ -37,15 +37,12 @@ public class TokenUtil {
     public boolean verifyToken(String token) {
         System.out.println("getToken: " + token);
         try {
-            System.out.println("1");
+//            System.out.println("1");
             Integer accountId=Integer.parseInt(JWT.decode(token).getAudience().get(0));
-            System.out.println("2");
             Account account= accountRepository.findById(accountId).get();
-            System.out.println("3");
             JWTVerifier jwtVerifier = JWT.require(Algorithm.HMAC256(account.getPassword())).build();
-            System.out.println("4");
             jwtVerifier.verify(token);
-            System.out.println("5");
+//            System.out.println("5");
             return true;
         }catch (Exception e){
             return false;

@@ -95,6 +95,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public String updateAccount(AccountVO accountVO) {
         Account account = securityUtil.getCurrentAccount();
+        System.out.println("raw password: "+account.getPassword());
         boolean needNewToken = false;
 
         if (accountVO.getPassword() != null) {
@@ -115,7 +116,10 @@ public class AccountServiceImpl implements AccountService {
 
         // 更新 session 中的 currentAccount
         HttpSession session = request.getSession();
-        session.setAttribute("currentAccount", account);
+        session.setAttribute("currentAccount", securityUtil.getCurrentAccount());
+
+
+        System.out.println("updated password: "+securityUtil.getCurrentAccount().getPassword());
 
         // 如果密码变了，就重新生成 Token
         if (needNewToken) {

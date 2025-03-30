@@ -28,7 +28,7 @@ public class CorsFilter implements Filter {
     @Override
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
             throws IOException, ServletException {
-        System.out.println("doFilter");
+//        System.out.println("doFilter");
         HttpServletResponse response = (HttpServletResponse) res;
         response.setHeader("Access-Control-Allow-Origin", "*");
         response.setHeader("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE");
@@ -36,10 +36,10 @@ public class CorsFilter implements Filter {
         response.setHeader("Access-Control-Max-Age", "3600");
 
         if ("OPTIONS".equalsIgnoreCase(((HttpServletRequest) req).getMethod())){
-            System.out.println("\"OPTIONS\"");
+//            System.out.println("\"OPTIONS\"");
             response.setStatus(200);
         } else {
-            System.out.println("req: "+req.toString()+", res: "+res.toString());
+//            System.out.println("req: "+req.toString()+", res: "+res.toString());
             // req: org.apache.catalina.connector.RequestFacade@1cc4aa1, res: org.apache.catalina.connector.ResponseFacade@1301737
             chain.doFilter(req, res);
 //            System.out.println("1");
