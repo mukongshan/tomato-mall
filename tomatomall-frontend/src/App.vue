@@ -1,9 +1,9 @@
 <template>
   <div class="app-container">
     <NavigationBar />
-    <main class="main-content">
+    <div class="main-container">
       <router-view />
-    </main>
+    </div>
   </div>
 </template>
 
@@ -15,11 +15,13 @@ import NavigationBar from "@/components/NavigationBar.vue";
 .app-container {
   display: flex;
   flex-direction: column;
-  min-height: 100vh; /* 关键：确保容器至少填满整个视口高度 */
+  min-height: 100vh;
 }
 
-.main-content {
-  flex: 1; /* 关键：使内容区域填满剩余空间 */
-  overflow: auto; /* 可选：内容超出时添加滚动条 */
+.main-container {
+  width: 100%;
+  flex: 1;
+  overflow: auto;
+  padding-top: 60px;
 }
 </style>

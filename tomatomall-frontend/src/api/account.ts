@@ -32,7 +32,7 @@ export const getUserDetails = async (username:string) =>{
 }
 
 export const createAccount = async (account :AccountDetail)=>{
-    return await axios.post(`${ACCOUNT_MODULE}`,account,
+    return await axios.post(`${ACCOUNT_MODULE}/create`,account,
         {headers: {'Content-Type': 'application/json'}});
 }
 
@@ -42,6 +42,6 @@ export const login = async (login:LoginCredentials)=>{
 }
 
 export const updateUser = async (account:AccountDetail)=>{
-    return await axios.put(`${ACCOUNT_MODULE}`,account,
+    return await axios.post(`${ACCOUNT_MODULE}/update`,account,
         {headers: {'Content-Type': 'application/json'}});
 }

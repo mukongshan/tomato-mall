@@ -123,6 +123,7 @@ const resetEditForm = () => {
 
 // 提交更新（传递所有字段）
 const handleUpdate = () => {
+  console.log(editForm)
   formRef.value?.validate(async (valid:boolean) => {
     if (!valid) return
     try {
@@ -275,19 +276,6 @@ const cancelEdit = () => {
 </template>
 
 <style scoped>
-
-/* 在全局样式或App.vue中添加 */
-.main-container {
-  display: flex;
-  flex-direction: row;
-  gap: 5px;
-  justify-content: flex-start; /* 改为从左侧开始 */
-  min-height: calc(100vh - 60px); /* 添加这行，确保至少占满整个视口高度 */
-  min-width: 100vw;
-  box-sizing: border-box; /* 防止padding影响高度 */
-  padding-left: 0; /* 左侧不留白 */
-}
-
 
 .card-header {
   display: flex;
