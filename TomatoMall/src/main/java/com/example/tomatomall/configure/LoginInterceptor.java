@@ -25,11 +25,17 @@ public class LoginInterceptor implements HandlerInterceptor {
     TokenUtil tokenUtil;
 
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+        //对创建用户的请求放行
+        String uri = request.getRequestURI();
+        String method = request.getMethod();
+        if ("/api/accounts".equals(uri) && "POST".equalsIgnoreCase(method)) {
+            return true;
+        }
+        //对其余请求鉴权
         String token = request.getHeader("token");
         if (token != null && tokenUtil.verifyToken(token)) {
             Account account = tokenUtil.getAccount(token);
             request.getSession().setAttribute("currentAccount", account);
-            System.out.println("preHandle: sessionId = " + request.getSession().getId());
             return true;
         } else {
             throw TomatoMallException.notLogin();

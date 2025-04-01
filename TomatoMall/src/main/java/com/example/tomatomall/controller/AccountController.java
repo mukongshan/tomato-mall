@@ -27,24 +27,15 @@ public class AccountController {
      */
     @GetMapping("/{username}")
     public Response<AccountVO> getAccountInfo(@PathVariable String username) {
-        return Response.buildSuccess(accountService.getAccountInfo());
+        return Response.buildSuccess(accountService.getAccountInfo(username));
     }
-
 
     /**
      * 创建用户（注册）
      */
-    @PostMapping("/register")
+    @PostMapping()
     public Response<String> createAccount(@RequestBody AccountVO accountVO) {
         return Response.buildSuccess(accountService.createAccount(accountVO));
-    }
-
-    /**
-     * 更新用户信息（需要 token）
-     */
-    @PutMapping("/update")
-    public Response<String> updateAccount(@RequestBody AccountVO accountVO) {
-        return Response.buildSuccess(accountService.updateAccount(accountVO));
     }
 
     /**
@@ -53,6 +44,14 @@ public class AccountController {
     @PostMapping("/login")
     public Response<String> login(@RequestBody AccountVO accountVO) {
         return Response.buildSuccess(accountService.login(accountVO));
+    }
+
+    /**
+     * 更新用户信息（需要 token）
+     */
+    @PutMapping()
+    public Response<String> updateAccount(@RequestBody AccountVO accountVO) {
+        return Response.buildSuccess(accountService.updateAccount(accountVO));
     }
 
     @PostMapping("/image")

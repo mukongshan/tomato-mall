@@ -6,7 +6,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface AccountService {
     AccountVO getAccountByUsername(String username);
-    AccountVO getAccountInfo();
+    AccountVO getAccountInfo(String username);
     String createAccount(AccountVO accountVO);
     String updateAccount(AccountVO accountVO);
     String login(AccountVO accountVO);

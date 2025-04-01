@@ -26,22 +26,20 @@ export interface LoginCredentials {
 
 export const getUserDetails = async (username:string) =>{
     return await axios.get(`${ACCOUNT_MODULE}/${username}`,
-        {headers:{
-            'Content-Type':'application/json'
-            }});
+        {headers:{'Content-Type':'application/json'}});
 }
 
 export const createAccount = async (account :AccountDetail)=>{
-    return await axios.post(`${ACCOUNT_MODULE}/register`,account,
+    return await axios.post(`${ACCOUNT_MODULE}`, account,
         {headers: {'Content-Type': 'application/json'}});
 }
 
 export const login = async (login:LoginCredentials)=>{
-    return await axios.post(`${ACCOUNT_MODULE}/login`,login,
+    return await axios.post(`${ACCOUNT_MODULE}/login`, login,
         {headers: {'Content-Type': 'application/json'}});
 }
 
 export const updateUser = async (account:AccountDetail)=>{
-    return await axios.put(`${ACCOUNT_MODULE}/update`,account,
+    return await axios.put(`${ACCOUNT_MODULE}`, account,
         {headers: {'Content-Type': 'application/json'}});
 }

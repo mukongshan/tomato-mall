@@ -74,55 +74,53 @@ public class AccountServiceImpl implements AccountService {
         if (account == null) {
             throw TomatoMallException.usernameOrPasswordError();
         }
-
         // 使用 passwordEncoder 比较原始密码和数据库中加密后的密码
         boolean isPswMatch = passwordEncoder.matches(accountVO.getPassword(), account.getPassword());
         if (!isPswMatch) {
-            System.out.println(passwordEncoder.encode(accountVO.getPassword()));
             throw TomatoMallException.usernameOrPasswordError();
         }
 
         request.getSession().setAttribute("currentAccount", account);
-        System.out.println("login: sessionId = " + request.getSession().getId());
-
-        String loginToken = tokenUtil.getToken(account);
-        return loginToken;
+        //登录成功返回Token
+        return tokenUtil.getToken(account);
     }
 
     @Override
-    public AccountVO getAccountInfo() {
-        Account account=securityUtil.getCurrentAccount();
+    public AccountVO getAccountInfo(String username) {
+        Account account = accountRepository.findByUsername(username);
         if (account == null) {
-            System.out.println("null account");
-            return null;
+            throw TomatoMallException.usernameNotExists();
         }
-        System.out.println("getAccountInfo: get account!");
         return account.toVO();
     }
 
     @Override
     public String updateAccount(AccountVO accountVO) {
-        System.out.println("updateAccount: sessionId = " + request.getSession().getId());
         Account account = securityUtil.getCurrentAccount();
         if (account == null) {
-            System.out.println("updateAccount: null account");
-            return "不存在该用户";
+            throw TomatoMallException.usernameNotExists();
         }
-        System.out.println("updateAccount: get account!");
-        boolean needNewToken = false;
 
         if (!accountVO.getPassword().isEmpty()) {
-            account.setPassword(passwordEncoder.encode(accountVO.getPassword()));  // 记得加密密码
-            needNewToken = true; // 如果修改了密码，需要重新生成 Token
+            account.setPassword(passwordEncoder.encode(accountVO.getPassword()));
         }
-        if (accountVO.getName() != null) {
+        if (!accountVO.getName().isEmpty()) {
             account.setName(accountVO.getName());
         }
-        if (accountVO.getLocation() != null) {
-            account.setLocation(accountVO.getLocation());
-        }
-        if (accountVO.getAvatar() != null) {
+        if (!accountVO.getAvatar().isEmpty()) {
             account.setAvatar(accountVO.getAvatar());
+        }
+        if (!accountVO.getRole().isEmpty()) {
+            account.setRole(accountVO.getRole());
+        }
+        if (!accountVO.getTelephone().isEmpty()) {
+            account.setTelephone(accountVO.getTelephone());
+        }
+        if (!accountVO.getEmail().isEmpty()) {
+            account.setEmail(accountVO.getEmail());
+        }
+        if (!accountVO.getLocation().isEmpty()) {
+            account.setLocation(accountVO.getLocation());
         }
 
         accountRepository.save(account);
@@ -130,11 +128,6 @@ public class AccountServiceImpl implements AccountService {
         // 更新 session 中的 currentAccount
         HttpSession session = request.getSession();
         session.setAttribute("currentAccount", account);
-
-        // 如果密码变了，就重新生成 Token
-        if (needNewToken) {
-            return tokenUtil.getToken(account);
-        }
 
         return "更新成功";
     }
