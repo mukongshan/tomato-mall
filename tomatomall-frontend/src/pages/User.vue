@@ -5,6 +5,7 @@ import {UploadProps, UploadFile, FormRules, ElMessage} from 'element-plus'
 import type { UserDetail, AccountDetail } from '@/api/account.ts'
 import { getUserDetails, updateUser } from '@/api/account.ts'
 import {UserFilled} from "@element-plus/icons-vue";
+import router from "@/router";
 
 // 用户信息
 const userInfo = ref<UserDetail>({
@@ -129,15 +130,22 @@ const handleUpdate = () => {
     try {
       // 注意：这里会提交所有字段，包括空的密码字段
       await updateUser({ ...editForm })
-      await fetchUserDetails() // 重新获取最新数据
       editMode.value = false
       ElMessage.success('更新成功')
+      if (editForm.confirmPassword == editForm.confirmPassword) {
+        goToLogin();
+      }
     } catch (error) {
       console.error('更新失败:', error)
       ElMessage.error('更新失败')
     }
   })
 }
+
+// 跳转到登录页面
+const goToLogin = () => {
+  router.push({ path: `/login` });
+};
 
 // 取消编辑
 const cancelEdit = () => {
