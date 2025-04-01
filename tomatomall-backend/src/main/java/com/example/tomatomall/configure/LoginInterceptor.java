@@ -25,20 +25,10 @@ public class LoginInterceptor implements HandlerInterceptor {
     TokenUtil tokenUtil;
 
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-<<<<<<< HEAD:TomatoMall/src/main/java/com/example/tomatomall/configure/LoginInterceptor.java
-        //对创建用户的请求放行
-        String uri = request.getRequestURI();
-        String method = request.getMethod();
-        if ("/api/accounts".equals(uri) && "POST".equalsIgnoreCase(method)) {
-            return true;
-        }
-        //对其余请求鉴权
-=======
         // 允许注册请求（POST /api/accounts）不检查 token
         if ("POST".equalsIgnoreCase(request.getMethod()) && "/api/accounts".equals(request.getRequestURI())) {
             return true;
         }
->>>>>>> 1212401 (实现了修改密码跳转到登录界面):tomatomall-backend/src/main/java/com/example/tomatomall/configure/LoginInterceptor.java
         String token = request.getHeader("token");
         if (token != null && tokenUtil.verifyToken(token)) {
             Account account = tokenUtil.getAccount(token);
