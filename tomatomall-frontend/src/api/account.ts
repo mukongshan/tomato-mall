@@ -30,11 +30,7 @@ export const getUserDetails = async (username:string) =>{
 }
 
 export const createAccount = async (account :AccountDetail)=>{
-<<<<<<< HEAD
-    return await axios.post(`${ACCOUNT_MODULE}`, account,
-=======
     return await axios.post(`${ACCOUNT_MODULE}`,account,
->>>>>>> 1212401 (实现了修改密码跳转到登录界面)
         {headers: {'Content-Type': 'application/json'}});
 }
 
@@ -44,10 +40,6 @@ export const login = async (login:LoginCredentials)=>{
 }
 
 export const updateUser = async (account:AccountDetail)=>{
-<<<<<<< HEAD
-    return await axios.put(`${ACCOUNT_MODULE}`, account,
-=======
     return await axios.put(`${ACCOUNT_MODULE}`,account,
->>>>>>> 1212401 (实现了修改密码跳转到登录界面)
         {headers: {'Content-Type': 'application/json'}});
 }

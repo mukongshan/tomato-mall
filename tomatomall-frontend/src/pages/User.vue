@@ -132,7 +132,7 @@ const handleUpdate = () => {
       await updateUser({ ...editForm })
       editMode.value = false
       ElMessage.success('更新成功')
-      if (editForm.confirmPassword == editForm.confirmPassword) {
+      if (editForm.confirmPassword && editForm.confirmPassword == editForm.confirmPassword) {
         goToLogin();
       }
     } catch (error) {
