@@ -33,27 +33,12 @@ public class AccountController {
     /**
      * 创建用户（注册）
      */
-<<<<<<< HEAD:TomatoMall/src/main/java/com/example/tomatomall/controller/AccountController.java
     @PostMapping()
-=======
-    @PostMapping("")
->>>>>>> 1212401 (实现了修改密码跳转到登录界面):tomatomall-backend/src/main/java/com/example/tomatomall/controller/AccountController.java
     public Response<String> createAccount(@RequestBody AccountVO accountVO) {
         return Response.buildSuccess(accountService.createAccount(accountVO));
     }
 
     /**
-<<<<<<< HEAD:TomatoMall/src/main/java/com/example/tomatomall/controller/AccountController.java
-=======
-     * 更新用户信息（需要 token）
-     */
-    @PutMapping("")
-    public Response<String> updateAccount(@RequestBody AccountVO accountVO) {
-        return Response.buildSuccess(accountService.updateAccount(accountVO));
-    }
-
-    /**
->>>>>>> 1212401 (实现了修改密码跳转到登录界面):tomatomall-backend/src/main/java/com/example/tomatomall/controller/AccountController.java
      * 用户登录
      */
     @PostMapping("/login")
