@@ -40,6 +40,6 @@ export const login = async (login:LoginCredentials)=>{
 }
 
 export const updateUser = async (account:AccountDetail)=>{
-    return await axios.put(`${ACCOUNT_MODULE}`,account,
+    return await axios.put(`${ACCOUNT_MODULE}`, account,
         {headers: {'Content-Type': 'application/json'}});
 }
