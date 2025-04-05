@@ -33,11 +33,7 @@ public class AccountController {
     /**
      * 创建用户（注册）
      */
-<<<<<<< HEAD
     @PostMapping("")
-=======
-    @PostMapping()
->>>>>>> 72f1208 (恢复了前后端因diff信息导致的错误)
     public Response<String> createAccount(@RequestBody AccountVO accountVO) {
         return Response.buildSuccess(accountService.createAccount(accountVO));
     }
