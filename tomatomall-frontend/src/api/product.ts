@@ -17,13 +17,20 @@ export interface Specification {
     value: string;
 }
 
+export interface Stockpile {
+    id: number;
+    productId: number;
+    amount: number;
+    frozen: number;
+}
+
 export const getProductsList = async () =>{
     return await axios.get(`${PRODUCT_MODULE}`,
         {headers:{'Content-Type':'application/json'}});
 }
 
-export const getProduct = async (id: number)=>{
-    return await axios.get(`${PRODUCT_MODULE}/${id}`,
+export const getProduct = async (productId: number)=>{
+    return await axios.get(`${PRODUCT_MODULE}/${productId}`,
         {headers: {'Content-Type': 'application/json'}});
 }
 
@@ -37,7 +44,17 @@ export const addProduct = async (product: Product)=>{
         {headers: {'Content-Type': 'application/json'}});
 }
 
-export const deleteProduct = async (id: number)=>{
-    return await axios.delete(`${PRODUCT_MODULE}/${id}`,
+export const deleteProduct = async (productId: number)=>{
+    return await axios.delete(`${PRODUCT_MODULE}/stockpile/${productId}`,
+        {headers: {'Content-Type': 'application/json'}});
+}
+
+export const updateStockpile = async (productId: number, amount: number)=>{
+    return await axios.patch(`${PRODUCT_MODULE}/stockpile/${productId}`, amount,
+        {headers: {'Content-Type': 'application/json'}});
+}
+
+export const getStockpile = async (productId: number)=>{
+    return await axios.get(`${PRODUCT_MODULE}/stockpile/${productId}`,
         {headers: {'Content-Type': 'application/json'}});
 }

@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { ElMessageBox, ElMessage } from "element-plus";
-import {addProduct, deleteProduct, Product, updateProduct} from "@/api/product.ts"
-import { getProductsList } from "@/api/product.ts"
+import {Product, Stockpile} from "@/api/product.ts"
+import { getProductsList, addProduct, deleteProduct, updateProduct } from "@/api/product.ts"
+import { updateStockpile, getStockpile } from "@/api/product.ts"
 
 const products = ref<Product[]>([
   {
@@ -26,8 +27,22 @@ const products = ref<Product[]>([
     specification: [{ item: "2", value: "2" }]
   },
 ]);
+const stockpiles = ref<Stockpile[]>([
+  {
+    id: 1,
+    productId: 1,
+    amount: 1,
+    frozen: 0
+  },
+  {
+    id: 2,
+    productId: 2,
+    amount: 199,
+    frozen: 0
+  }
+]);
 const isAdding = ref(false);
-const dialogVisible = ref(false);
+const dialogProductVisible = ref(false);
 
 // 编辑表单的数据结构
 const editProduct = ref<Product>({
@@ -63,30 +78,41 @@ const handleAdd = async () => {
     details: '',
     specification: []
   };
-  dialogVisible.value = true;
+  dialogProductVisible.value = true;
 }
 
 const handleUpdate = async (product: Product) => {
   isAdding.value = false;
   // 深拷贝当前商品数据到表单
   editProduct.value = { ...product };
-  dialogVisible.value = true;
+  dialogProductVisible.value = true;
 };
 
 const handleSubmit = async () => {
-  try {
-    let response;
-    if (isAdding.value == true) {
-      response = await addProduct(editProduct.value);
-    } else {
-      response = await updateProduct(editProduct.value as Product);
+  if (isAdding.value == true) {
+    if (editProduct.value.title == "") {
+      ElMessage.error("请填写标题")
+      return
     }
-    ElMessage.success(response.data.data);
-    await pageInit();
-    dialogVisible.value = false;
-  } catch (error: any) {
-    ElMessage.error(error.response.msg);
+
+    addProduct(editProduct.value).then((res) => {
+      if (res.data.code === '200') {
+        ElMessage.success('添加成功');
+      } else {
+        ElMessage.error(res.data.msg);
+      }
+    });
+  } else {
+    updateProduct(editProduct.value).then((res) => {
+      if (res.data.code === '200') {
+        ElMessage.success('修改成功');
+      } else {
+        ElMessage.error(res.data.msg);
+      }
+    });
   }
+  dialogProductVisible.value = false;
+  await pageInit();
 }
 
 const handleDelete = (productId: number) => {
@@ -95,28 +121,82 @@ const handleDelete = (productId: number) => {
     cancelButtonText: '取消',
     type: 'warning'
   }).then(() => {
-    try {
-      deleteProduct(productId);
-      ElMessage.success('删除成功');
-    } catch(error: any) {
-      ElMessage.error(error.response.msg);
-    }
-
+    deleteProduct(productId).then((res) => {
+      if (res.data.code === '200') {
+        ElMessage.success('删除成功');
+      } else {
+        ElMessage.error(res.data.msg);
+      }
+    });
   }).catch(() => {
     ElMessage.info('已取消删除');
   });
 };
 
-const pageInit = async () => {
-  getProductsList().then(ret => {
-    products.value = ret.data;
-  })
+const handleStockpile = async (productId: number) => {
+  ElMessageBox.prompt('请输入库存数量', '调整库存', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    inputType: 'number',
+    inputPattern: /^-?\d+$/,  // 只允许整数
+    inputErrorMessage: '请输入有效的整数',
+  }).then(({value}) => {
+    const amount = Number(value);
+
+    if (isNaN(amount) || amount < 0) {
+      ElMessage.error('请输入有效的数字');
+      return;
+    }
+
+    updateStockpile(productId, amount).then((res) => {
+      if (res.data.code === '200') {
+        ElMessage.success('调整成功');
+      } else {
+        ElMessage.error(res.data.msg);
+      }
+    });
+  }).catch(() => {
+    ElMessage.info('已取消调整');
+  });
 }
+
+const getStockpileAmount = (productId: number): number => {
+  const stock = stockpiles.value.find(s => s.productId === productId);
+  return stock?.amount || 0;
+}
+
+const pageInit = async () => {
+  getProductsList().then(res => {
+    if (res.data.code === '200') {
+      products.value = res.data.data;
+    } else {
+      ElMessage({
+        message: res.data.msg,
+        type: 'error',
+        center: true,
+      })
+    }
+  })
+
+  for (const product of products.value) {
+    getStockpile(product.id).then(res => {
+      if (res.data.code === '200') {
+        products.value = res.data.data;
+      } else {
+        ElMessage({
+          message: res.data.msg,
+          type: 'error',
+          center: true,
+        })
+      }
+    })
+  }
+};
 pageInit();
 </script>
 
 <template>
-  <h1>库存管理</h1>
+  <h1>商品管理</h1>
   <el-button @click="handleAdd">
     增加商品
   </el-button>
@@ -133,15 +213,17 @@ pageInit();
         <div class="product-info">
           <div class="product-name">{{ product.title }}</div>
           <div class="product-price">¥{{ product.price }}</div>
+          <div class="product-stockpile">库存数量: {{ getStockpileAmount(product.id) }}</div>
           <el-button @click="handleUpdate(product)">编辑</el-button>
           <el-button @click="handleDelete(product.id)">删除</el-button>
+          <el-button @click="handleStockpile(product.id)">调整库存</el-button>
         </div>
       </div>
     </div>
   </el-card>
 
   <!-- 商品弹窗 -->
-  <el-dialog v-model="dialogVisible" :title="isAdding ? '增加商品' : '编辑商品'" width="50%">
+  <el-dialog v-model="dialogProductVisible" :title="isAdding ? '增加商品' : '编辑商品'" width="50%">
     <el-form label-width="100px">
       <el-form-item label="商品名称">
         <el-input v-model="editProduct.title" />
@@ -186,7 +268,7 @@ pageInit();
     </el-form>
 
     <template #footer>
-      <el-button @click="dialogVisible = false">取消</el-button>
+      <el-button @click="dialogProductVisible = false">取消</el-button>
       <el-button
           type="primary"
           @click="handleSubmit"
@@ -259,6 +341,12 @@ pageInit();
   color: #f56c6c;
   font-size: 14px;
   margin-bottom: 8px;
+}
+
+.product-stockpile {
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
 }
 
 </style>

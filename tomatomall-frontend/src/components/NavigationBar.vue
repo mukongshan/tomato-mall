@@ -12,7 +12,7 @@ import { ElMenu, ElMenuItem } from "element-plus";
       <div class="mid-items">
         <el-menu-item index="/">番茄书城</el-menu-item>
         <el-menu-item index="/cart">购物车</el-menu-item>
-        <el-menu-item index="/warehouse">库存管理</el-menu-item>
+        <el-menu-item index="/warehouse">商品管理</el-menu-item>
       </div>
 
       <div class="right-items">
