@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { ElMessageBox, ElMessage } from "element-plus";
-import { Product, Specification } from "@/api/product.ts"
-import { getProductsList, getProduct,} from "@/api/product.ts"
+import {addProduct, deleteProduct, Product, updateProduct} from "@/api/product.ts"
+import { getProductsList } from "@/api/product.ts"
 
 const products = ref<Product[]>([
   {
@@ -13,7 +13,7 @@ const products = ref<Product[]>([
     description: "这是商品1",
     cover: "https://via.placeholder.com/150",
     details: "啥1？",
-    specification: {}
+    specification: [{ item: "1", value: "1" }]
   },
   {
     id: 2,
@@ -23,21 +23,88 @@ const products = ref<Product[]>([
     description: "这是商品2",
     cover: "https://via.placeholder.com/150",
     details: "啥2？",
-    specification: {}
+    specification: [{ item: "2", value: "2" }]
   },
 ]);
+const isAdding = ref(false);
+const dialogVisible = ref(false);
 
-// 当前激活的下拉菜单
-const activeDropdown = ref<number | null>(null);
+// 编辑表单的数据结构
+const editProduct = ref<Product>({
+  id: -1,
+  title: '',
+  price: 0,
+  rate: 0,
+  description: '',
+  cover: '',
+  details: '',
+  specification: []
+});
 
-// 切换下拉菜单显示状态
-const toggleDropdown = (productId: number) => {
-  activeDropdown.value = activeDropdown.value === productId ? null : productId;
+// 添加新规格
+const addSpecification = () => {
+  editProduct.value.specification.push({ item: "", value: ""});
+};
+// 移除规格
+const removeSpecification = (index: number) => {
+  editProduct.value.specification.splice(index, 1);
 };
 
-// 关闭所有下拉菜单
-const closeDropdowns = () => {
-  activeDropdown.value = null;
+const handleAdd = async () => {
+  isAdding.value = true;
+  // 初始化空表单
+  editProduct.value = {
+    id: -1,
+    title: '',
+    price: 0,
+    rate: 0,
+    description: '',
+    cover: '',
+    details: '',
+    specification: []
+  };
+  dialogVisible.value = true;
+}
+
+const handleUpdate = async (product: Product) => {
+  isAdding.value = false;
+  // 深拷贝当前商品数据到表单
+  editProduct.value = { ...product };
+  dialogVisible.value = true;
+};
+
+const handleSubmit = async () => {
+  try {
+    let response;
+    if (isAdding.value == true) {
+      response = await addProduct(editProduct.value);
+    } else {
+      response = await updateProduct(editProduct.value as Product);
+    }
+    ElMessage.success(response.data.data);
+    await pageInit();
+    dialogVisible.value = false;
+  } catch (error: any) {
+    ElMessage.error(error.response.msg);
+  }
+}
+
+const handleDelete = (productId: number) => {
+  ElMessageBox.confirm('确定要删除这个商品吗?', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    try {
+      deleteProduct(productId);
+      ElMessage.success('删除成功');
+    } catch(error: any) {
+      ElMessage.error(error.response.msg);
+    }
+
+  }).catch(() => {
+    ElMessage.info('已取消删除');
+  });
 };
 
 const pageInit = async () => {
@@ -45,51 +112,20 @@ const pageInit = async () => {
     products.value = ret.data;
   })
 }
-
-
-// 删除商品
-const handleDelete = (productId: number) => {
-  ElMessageBox.confirm('确定要删除这个商品吗?', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning'
-  }).then(() => {
-    products.value = products.value.filter(p => p.productId !== productId);
-    ElMessage.success('删除成功');
-  }).catch(() => {
-    ElMessage.info('已取消删除');
-  });
-};
-
-// 更新商品
-const handleUpdate = (product: Product) => {
-  ElMessageBox.prompt('请输入新的商品名称', '编辑商品', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    inputValue: product.productName
-  }).then(({ value }) => {
-    const index = products.value.findIndex(p => p.productId === product.productId);
-    if (index !== -1) {
-      products.value[index].productName = value;
-      ElMessage.success('更新成功');
-    }
-  }).catch(() => {
-    ElMessage.info('已取消编辑');
-  });
-};
-
 pageInit();
 </script>
 
 <template>
   <h1>库存管理</h1>
+  <el-button @click="handleAdd">
+    增加商品
+  </el-button>
   <el-card class="product-list">
     <div class="product-grid">
       <div
           v-for="product in products"
           :key="product.id"
           class="product-item"
-          @click="closeDropdowns"
       >
         <div class="product-image-container">
           <img :src="product.cover" alt="商品图片" class="product-image" />
@@ -97,33 +133,68 @@ pageInit();
         <div class="product-info">
           <div class="product-name">{{ product.title }}</div>
           <div class="product-price">¥{{ product.price }}</div>
-
-          <!-- 三点下拉菜单 -->
-          <div class="product-actions">
-            <el-button
-                class="more-button"
-                @click.stop="toggleDropdown(product.id)"
-            >
-              <i class="el-icon-more"></i>
-            </el-button>
-
-            <div
-                v-show="activeDropdown === product.id"
-                class="dropdown-menu"
-                @click.stop
-            >
-              <div class="dropdown-item" @click="handleUpdate(product)">
-                <i class="el-icon-edit"></i> 更新
-              </div>
-              <div class="dropdown-item danger" @click="handleDelete(product.id)">
-                <i class="el-icon-delete"></i> 删除
-              </div>
-            </div>
-          </div>
+          <el-button @click="handleUpdate(product)">编辑</el-button>
+          <el-button @click="handleDelete(product.id)">删除</el-button>
         </div>
       </div>
     </div>
   </el-card>
+
+  <!-- 商品弹窗 -->
+  <el-dialog v-model="dialogVisible" :title="isAdding ? '增加商品' : '编辑商品'" width="50%">
+    <el-form label-width="100px">
+      <el-form-item label="商品名称">
+        <el-input v-model="editProduct.title" />
+      </el-form-item>
+
+      <el-form-item label="商品价格">
+        <el-input-number v-model="editProduct.price" :min="0" :precision="2" />
+      </el-form-item>
+
+      <el-form-item label="商品评分">
+        <el-input-number v-model="editProduct.rate" :min="0" :max="10.0" :precision="1" />
+      </el-form-item>
+
+      <el-form-item label="商品描述">
+        <el-input v-model="editProduct.description" type="textarea" :rows="3" />
+      </el-form-item>
+
+      <el-form-item label="商品封面">
+        <el-input v-model="editProduct.cover" />
+      </el-form-item>
+
+      <el-form-item label="商品细节">
+        <el-input v-model="editProduct.details" />
+      </el-form-item>
+
+      <el-form-item label="商品规格">
+        <div v-for="(spec, index) in editProduct.specification" :key="index" class="spec-item">
+          <el-input v-model="spec.item" placeholder="规格名称" style="width: 200px; margin-right: 10px;" />
+          <el-input v-model="spec.value" placeholder="规格内容" style="width: 200px; margin-right: 10px;" />
+          <el-button
+              type="danger"
+              circle
+              @click="removeSpecification(index)"
+          >
+            <i class="el-icon-minus" />
+          </el-button>
+        </div>
+        <el-button type="primary" plain @click="addSpecification" icon="el-icon-plus">
+          添加规格
+        </el-button>
+      </el-form-item>
+    </el-form>
+
+    <template #footer>
+      <el-button @click="dialogVisible = false">取消</el-button>
+      <el-button
+          type="primary"
+          @click="handleSubmit"
+      >
+        {{ isAdding ? '添加' : '更新' }}
+      </el-button>
+    </template>
+  </el-dialog>
 </template>
 
 <style scoped>
@@ -190,60 +261,4 @@ pageInit();
   margin-bottom: 8px;
 }
 
-/* 三点按钮样式 */
-.product-actions {
-  position: relative;
-  display: flex;
-  justify-content: center;
-}
-
-.more-button {
-  padding: 5px;
-  min-width: auto;
-  border: none;
-  background: transparent;
-  color: #666;
-}
-
-.more-button:hover {
-  color: #409eff;
-  background: transparent;
-}
-
-/* 下拉菜单样式 */
-.dropdown-menu {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  background: #3ac6cd;
-  border: 1px solid #ebeef5;
-  border-radius: 4px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-  z-index: 10;
-  min-width: 100px;
-}
-
-.dropdown-item {
-  padding: 8px 12px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  font-size: 14px;
-}
-
-.dropdown-item:hover {
-  background-color: #4572b6;
-}
-
-.dropdown-item i {
-  margin-right: 5px;
-}
-
-.dropdown-item.danger {
-  color: #f56c6c;
-}
-
-.dropdown-item.danger:hover {
-  background-color: #fef0f0;
-}
 </style>
