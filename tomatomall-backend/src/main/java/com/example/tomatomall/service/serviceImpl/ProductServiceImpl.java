@@ -126,8 +126,6 @@ public class ProductServiceImpl implements ProductService {
         stockpileRepository.save(stockpile);
         return "调整库存成功";
 
-
-
     }
 
 
