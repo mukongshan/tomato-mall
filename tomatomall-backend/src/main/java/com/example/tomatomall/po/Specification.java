@@ -35,6 +35,8 @@ public class Specification {
         SpecificationVO vo = new SpecificationVO();
         vo.setItem(this.item);
         vo.setValue(this.value);
+        vo.setProductId(this.productId);
+
         return vo;
     }
 }

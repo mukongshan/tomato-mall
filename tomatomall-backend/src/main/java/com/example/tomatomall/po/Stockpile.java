@@ -21,7 +21,7 @@ public class Stockpile {
 
     @Basic
     @Column(name = "product_id", nullable = false)
-    private Integer product_id;
+    private Integer productId;
 
     @Basic
     @Column(name = "amount", nullable = false)
@@ -35,6 +35,8 @@ public class Stockpile {
         StockpileVO vo = new StockpileVO();
         vo.setAmount(this.amount);
         vo.setFrozen(this.frozen);
+        vo.setProductId(this.productId);
+        vo.setId(this.id);
         return vo;
     }
 }

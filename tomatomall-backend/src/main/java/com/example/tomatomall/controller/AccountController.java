@@ -33,7 +33,7 @@ public class AccountController {
     /**
      * 创建用户（注册）
      */
-    @PostMapping("")
+    @PostMapping()
     public Response<String> createAccount(@RequestBody AccountVO accountVO) {
         return Response.buildSuccess(accountService.createAccount(accountVO));
     }
@@ -49,7 +49,7 @@ public class AccountController {
     /**
      * 更新用户信息（需要 token）
      */
-    @PutMapping("")
+    @PutMapping()
     public Response<String> updateAccount(@RequestBody AccountVO accountVO) {
         return Response.buildSuccess(accountService.updateAccount(accountVO));
     }
