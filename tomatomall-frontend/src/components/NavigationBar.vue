@@ -1,5 +1,26 @@
 <script setup>
+import { ref,onMounted, watch } from "vue";
 import { ElMenu, ElMenuItem } from "element-plus";
+import router from "@/router";
+import { isLogin} from "./LoginEvent";
+
+const checkLogin = () => {
+  const token = sessionStorage.getItem('token');
+  if (token) {
+    isLogin.value = true;
+  } else {
+    isLogin.value = false;
+  }
+};
+
+const Logout = () => {
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('username');
+    isLogin.value = false;
+    router.push("/login"); // 跳转到登录页面
+};
+onMounted(checkLogin);
+
 </script>
 
 <template>
@@ -16,8 +37,15 @@ import { ElMenu, ElMenuItem } from "element-plus";
       </div>
 
       <div class="right-items">
-        <el-menu-item index="/login">登录</el-menu-item>
-        <el-menu-item index="/register">注册</el-menu-item>
+        <template v-if="isLogin">
+          <el-menu-item index="/user">个人中心</el-menu-item>
+          <el-menu-item  @click="Logout">退出登录</el-menu-item>
+        </template>
+
+        <template v-else>
+          <el-menu-item index="/login">登录</el-menu-item>
+          <el-menu-item index="/register">注册</el-menu-item>
+        </template>
       </div>
     </el-menu>
   </div>

@@ -3,7 +3,8 @@ import {reactive, ref} from 'vue'
 import {ComponentSize, ElLoading, ElMessage, FormInstance, FormRules} from 'element-plus'
 import router from "../router/index.ts";
 import type {LoginCredentials} from "@/api/account";
-import {login} from "@/api/account";
+import { login } from "@/api/account";
+import { isLogin } from '@/components/LoginEvent.ts';
 
 // 表单尺寸
 const formSize = ref<ComponentSize>('default')
@@ -39,9 +40,10 @@ const handleLogin = async () => {
     try {
       const response = await login(ruleForm);
       if (response.data.code === '200') {
-        ElMessage.success("登录成功")
-        sessionStorage.setItem('token', response.data.data)
-        sessionStorage.setItem('username',ruleForm.username)
+          ElMessage.success("登录成功");
+          sessionStorage.setItem('token', response.data.data);
+          sessionStorage.setItem('username', ruleForm.username);
+          isLogin.value = true; // 更新登录状态
         await router.push("/user") // 跳转到首页或其他页面
       } else {
         ElMessage.warning(response.data.message || "登录失败");
