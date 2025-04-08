@@ -5,6 +5,7 @@ import WarehousePage from "../pages/WarehousePage.vue";
 import Register from "@/pages/Register.vue";
 import Login from "@/pages/Login.vue";
 import User from "@/pages/User.vue";
+import Product from "@/pages/productDetails.vue";
 
 const routes = [
     {
@@ -39,6 +40,13 @@ const routes = [
         name: 'user',
         mata:{title:'用户主页'},
         component: User,
+    },
+    {
+        path: '/product/:id',
+        name: 'product',
+        mata: { title: '商品详情' },
+        component:Product,
+        props: true,
     }
     //其他路由配置
 ];

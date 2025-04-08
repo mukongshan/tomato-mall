@@ -4,6 +4,10 @@ import { ElMessageBox, ElMessage } from "element-plus";
 import { Product, Stockpile } from "@/api/product.ts"
 import { getProductsList, addProduct, deleteProduct, updateProduct } from "@/api/product.ts"
 import { updateStockpile, getStockpile } from "@/api/product.ts"
+import router from "@/router/index.ts"
+
+// 1. 商品规格表
+// 2. 图片上传
 
 // 存储商品列表数据
 const products = ref<Product[]>([]);
@@ -22,7 +26,7 @@ const editProduct = ref<Product>({
     rate: 0,
     description: '',
     cover: '',
-    details: '',
+    detail: '',
     specification: []
 });
 
@@ -45,7 +49,7 @@ const handleAdd = async () => {
         rate: 0,
         description: '',
         cover: '',
-        details: '',
+        detail: '',
         specification: []
     };
     dialogProductVisible.value = true;
@@ -181,6 +185,10 @@ const pageInit = async () => {
     }
     
 };
+
+const gotoDetails = (productId: number) => {
+    router.push({ path: `/product/${productId}` });
+};
 pageInit();
 </script>
 
@@ -195,23 +203,23 @@ pageInit();
             <!--商品列表-->
             <div v-for="product in products" :key="product.id" class="product-item">
                 <!-- 图片-->
-                <div class="product-image-container">
+                <div class="product-image-container" @click="gotoDetails(product.id)" >
 
-                    <img :src="product.cover" alt="商品图片" class="product-image" />
-                </div>
-                <!-- 商品信息-->
-                <div class="product-info">
-                    <div class="product-name">{{ product.title }}</div>
-                    <div class="product-price">¥{{ product.price }}</div>
-                    <div class="product-stockpile">库存数量: {{ getStockpileAmount(product.id) }}</div>
-
-                    <el-button @click="handleUpdate(product)">编辑</el-button>
-
-                    <el-button @click="handleDelete(product.id)">删除</el-button>
-
-                    <el-button @click="handleStockpile(product.id)">调整库存</el-button>
-                </div>
+                    <img :src=" product.cover" alt="商品图片" class="product-image" />
             </div>
+            <!-- 商品信息-->
+            <div class="product-info">
+                <div class="product-name">{{ product.title }}</div>
+                <div class="product-price">¥{{ product.price }}</div>
+                <div class="product-stockpile">库存数量: {{ getStockpileAmount(product.id) }}</div>
+
+                <el-button @click="handleUpdate(product)">编辑</el-button>
+
+                <el-button @click="handleDelete(product.id)">删除</el-button>
+
+                <el-button @click="handleStockpile(product.id)">调整库存</el-button>
+            </div>
+        </div>
         </div>
     </el-card>
 
@@ -239,7 +247,7 @@ pageInit();
             </el-form-item>
 
             <el-form-item label="商品细节">
-                <el-input v-model="editProduct.details" />
+                <el-input v-model="editProduct.detail" type = "textarea" />
             </el-form-item>
 
             <el-form-item label="商品规格">

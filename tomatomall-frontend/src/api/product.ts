@@ -8,7 +8,7 @@ export interface Product {
     rate: number;
     description: string;
     cover: string;
-    details: string;
+    detail: string;
     specification: Specification[];
 }
 // 商品描述
