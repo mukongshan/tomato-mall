@@ -26,7 +26,7 @@ export interface LoginCredentials {
 
 export const getUserDetails = async (username:string) =>{
     return await axios.get(`${ACCOUNT_MODULE}/${username}`,
-        {headers:{'Content-Type':'application/json'}});
+        { headers: { 'Content-Type': 'application/json' } });
 }
 
 export const createAccount = async (account :AccountDetail)=>{

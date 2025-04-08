@@ -56,7 +56,6 @@ public class ProductController {
     @PatchMapping("/stockpile/{productId}")
     public Response<String> updateProductStock(@PathVariable Integer productId,@RequestBody Map<String, Integer> body ) {
         Integer amount = (Integer) body.get("amount");
-        System.out.println("amount = " + amount);
         return Response.buildSuccess(productService.updateStockpile(productId,amount));
     }
 }

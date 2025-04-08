@@ -48,7 +48,6 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductVO createProduct(ProductVO productVO) {
         Product newProduct = productVO.toPO();
-
         productRepository.save(newProduct);
         Stockpile stockpile = new Stockpile();
         stockpile.setProductId(newProduct.getId());
@@ -57,9 +56,6 @@ public class ProductServiceImpl implements ProductService {
         stockpileRepository.save(stockpile);
         return convertToVO(newProduct);
     }
-
-
-
 
     @Override
     public String updateProduct(ProductVO productVO) {
@@ -100,9 +96,6 @@ public class ProductServiceImpl implements ProductService {
         specificationRepository.deleteByProductId(id);
         productRepository.delete(product);
 
-
-
-
         return "删除成功";
     }
 
@@ -118,14 +111,12 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public String updateStockpile(int id,int amount) {
         Stockpile stockpile = stockpileRepository.findByProductId(id);
-
         if (stockpile == null) {
             throw TomatoMallException.productNotExists();
         }
         stockpile.setAmount(amount);
         stockpileRepository.save(stockpile);
         return "调整库存成功";
-
     }
 
 
