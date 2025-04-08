@@ -43,8 +43,7 @@ export const addProduct = async (product: Omit<Product,"id">)=>{
 }
 // 删除商品
 export const deleteProduct = async (productId: number)=>{
-    return await axios.delete(`${PRODUCT_MODULE}/stockpile/${productId}`,
-        { headers: { 'Content-Type': 'application/json' } });
+    return await axios.delete(`${PRODUCT_MODULE}/${productId}` );
 }
 // 调整商品库存
 export const updateStockpile = async (productId: number, amount: number)=>{

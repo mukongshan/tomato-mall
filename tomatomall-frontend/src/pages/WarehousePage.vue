@@ -4,10 +4,6 @@ import { ElMessageBox, ElMessage } from "element-plus";
 import { Product, Stockpile } from "@/api/product.ts"
 import { getProductsList, addProduct, deleteProduct, updateProduct } from "@/api/product.ts"
 import { updateStockpile, getStockpile } from "@/api/product.ts"
-// 1. 更新库存不生效 后端数据库是0 显示商品不存在
-// 2. 删除商品不生效
-// 3. 更新数据时后端报错商品不存在前端500错误 但是能正确更新
-// 4. 编辑表单里面的id是不可编辑的  如果设置为-1 那么传入后端也是-1  应该把编辑表单的id隐藏掉 并且默认值变成被编辑的商品的id
 
 // 存储商品列表数据
 const products = ref<Product[]>([]);
@@ -62,6 +58,10 @@ const handleUpdate = async (product: Product) => {
     dialogProductVisible.value = true;
 };
 // 提交表单
+/*
+async 表示函数内部包含异步操作
+await 表示等待异步操作完成 再继续执行后面的代码
+*/
 const handleSubmit = async () => {
     // 新增数据
     if (isAdding.value == true) {
@@ -70,7 +70,7 @@ const handleSubmit = async () => {
             return
         }
         const { id: _, ...productWithoutId } = editProduct.value; // 解构赋值，去掉 id 属性
-        addProduct(productWithoutId).then((res) => {
+        await addProduct(productWithoutId).then((res) => {
             if (res.data.code === '200') {
                 ElMessage.success('添加成功');
             } else {
@@ -79,7 +79,7 @@ const handleSubmit = async () => {
         });
     } else { // 编辑数据
         // 编辑数据的id是隐藏的 应该默认为该有的id 不能是-1
-        updateProduct(editProduct.value).then((res) => {
+        await updateProduct(editProduct.value).then((res) => {
             if (res.data.code === '200') {
                 ElMessage.success('修改成功');
             } else {
@@ -101,6 +101,7 @@ const handleDelete = (productId: number) => {
         deleteProduct(productId).then((res) => {
             if (res.data.code === '200') {
                 ElMessage.success('删除成功');
+                pageInit(); // 刷新页面
             } else {
                 ElMessage.error(res.data.msg);
             }
@@ -109,33 +110,39 @@ const handleDelete = (productId: number) => {
         ElMessage.info('已取消删除');
     });
 };
-// 调整库存数量
 const handleStockpile = async (productId: number) => {
-    ElMessageBox.prompt('请输入库存数量', '调整库存', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        inputType: 'number',
-        inputPattern: /^-?\d+$/,  // 只允许整数
-        inputErrorMessage: '请输入有效的整数',
-    }).then(({ value }) => {
-        const amount = Number(value);
+    try {
+        const { value } = await ElMessageBox.prompt('请输入库存数量', '调整库存', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            inputType: 'number',
+            inputPattern: /^-?\d+$/,
+            inputErrorMessage: '请输入有效的整数',
+        });
 
+        const amount = Number(value);
         if (isNaN(amount) || amount < 0) {
             ElMessage.error('请输入有效的数字');
             return;
         }
 
-        updateStockpile(productId, amount).then((res) => {
-            if (res.data.code === '200') {
-                ElMessage.success('调整成功');
-            } else {
-                ElMessage.error(res.data.msg);
-            }
-        });
-    }).catch(() => {
-        ElMessage.info('已取消调整');
-    });
-}
+        // 直接 await 异步操作
+        const res = await updateStockpile(productId, amount);
+        if (res.data.code === '200') {
+            ElMessage.success('调整成功');
+            await pageInit(); // 确保刷新
+        } else {
+            ElMessage.error(res.data.msg);
+        }
+        await pageInit(); // 确保刷新
+    } catch (error:any) {
+        if (error === 'cancel') {
+            ElMessage.info('已取消调整');
+        } else {
+            ElMessage.error(error.message || '操作失败');
+        }
+    }
+};
 
 const getStockpileAmount = (productId: number): number => {
     const stock = stockpiles.value.find(s => s.productId === productId);
@@ -144,24 +151,10 @@ const getStockpileAmount = (productId: number): number => {
 
 const pageInit = async () => {
     // 这里是异步请求 但是for是同步的 所以会先执行完for循环 再执行异步请求 所以导致无法获取库存数据
-    getProductsList().then(res => {
+    await getProductsList().then(res => {
         if (res.data.code === '200') {
             products.value = res.data.data;
-            for (const product of products.value) {
-                getStockpile(product.id).then(res => {
-                    if (res.data.code === '200') {
-                        stockpiles.value.push(res.data.data);
-                        console.log("成功")
-                    } else {
-                        ElMessage({
-                            message: res.data.msg,
-                            type: 'error',
-                            center: true,
-                        })
-                        console.log("失败")
-                    }
-                })
-            }
+            
         } else {
             ElMessage({
                 message: res.data.msg,
@@ -170,6 +163,22 @@ const pageInit = async () => {
             })
         }
     })
+    stockpiles.value = [];// 清空库存数据
+    for (const product of products.value) {
+        await getStockpile(product.id).then(res => {
+            if (res.data.code === '200') {
+                stockpiles.value.push(res.data.data);
+                console.log("成功")
+            } else {
+                ElMessage({
+                    message: res.data.msg,
+                    type: 'error',
+                    center: true,
+                })
+                console.log("失败")
+            }
+        })
+    }
     
 };
 pageInit();
