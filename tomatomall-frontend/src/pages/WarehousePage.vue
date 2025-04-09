@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { ElMessageBox, ElMessage } from "element-plus";
+import { ElMessageBox, ElMessage, UploadProps, UploadFile } from "element-plus";
 import { Product, Stockpile } from "@/api/product.ts"
 import { getProductsList, addProduct, deleteProduct, updateProduct } from "@/api/product.ts"
 import { updateStockpile, getStockpile } from "@/api/product.ts"
 import router from "@/router/index.ts"
+import { Plus } from '@element-plus/icons-vue'
+import { imageProcess } from "@/utils/UploadImage";
 
 // 1. 商品规格表
 // 2. 图片上传
@@ -194,6 +196,35 @@ const pageInit = async () => {
     
 };
 
+// 图片验证
+const beforeLogoUpload: UploadProps['beforeUpload'] = (rawFile) => {
+    const isImage = ['image/jpg', 'image/png'].includes(rawFile.type)
+    const isSizeValid = rawFile.size <= 5 * 1024 * 1024
+
+    if (!isImage) {
+        ElMessage.error('Logo必须为JPG/PNG格式')
+        return false
+    }
+    if (!isSizeValid) {
+        ElMessage.error('Logo大小不能超过5MB')
+        return false
+    }
+    return true
+}
+// 图片上传处理
+const handleAvatarChange: UploadProps['onChange'] = async (uploadFile: UploadFile) => {
+    if (uploadFile.raw) {
+        // 生成预览URL
+        editProduct.value.cover = await imageProcess(uploadFile.raw)
+        console.log(editProduct.value.cover)
+    }
+}
+
+// 删除头像
+const handleAvatarRemove = () => {
+    editProduct.value.cover = ''
+}
+
 const gotoDetails = (productId: number) => {
     router.push({ path: `/product/${productId}` });
 };
@@ -211,23 +242,23 @@ pageInit();
             <!--商品列表-->
             <div v-for="product in products" :key="product.id" class="product-item">
                 <!-- 图片-->
-                <div class="product-image-container" @click="gotoDetails(product.id)" >
+                <div class="product-image-container" @click="gotoDetails(product.id)">
 
                     <img :src=" product.cover" alt="商品图片" class="product-image" />
+                </div>
+                <!-- 商品信息-->
+                <div class="product-info">
+                    <div class="product-name">{{ product.title }}</div>
+                    <div class="product-price">¥{{ product.price }}</div>
+                    <div class="product-stockpile">库存数量: {{ getStockpileAmount(product.id) }}</div>
+
+                    <el-button @click="handleUpdate(product)">编辑</el-button>
+
+                    <el-button @click="handleDelete(product.id)">删除</el-button>
+
+                    <el-button @click="handleStockpile(product.id)">调整库存</el-button>
+                </div>
             </div>
-            <!-- 商品信息-->
-            <div class="product-info">
-                <div class="product-name">{{ product.title }}</div>
-                <div class="product-price">¥{{ product.price }}</div>
-                <div class="product-stockpile">库存数量: {{ getStockpileAmount(product.id) }}</div>
-
-                <el-button @click="handleUpdate(product)">编辑</el-button>
-
-                <el-button @click="handleDelete(product.id)">删除</el-button>
-
-                <el-button @click="handleStockpile(product.id)">调整库存</el-button>
-            </div>
-        </div>
         </div>
     </el-card>
 
@@ -251,20 +282,33 @@ pageInit();
             </el-form-item>
 
             <el-form-item label="商品封面">
-                <el-input v-model="editProduct.cover" />
+                <el-upload class="avatar-uploader" :show-file-list="false" :on-change="handleAvatarChange"
+                    :on-remove="handleAvatarRemove" :before-upload="beforeLogoUpload" accept="image/*"
+                    :auto-upload="false">
+                    <!--图片上传模式-->
+                    <!-- 有头像是显示预览图-->
+                    <el-image v-if="editProduct.cover" :src="editProduct.cover" class="avatar" fit="cover" />
+                    <!-- 无图像时候显示上传图标-->
+                    <el-icon v-else class="avatar-uploader-icon">
+                        <el-icon><span>+</span></el-icon>
+                    </el-icon>
+                </el-upload>
+                <div class="el-upload__tip">
+                    支持JPG/PNG格式，且不超过5MB
+                </div>
             </el-form-item>
 
             <el-form-item label="商品细节">
-                <el-input v-model="editProduct.detail" type = "textarea" />
+                <el-input v-model="editProduct.detail" type="textarea" />
             </el-form-item>
 
             <el-form-item label="商品规格">
                 <div v-for="(spec, index) in editProduct.specifications" :key="index" class="spec-item">
-                    
+
                     <el-input v-model="spec.item" placeholder="规格名称" style="width: 200px; margin-right: 10px;" />
-                    
+
                     <el-input v-model="spec.value" placeholder="规格内容" style="width: 200px; margin-right: 10px;" />
-                    
+
                     <el-button type="danger" circle @click="removeSpecification(index)">
                         <i class="el-icon-minus" />
                     </el-button>

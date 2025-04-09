@@ -6,6 +6,7 @@ import type { UserDetail, AccountDetail } from '@/api/account.ts'
 import { getUserDetails, updateUser } from '@/api/account.ts'
 import {UserFilled} from "@element-plus/icons-vue";
 import router from "@/router";
+import { imageProcess } from '@/utils/UploadImage'
 
 // 用户信息
 const userInfo = ref<UserDetail>({
@@ -90,11 +91,13 @@ const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
   return true
 }
 
-const handleAvatarChange: UploadProps['onChange'] = (uploadFile: UploadFile) => {
-  if (uploadFile.raw) {
-    editForm.avatar = URL.createObjectURL(uploadFile.raw)
-    // 实际项目中这里应该调用API上传图片到服务器，并返回图片URL
-  }
+// 图片上传处理
+const handleAvatarChange: UploadProps['onChange'] = async (uploadFile: UploadFile) => {
+    if (uploadFile.raw) {
+        // 生成预览URL
+        editForm.avatar = await imageProcess(uploadFile.raw)
+        console.log(editForm.avatar)
+    }
 }
 
 const handleAvatarRemove = () => {
