@@ -9,12 +9,14 @@ export interface Product {
     description: string;
     cover: string;
     detail: string;
-    specification: Specification[];
+    specifications: Specification[];
 }
-// 商品描述
+// 商品规格说明
 export interface Specification {
-    item: string;
-    value: string;
+    id: string; // 规格ID
+    productId: string; // 商品ID
+    item: string; // 规格名称
+    value: string; // 规格内容
 }
 // 商品库存表
 export interface Stockpile {

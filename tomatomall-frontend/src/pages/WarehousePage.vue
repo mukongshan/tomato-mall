@@ -27,16 +27,24 @@ const editProduct = ref<Product>({
     description: '',
     cover: '',
     detail: '',
-    specification: []
+    specifications: []
 });
 
 // 添加新规格
 const addSpecification = () => {
-    editProduct.value.specification.push({ item: "", value: "" });
+    if (!editProduct.value.specifications) {
+        editProduct.value.specifications = []; // 如果未定义则初始化
+    }
+    editProduct.value.specifications.push({
+        id: '', // 新增时ID为空，由后端生成
+        productId: editProduct.value.id.toString(), // 关联当前商品ID
+        item: "",
+        value: ""
+    });
 };
 // 移除规格
 const removeSpecification = (index: number) => {
-    editProduct.value.specification.splice(index, 1);// 从index位置 删除一个元素
+    editProduct.value.specifications.splice(index, 1);// 从index位置 删除一个元素
 };
 // 处理添加商品逻辑
 const handleAdd = async () => {
@@ -50,7 +58,7 @@ const handleAdd = async () => {
         description: '',
         cover: '',
         detail: '',
-        specification: []
+        specifications: []
     };
     dialogProductVisible.value = true;
 }
@@ -251,9 +259,12 @@ pageInit();
             </el-form-item>
 
             <el-form-item label="商品规格">
-                <div v-for="(spec, index) in editProduct.specification" :key="index" class="spec-item">
+                <div v-for="(spec, index) in editProduct.specifications" :key="index" class="spec-item">
+                    
                     <el-input v-model="spec.item" placeholder="规格名称" style="width: 200px; margin-right: 10px;" />
+                    
                     <el-input v-model="spec.value" placeholder="规格内容" style="width: 200px; margin-right: 10px;" />
+                    
                     <el-button type="danger" circle @click="removeSpecification(index)">
                         <i class="el-icon-minus" />
                     </el-button>

@@ -49,7 +49,7 @@ onMounted(async () => {
 
                 <h3>商品规格</h3>
                 <div class="specifications">
-                    <div v-for="(spec, index) in product.specification" :key="index" class="spec-item">
+                    <div v-for="(spec, index) in product.specifications" :key="index" class="spec-item">
                         <span class="spec-name">{{ spec.item }}:</span>
                         <span class="spec-value">{{ spec.value }}</span>
                     </div>
