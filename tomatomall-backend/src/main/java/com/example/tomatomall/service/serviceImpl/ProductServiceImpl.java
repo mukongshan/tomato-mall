@@ -2,6 +2,7 @@ package com.example.tomatomall.service.serviceImpl;
 
 import com.example.tomatomall.exception.TomatoMallException;
 import com.example.tomatomall.po.Product;
+import com.example.tomatomall.po.Specification;
 import com.example.tomatomall.po.Stockpile;
 import com.example.tomatomall.repository.ProductRepository;
 import com.example.tomatomall.repository.SpecificationRepository;
@@ -58,6 +59,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional
     public String updateProduct(ProductVO productVO) {
         Product product = productRepository.findById(productVO.getId())
                 .orElse(null);
@@ -78,7 +80,6 @@ public class ProductServiceImpl implements ProductService {
             for (SpecificationVO specificationVO : specifications) {
                 specificationRepository.save(specificationVO.toPO());
             }
-
         }
         productRepository.save(product);
         return "更新成功";
@@ -133,19 +134,14 @@ public class ProductServiceImpl implements ProductService {
         productVO.setDetail(product.getDetail());
 
         // 通过 productId 查询规格信息，并转换成 VO
-        List<SpecificationVO> specVOs = specificationRepository.findByProductId(product.getId())
-                .stream()
-                .map(spec -> {
-                    SpecificationVO vo = new SpecificationVO();
-                    vo.setId(spec.getId());
-                    vo.setItem(spec.getItem());
-                    vo.setValue(spec.getValue());
-                    vo.setProductId(spec.getProductId());
-                    return vo;
-                })
-                .collect(Collectors.toList());
+        List<Specification> specs = specificationRepository.findByProductId(product.getId());
 
-        productVO.setSpecifications(specVOs);
+        if(!specs.isEmpty()) {
+            List<SpecificationVO> specVOs = specs.stream()
+                    .map(Specification::toVO)
+                    .collect(Collectors.toList());
+            productVO.setSpecifications(specVOs);
+        }
         return productVO;
     }
 }

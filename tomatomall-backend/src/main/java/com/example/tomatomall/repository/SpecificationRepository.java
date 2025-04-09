@@ -9,7 +9,7 @@ import java.util.List;
 
 @Repository
 public interface SpecificationRepository extends JpaRepository<Specification, Integer> {
-    List<SpecificationVO> findByProductId(Integer productId);
+    List<Specification> findByProductId(Integer productId);
 
     void deleteByProductId(Integer productId);
 }
