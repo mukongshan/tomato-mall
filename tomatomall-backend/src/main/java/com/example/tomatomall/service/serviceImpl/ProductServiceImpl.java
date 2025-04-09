@@ -8,9 +8,11 @@ import com.example.tomatomall.repository.ProductRepository;
 import com.example.tomatomall.repository.SpecificationRepository;
 import com.example.tomatomall.repository.StockpileRepository;
 import com.example.tomatomall.service.ProductService;
+import com.example.tomatomall.util.OssUtil;
 import com.example.tomatomall.vo.ProductVO;
 import com.example.tomatomall.vo.SpecificationVO;
 import com.example.tomatomall.vo.StockpileVO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -21,6 +23,9 @@ import java.util.stream.Collectors;
 public class ProductServiceImpl implements ProductService {
     @Resource
     private ProductRepository productRepository;
+
+    @Autowired
+    private OssUtil ossUtil = new OssUtil();
 
     @Resource
     private SpecificationRepository specificationRepository;
@@ -66,6 +71,7 @@ public class ProductServiceImpl implements ProductService {
         if (product == null) {
             throw TomatoMallException.productNotExists();
         }
+        String oldCover = product.getCover();
 
         if (productVO.getTitle() != null) product.setTitle(productVO.getTitle());
         if (productVO.getPrice() != null) product.setPrice(productVO.getPrice());
@@ -73,6 +79,15 @@ public class ProductServiceImpl implements ProductService {
         if (productVO.getDescription() != null) product.setDescription(productVO.getDescription());
         if (productVO.getCover() != null) product.setCover(productVO.getCover());
         if (productVO.getDetail() != null) product.setDetail(productVO.getDetail());
+
+        // 处理封面更新
+        if (productVO.getCover() != null && !productVO.getCover().equals(oldCover)) {
+            product.setCover(productVO.getCover());
+            // 删除旧封面
+            if (oldCover != null && !oldCover.isEmpty()) {
+                ossUtil.deleteFileByUrl(oldCover);
+            }
+        }
 
         if(productVO.getSpecifications() != null){
             specificationRepository.deleteByProductId(productVO.getId());
@@ -92,6 +107,11 @@ public class ProductServiceImpl implements ProductService {
         Product product = productRepository.findById(id).orElse(null);
         if (product == null) {
             throw TomatoMallException.productNotExists();
+        }
+        // 删除商品封面
+        if (product.getCover()!=null&&!product.getCover().isEmpty()) {
+            String res  = ossUtil.deleteFileByUrl(product.getCover());
+            System.out.println(res);
         }
         stockpileRepository.deleteByProductId(id);
         specificationRepository.deleteByProductId(id);

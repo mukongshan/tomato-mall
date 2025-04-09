@@ -137,18 +137,10 @@ public class AccountServiceImpl implements AccountService {
     public String uploadImg(MultipartFile file){
         try {
             String url = ossUtil.upload(file.getOriginalFilename(),file.getInputStream());
-            Account account=securityUtil.getCurrentAccount();
-            if (url != null){
-                account.setAvatar(url);
-            }
-            accountRepository.save(account);
             return url;
         }catch (Exception e){
             e.printStackTrace();
             throw TomatoMallException.fileUploadFail();
         }
     }
-
-
-
 }
