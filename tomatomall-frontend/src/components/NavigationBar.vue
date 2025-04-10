@@ -17,6 +17,7 @@ const checkLogin = () => {
 const Logout = () => {
     sessionStorage.removeItem('token');
     sessionStorage.removeItem('username');
+    sessionStorage.removeItem('role');
     isLogin.value = false;
     router.push("/login"); // 跳转到登录页面
 };
