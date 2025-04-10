@@ -2,8 +2,9 @@
 import { ref,onMounted, watch } from "vue";
 import { ElMenu, ElMenuItem } from "element-plus";
 import router from "@/router";
-import { isLogin} from "./LoginEvent";
+import { isLogin } from "./LoginEvent";
 
+const isAdmin = ref(false);
 const checkLogin = () => {
   const token = sessionStorage.getItem('token');
   if (token) {
@@ -19,8 +20,18 @@ const Logout = () => {
     isLogin.value = false;
     router.push("/login"); // 跳转到登录页面
 };
-onMounted(checkLogin);
 
+const checkRole = () => {
+  const role = sessionStorage.getItem('role');
+  if (role === "ADMINISTRATOR") {
+    isAdmin.value = true;
+  } else {
+    isAdmin.value = false;
+  }
+}
+
+onMounted(checkLogin);
+onMounted(checkRole);
 </script>
 
 <template>
@@ -33,7 +44,7 @@ onMounted(checkLogin);
       <div class="mid-items">
         <el-menu-item index="/">番茄书城</el-menu-item>
         <el-menu-item index="/cart">购物车</el-menu-item>
-        <el-menu-item index="/warehouse">商品管理</el-menu-item>
+        <el-menu-item v-if="isAdmin" index="/warehouse">商品管理</el-menu-item>
       </div>
 
       <div class="right-items">

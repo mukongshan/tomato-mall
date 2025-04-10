@@ -5,7 +5,6 @@ import { Product, Stockpile } from "@/api/product.ts"
 import { getProductsList, addProduct, deleteProduct, updateProduct } from "@/api/product.ts"
 import { updateStockpile, getStockpile } from "@/api/product.ts"
 import router from "@/router/index.ts"
-import { Plus } from '@element-plus/icons-vue'
 import { imageProcess } from "@/utils/UploadImage";
 
 // 1. 商品规格表

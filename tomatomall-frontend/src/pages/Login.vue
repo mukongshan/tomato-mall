@@ -2,7 +2,7 @@
 import {reactive, ref} from 'vue'
 import {ComponentSize, ElLoading, ElMessage, FormInstance, FormRules} from 'element-plus'
 import router from "../router/index.ts";
-import type {LoginCredentials} from "@/api/account";
+import {getUserDetails, LoginCredentials, UserDetail} from "@/api/account";
 import { login } from "@/api/account";
 import { isLogin } from '@/components/LoginEvent.ts';
 
@@ -43,6 +43,13 @@ const handleLogin = async () => {
           ElMessage.success("登录成功");
           sessionStorage.setItem('token', response.data.data);
           sessionStorage.setItem('username', ruleForm.username);
+          try {
+            const response = await getUserDetails(ruleForm.username); // 等待 Promise 解析
+            const userDetail: UserDetail = response.data.data; // 提取 Axios 返回的实际数据
+            sessionStorage.setItem('role', userDetail.role);
+          } catch (error) {
+            console.error("获取用户详情失败:", error);
+          }
           isLogin.value = true; // 更新登录状态
         await router.push("/user") // 跳转到首页或其他页面
       } else {

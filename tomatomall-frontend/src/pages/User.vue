@@ -169,7 +169,9 @@ const cancelEdit = () => {
         </el-avatar>
         <span class="avatar-text">欢迎您，{{ userInfo.name }}</span>
       </div>
+
       <el-divider></el-divider>
+
       <el-descriptions
           :column="1" border
           title="个人信息">
@@ -183,12 +185,7 @@ const cancelEdit = () => {
         </template>
         <el-descriptions-item label="用户名">{{ userInfo.username }}</el-descriptions-item>
         <el-descriptions-item label="姓名">{{ userInfo.name }}</el-descriptions-item>
-        <el-descriptions-item label="角色"><el-tag>
-          {{ userInfo.role === 'CUSTOMER' ? '顾客' :
-            userInfo.role === 'STAFF' ? '员工' :
-                userInfo.role === 'SHOPKEEPER' ? '店主' :
-                    userInfo.role === 'ADMINISTRATOR' ? '管理员' : userInfo.role }}
-        </el-tag></el-descriptions-item>
+        <el-descriptions-item label="角色"><el-tag>{{ userInfo.role }}</el-tag></el-descriptions-item>
         <el-descriptions-item label="电话">{{ userInfo.telephone }}</el-descriptions-item>
         <el-descriptions-item label="邮箱">{{ userInfo.email }}</el-descriptions-item>
         <el-descriptions-item label="地址">{{ userInfo.location }}</el-descriptions-item>
@@ -287,33 +284,40 @@ const cancelEdit = () => {
 </template>
 
 <style scoped>
+.main-container {
+  display: flex;
+  gap: 20px; /* 两栏之间的间距 */
+  height: 100%;
+}
+
+.aside-card {
+  flex: 0 0 34%; /* 固定34%宽度，不伸缩 */
+  height: 100%;
+  overflow-y: auto;
+}
+
+.change-card {
+  flex: 1; /* 占据剩余空间 */
+  height: 100%;
+  overflow-y: auto;
+}
 
 .card-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-}
-.aside-card {
-  height: 100%; /* 继承父容器高度 */
-  width: 34%;
-  overflow-y: auto; /* 内容过多时滚动 */
-}
-.change-card {
-  height: 100%; /* 继承父容器高度 */
-  width: 66%;
-  overflow-y: auto; /* 内容过多时滚动 */
+  align-items: center;
 }
 
 .avatar-area {
   display: flex;
-  justify-content: space-around;
   align-items: center;
   gap: 30px;
+  margin-bottom: 20px;
 }
+
 .avatar-text {
   font-size: x-large;
   font-weight: bolder;
-  padding-right: 40px;
 }
 
 </style>
