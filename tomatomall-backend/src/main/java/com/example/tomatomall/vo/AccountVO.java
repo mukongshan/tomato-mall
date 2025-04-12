@@ -1,5 +1,6 @@
 package com.example.tomatomall.vo;
 
+import com.example.tomatomall.enums.RoleEnum;
 import com.example.tomatomall.po.Account;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,7 +18,7 @@ public class AccountVO {
     private String telephone;  // 对应 Account 类中的 telephone
     private String password;
     private String avatar;  // 对应 Account 类中的 avatar
-    private String role;  // 对应 Account 类中的 role
+    private RoleEnum role;  // 对应 Account 类中的 role
     private String email;  // 对应 Account 类中的 email
     private String location;  // 对应 Account 类中的 location
 

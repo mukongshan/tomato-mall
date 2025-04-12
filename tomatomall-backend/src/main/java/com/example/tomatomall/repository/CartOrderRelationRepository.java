@@ -1,6 +1,7 @@
 package com.example.tomatomall.repository;
 
 import com.example.tomatomall.po.Cart;
+import com.example.tomatomall.po.CartOrderRelation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.Query;
@@ -9,9 +10,6 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 @Repository
-public interface CartRepository extends JpaRepository<Cart, Integer> {
-    Cart findByProductId(Integer productId);
-    Cart findByCartItemId(Integer cartItemId);
-    Boolean existsByProductId(Integer productId);
-    List<Cart> findByAccountId(Integer userId);
+public interface CartOrderRelationRepository extends JpaRepository<CartOrderRelation, Integer> {
+    List<CartOrderRelation> findByOrderId(Integer orderId);
 }

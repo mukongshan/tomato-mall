@@ -1,5 +1,6 @@
 package com.example.tomatomall.po;
 
+import com.example.tomatomall.enums.RoleEnum;
 import com.example.tomatomall.vo.AccountVO;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -38,7 +39,8 @@ public class Account {
 
     @Basic
     @Column(name = "role")
-    private String role;
+    @Enumerated(EnumType.STRING)
+    private RoleEnum role;
 
     @Basic
     @Column(name = "telephone", length = 11)

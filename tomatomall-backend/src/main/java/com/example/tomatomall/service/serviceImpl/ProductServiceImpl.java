@@ -1,12 +1,8 @@
 package com.example.tomatomall.service.serviceImpl;
 
 import com.example.tomatomall.exception.TomatoMallException;
-import com.example.tomatomall.po.Product;
-import com.example.tomatomall.po.Specification;
-import com.example.tomatomall.po.Stockpile;
-import com.example.tomatomall.repository.ProductRepository;
-import com.example.tomatomall.repository.SpecificationRepository;
-import com.example.tomatomall.repository.StockpileRepository;
+import com.example.tomatomall.po.*;
+import com.example.tomatomall.repository.*;
 import com.example.tomatomall.service.ProductService;
 import com.example.tomatomall.util.OssUtil;
 import com.example.tomatomall.vo.ProductVO;
@@ -32,6 +28,15 @@ public class ProductServiceImpl implements ProductService {
 
     @Resource
     private StockpileRepository stockpileRepository;
+
+    @Resource
+    private CartRepository cartRepository;
+
+    @Resource
+    private OrderRepository orderRepository;
+
+    @Resource
+    private CartOrderRelationRepository cartOrderRelationRepository;
 
     @Override
     public List<ProductVO> getAllProducts() {
@@ -140,6 +145,59 @@ public class ProductServiceImpl implements ProductService {
         return "调整库存成功";
     }
 
+    @Override
+    public String increaseStockpile(int id, int amount){
+        StockpileVO stockpileVO = getStockpile(id);
+        updateStockpile(id, stockpileVO.getAmount()+amount);
+        return "添加库存成功";
+    }
+
+    @Override
+    public String reduceStockpile(int id, int amount){
+        StockpileVO stockpileVO = getStockpile(id);
+        updateStockpile(id, stockpileVO.getAmount()-amount);
+        return "减少库存成功";
+    }
+
+    @Override
+    public String reduceStockpileByOrder(String orderIdStr) {
+        int orderId = Integer.parseInt(orderIdStr);
+
+        // 1. 获取订单下所有 cartItem 关联
+        List<CartOrderRelation> relationList = cartOrderRelationRepository.findByOrderId(orderId);
+
+        // 2. 遍历每一项关系
+        for (CartOrderRelation relation : relationList) {
+            Integer cartItemId = relation.getCartItemId();
+
+            // 3. 查找对应 Cart
+            Cart cart = cartRepository.findByCartItemId(cartItemId);
+            if (cart == null) {
+                throw new RuntimeException("找不到 cartItemId = " + cartItemId);
+            }
+
+            // 4. 查找对应 Product
+            Integer productId = cart.getProductId();
+            Stockpile stockpile = stockpileRepository.findByProductId(productId);
+            if (stockpile == null){
+                throw new RuntimeException("找不到 stockpile 的 productId = " + productId);
+            }
+
+            // 5. 扣除库存
+            int newStock = stockpile.getAmount() - cart.getQuantity();
+            if (newStock < 0) {
+                throw new RuntimeException("库存不足，productId = " + productId);
+            }
+            stockpile.setAmount(newStock);
+
+            // 6. 保存新库存
+            stockpileRepository.save(stockpile);
+        }
+
+        return "订单库存已全部扣除成功";
+    }
+
+
 
 
 
@@ -164,4 +222,6 @@ public class ProductServiceImpl implements ProductService {
         }
         return productVO;
     }
+
+
 }

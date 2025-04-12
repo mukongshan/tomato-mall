@@ -81,7 +81,7 @@ public class CartServiceImpl implements CartService {
         List<CartVO> itemVOList = new ArrayList<>();
         double totalAmount = 0;
 
-        List<Cart> cartItems = cartRepository.findByUserId(userId);
+        List<Cart> cartItems = cartRepository.findByAccountId(userId);
         for (Cart cart : cartItems) {
             Product product = productRepository.findById(cart.getProductId())
                     .orElseThrow(() -> new TomatoMallException("商品不存在"));

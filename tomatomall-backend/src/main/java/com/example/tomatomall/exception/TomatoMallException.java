@@ -42,12 +42,19 @@ public class TomatoMallException extends RuntimeException {
     public static TomatoMallException usernameNotExists() {
         return new TomatoMallException("用户名不存在", "404");
     }
+
     public static TomatoMallException productNotExists() {return new TomatoMallException("商品不存在","400");}
+
     public static TomatoMallException overStock() {
         return new TomatoMallException("超出库存数量" ,"400");
     }
+
     public static TomatoMallException cartNotExists() {
         return new TomatoMallException("商品不存在","400");
+    }
+
+    public static TomatoMallException orderNotExists() {
+        return new TomatoMallException("订单不存在","400");
     }
 
     // 提供一个静态方法用于抛出文件上传失败的异常

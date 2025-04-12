@@ -110,7 +110,7 @@ public class AccountServiceImpl implements AccountService {
         if (!accountVO.getAvatar().isEmpty()) {
             account.setAvatar(accountVO.getAvatar());
         }
-        if (!accountVO.getRole().isEmpty()) {
+        if (accountVO.getRole() != null) {
             account.setRole(accountVO.getRole());
         }
         if (!accountVO.getTelephone().isEmpty()) {

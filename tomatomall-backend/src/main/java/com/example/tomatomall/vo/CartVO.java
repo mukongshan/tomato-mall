@@ -12,7 +12,7 @@ public class CartVO {
 
 
     private Integer cartItemId;
-    private Integer userId;
+    private Integer accountId;
     private Integer productId;
     private Integer quantity;
     private String title;
@@ -25,7 +25,7 @@ public class CartVO {
     public Cart toPO(){
         Cart cart = new Cart();
         cart.setCartItemId(this.cartItemId);
-        cart.setUserId(this.userId);
+        cart.setAccountId(this.accountId);
         cart.setProductId(this.productId);
         cart.setQuantity(this.quantity);
         return cart;

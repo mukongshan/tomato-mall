@@ -14,5 +14,8 @@ public interface ProductService {
     String deleteProduct(int id);
     StockpileVO getStockpile(int id);
     String updateStockpile(int id,int amount);
+    String increaseStockpile(int id, int amount);
+    String reduceStockpile(int id, int amount);
+    String reduceStockpileByOrder(String orderId);
 }
 
