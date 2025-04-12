@@ -21,7 +21,7 @@ public class CartController {
     private CartService cartService;
 
 
-    @PostMapping
+    @PostMapping()
     public Response<CartVO> addCart(@RequestBody Integer productId, @RequestBody Integer quantity) {
         return Response.buildSuccess(cartService.addProduct(productId, quantity));
     }

@@ -15,7 +15,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 public class ProductVO {
-    private Integer id;
+    private Integer productId;
     private String title;
     private Double price;
     private Double rate;
@@ -26,7 +26,7 @@ public class ProductVO {
 
     public Product toPO(){
         Product product = new Product();
-        product.setId(this.id);
+        product.setProductId(this.productId);
         product.setTitle(this.title);
         product.setPrice(this.price);
         product.setRate(this.rate);

@@ -48,10 +48,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductVO getProductById(int id) {
-        Product product = productRepository.findById(id).orElse(null);
-        if (product == null) {
-            throw TomatoMallException.productNotExists();
-        }
+        Product product = productRepository.findByProductId(id);
         return convertToVO(product);
     }
 
@@ -61,7 +58,7 @@ public class ProductServiceImpl implements ProductService {
         Product newProduct = productVO.toPO();
         productRepository.save(newProduct);
         Stockpile stockpile = new Stockpile();
-        stockpile.setProductId(newProduct.getId());
+        stockpile.setProductId(newProduct.getProductId());
         stockpile.setFrozen(0);
         stockpile.setAmount(0);
         stockpileRepository.save(stockpile);
@@ -71,11 +68,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public String updateProduct(ProductVO productVO) {
-        Product product = productRepository.findById(productVO.getId())
-                .orElse(null);
-        if (product == null) {
-            throw TomatoMallException.productNotExists();
-        }
+        Product product = productRepository.findByProductId(productVO.getProductId());
         String oldCover = product.getCover();
 
         if (productVO.getTitle() != null) product.setTitle(productVO.getTitle());
@@ -95,7 +88,7 @@ public class ProductServiceImpl implements ProductService {
         }
 
         if(productVO.getSpecifications() != null){
-            specificationRepository.deleteByProductId(productVO.getId());
+            specificationRepository.deleteByProductId(productVO.getProductId());
             List<SpecificationVO> specifications = productVO.getSpecifications();
             for (SpecificationVO specificationVO : specifications) {
                 specificationRepository.save(specificationVO.toPO());
@@ -109,10 +102,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public String deleteProduct(int id) {
-        Product product = productRepository.findById(id).orElse(null);
-        if (product == null) {
-            throw TomatoMallException.productNotExists();
-        }
+        Product product = productRepository.findByProductId(id);
         // 删除商品封面
         if (product.getCover()!=null&&!product.getCover().isEmpty()) {
             String res  = ossUtil.deleteFileByUrl(product.getCover());
@@ -203,7 +193,7 @@ public class ProductServiceImpl implements ProductService {
 
     private ProductVO convertToVO(Product product) {
         ProductVO productVO = new ProductVO();
-        productVO.setId(product.getId());
+        productVO.setProductId(product.getProductId());
         productVO.setTitle(product.getTitle());
         productVO.setPrice(product.getPrice());
         productVO.setRate(product.getRate());
@@ -212,7 +202,7 @@ public class ProductServiceImpl implements ProductService {
         productVO.setDetail(product.getDetail());
 
         // 通过 productId 查询规格信息，并转换成 VO
-        List<Specification> specs = specificationRepository.findByProductId(product.getId());
+        List<Specification> specs = specificationRepository.findByProductId(product.getProductId());
 
         if(!specs.isEmpty()) {
             List<SpecificationVO> specVOs = specs.stream()

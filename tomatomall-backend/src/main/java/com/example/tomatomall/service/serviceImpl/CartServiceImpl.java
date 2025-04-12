@@ -37,8 +37,8 @@ public class CartServiceImpl implements CartService {
     public CartVO addProduct(Integer productId, Integer quantity) {
         CartVO cartVO = new CartVO();
 
-        Product product = productRepository.findById(productId).get();
-        cartVO.setProductId(product.getId());
+        Product product = productRepository.findByProductId(productId);
+        cartVO.setProductId(product.getProductId());
         cartVO.setDescription(product.getDescription());
         cartVO.setTitle(product.getTitle());
         cartVO.setPrice(product.getPrice());
@@ -65,7 +65,7 @@ public class CartServiceImpl implements CartService {
             throw TomatoMallException.cartNotExists();
         }
 
-        Product product = productRepository.findById(productId).get();
+        Product product = productRepository.findByProductId(productId);
         if (quantity > stockpileRepository.findByProductId(productId).getAmount()) {
             throw TomatoMallException.overStock();
         }
@@ -83,12 +83,11 @@ public class CartServiceImpl implements CartService {
 
         List<Cart> cartItems = cartRepository.findByAccountId(userId);
         for (Cart cart : cartItems) {
-            Product product = productRepository.findById(cart.getProductId())
-                    .orElseThrow(() -> new TomatoMallException("商品不存在"));
+            Product product = productRepository.findByProductId(cart.getProductId());
 
             CartVO itemVO = new CartVO();
             itemVO.setCartItemId(cart.getCartItemId());
-            itemVO.setProductId(product.getId());
+            itemVO.setProductId(product.getProductId());
             itemVO.setTitle(product.getTitle());
             itemVO.setPrice(product.getPrice());
             itemVO.setCover(product.getCover());

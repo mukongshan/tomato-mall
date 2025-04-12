@@ -28,19 +28,19 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     OrderRepository orderRepository;
 
-    @Value("${alipay.gateway.url}")
+    @Value("${alipay.serverUrl}")
     private String gatewayUrl;
 
-    @Value("${alipay.app.id}")
+    @Value("${alipay.appId}")
     private String appId;
 
-    @Value("${alipay.private.key}")
+    @Value("${alipay.appPrivateKey}")
     private String privateKey;
 
-    @Value("${alipay.public.key}")
+    @Value("${alipay.alipayPublicKey}")
     private String alipayPublicKey;
 
-    @Value("${alipay.notify.url}")
+    @Value("${alipay.notifyUrl}")
     private String notifyUrl;
 
     public Map<String, Object> requestPayment(Integer orderId) {
