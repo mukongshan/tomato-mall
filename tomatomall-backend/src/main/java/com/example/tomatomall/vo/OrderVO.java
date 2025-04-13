@@ -18,7 +18,7 @@ import java.util.Date;
 public class OrderVO {
     private Integer orderId;
     private Integer accountId;
-    private Integer totalAmount;
+    private double totalAmount;
     private String paymentMethod;
     private PaymentStatusEnum status;
     private Date createTime;

@@ -25,7 +25,7 @@ public class Order{
     private Integer accountId;
 
     @Column(name = "total_amount", nullable = false)
-    private Integer totalAmount;
+    private double totalAmount;
 
     @Column(name = "payment_method", nullable = false)
     private String paymentMethod;

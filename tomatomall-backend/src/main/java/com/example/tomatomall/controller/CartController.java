@@ -2,10 +2,10 @@ package com.example.tomatomall.controller;
 
 
 import com.example.tomatomall.po.Cart;
+import com.example.tomatomall.po.Order;
 import com.example.tomatomall.service.CartService;
-import com.example.tomatomall.vo.CartListVO;
-import com.example.tomatomall.vo.CartVO;
-import com.example.tomatomall.vo.Response;
+import com.example.tomatomall.vo.*;
+import lombok.Data;
 import lombok.Getter;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,8 +21,13 @@ public class CartController {
     private CartService cartService;
 
 
-    @PostMapping()
-    public Response<CartVO> addCart(@RequestBody Integer productId, @RequestBody Integer quantity) {
+
+
+    @PostMapping
+    public Response<CartVO> addCart(@RequestBody CartRequestDTO cartRequest) {
+        Integer productId = cartRequest.getProductId();
+        Integer quantity = cartRequest.getQuantity();
+        System.out.println(productId + " " + quantity);
         return Response.buildSuccess(cartService.addProduct(productId, quantity));
     }
 
@@ -33,8 +38,10 @@ public class CartController {
     }
 
     @PatchMapping("/{cartItemId}")
-    public Response<String> updateCart(@PathVariable Integer cartItemId, @RequestBody Integer quantity) {
+    public Response<String> updateCart(@PathVariable Integer cartItemId, @RequestBody CartRequestDTO cartRequest) {
+        Integer quantity = cartRequest.getQuantity();
         return Response.buildSuccess(cartService.updateProduct(cartItemId,quantity));
+
     }
     @GetMapping
     public Response<CartListVO> getCart() {
@@ -42,6 +49,10 @@ public class CartController {
 
     }
 
+    @PostMapping("/checkout")
+    public Response<OrderVO> checkout() {
+        return Response.buildSuccess(cartService.check());
+    }
 
 
 
