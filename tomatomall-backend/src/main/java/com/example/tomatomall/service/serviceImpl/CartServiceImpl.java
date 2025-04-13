@@ -5,6 +5,7 @@ import com.example.tomatomall.exception.TomatoMallException;
 import com.example.tomatomall.po.Cart;
 import com.example.tomatomall.po.Product;
 import com.example.tomatomall.repository.CartRepository;
+import com.example.tomatomall.repository.OrderRepository;
 import com.example.tomatomall.repository.ProductRepository;
 import com.example.tomatomall.repository.StockpileRepository;
 import com.example.tomatomall.service.CartService;
@@ -33,8 +34,11 @@ public class CartServiceImpl implements CartService {
     @Resource
     private StockpileRepository stockpileRepository;
 
+
     @Autowired
     SecurityUtil securityUtil;
+    @Autowired
+    private OrderRepository orderRepository;
 
     @Override
     public CartVO addProduct(Integer productId, Integer quantity) {
@@ -120,6 +124,7 @@ public class CartServiceImpl implements CartService {
         orderVO.setStatus(PaymentStatusEnum.PENDING);
         orderVO.setPaymentMethod("ALIPAY");
         orderVO.setCreateTime(new Date());
+        orderRepository.save(orderVO.toPO());
         return orderVO;
     }
 
