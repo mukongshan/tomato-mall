@@ -4,14 +4,14 @@ import { ElMessage } from "element-plus";
 import { Product } from "@/api/product.ts"
 import { getProductsList } from "@/api/product.ts"
 import router from "@/router/index.ts"
-import {addProductToCart} from "@/api/cart.ts";
+import { addCartProduct } from "@/api/cart.ts";
 
 // 存储商品列表数据
 const products = ref<Product[]>([]);
 
 const handleAdd = (productId: number) => {
   const amount = 1;
-  addProductToCart(productId, amount).then((res) => {
+  addCartProduct(productId, amount).then((res) => {
     if (res.data.code === '200') {
       ElMessage.success('添加成功');
     } else {
@@ -25,11 +25,9 @@ const handleAdd = (productId: number) => {
 }
 
 const pageInit = async () => {
-  // 这里是异步请求 但是for是同步的 所以会先执行完for循环 再执行异步请求 所以导致无法获取库存数据
   await getProductsList().then(res => {
     if (res.data.code === '200') {
       products.value = res.data.data;
-
     } else {
       ElMessage({
         message: res.data.msg,

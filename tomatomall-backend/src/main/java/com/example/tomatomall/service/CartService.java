@@ -8,9 +8,9 @@ import com.example.tomatomall.vo.OrderVO;
 import java.util.List;
 
 public interface CartService {
-    public CartVO addProduct(Integer productId, Integer quantity);
-    public String deleteProduct(Integer cartItemId);
-    public String updateProduct(Integer productId, Integer quantity);
+    public CartVO addCartItem(Integer productId, Integer quantity);
+    public String deleteCartItem(Integer cartItemId);
+    public String updateCartItem(Integer productId, Integer quantity);
     public CartListVO getCart();
     public OrderVO check();
 }

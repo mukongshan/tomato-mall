@@ -1,22 +1,32 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { router } from "@/router/index.ts"
-import {CartItem, updateCartItem} from "@/api/cart.js";
+import {Cart, CartItem, deleteCartProduct, updateCartItem} from "@/api/cart.js";
 import { getCartProducts } from "@/api/cart.js";
+import {getProduct, getStockpile, Product, Stockpile} from "@/api/product.ts";
 
 // 购物车数据
-const cartItems = ref<CartItem[]>([]);
+const cart = ref<Cart>()
+const cartItems = ref<Array<CartItem & { selected: boolean }>>([]);
+const products = ref<Product[]>([]);
+const stockpiles = ref<Stockpile[]>([]);
 const loading = ref(false)
-const selectedItems = ref([])
+const selectedItems = ref<Array<CartItem & { selected: boolean }>>([]);
 
 // 获取购物车数据
-const fetchCartItems = async () => {
+const fetchCart = async () => {
   loading.value = true
   try {
     await getCartProducts().then((res) => {
-      if (res.data.code === 200) {
-        cartItems.value = res.data.data;
+      if (res.data.code === '200') {
+        cart.value = res.data.data
+        if (cart.value!.cartItems.length > 0) {
+          cartItems.value = cart.value!.cartItems.map(item => ({
+            ...item,
+            selected: false // 默认未选中
+          }));
+          fetchProductAndStockpile()
+        }
       } else {
         ElMessage({
           message: res.data.msg,
@@ -33,26 +43,46 @@ const fetchCartItems = async () => {
   }
 }
 
+const fetchProductAndStockpile = async () => {
+  for (const item of cart.value!.cartItems) {
+    await getProduct(item.productId).then((res) => {
+      if (res.data.code === '200') {
+        products.value.push(res.data.data)
+      }
+    })
+    await getStockpile(item.productId).then((res) => {
+      if (res.data.code === '200') {
+        stockpiles.value.push(res.data.data)
+      }
+    })
+  }
+}
+
+const getCartProduct = (productId: number): Product => {
+  return products.value.find(p => p.id === productId)!
+}
+const getCartStockpile = (productId: number): Stockpile => {
+  return stockpiles.value.find(s => s.productId === productId)!
+}
+
 // 初始化加载
-onMounted(() => { fetchCartItems() })
+onMounted(() => { fetchCart() })
 
 // 数量变化处理
-const handleQuantityChange = (item, newQuantity) => {
+const handleQuantityChange = (item: CartItem, newQuantity: number) => {
   if (newQuantity < 1) {
     ElMessage.warning('数量不能小于1')
     return
   }
-  if (newQuantity > item.quantity) {
-    ElMessage.warning(`库存不足，最多可购买${item.amount}件`)
+  if (newQuantity > getCartStockpile(item.productId).amount) {
+    ElMessage.warning(`库存不足，最多可购买${getCartStockpile(item.productId).amount}件`)
     return
   }
 
-  // 这里调用更新购物车数量的API
   updateCartItem(item.cartItemId, newQuantity).then((res) => {
-    if (res.data.code === 200) {
+    if (res.data.code === '200') {
       item.quantity = newQuantity
       ElMessage.success('更新成功');
-      console.log(`更新商品 ${item.id} 数量为 ${newQuantity}`)
     } else {
       ElMessage({
         message: res.data.msg,
@@ -64,26 +94,34 @@ const handleQuantityChange = (item, newQuantity) => {
 }
 
 // 删除商品
-const handleDeleteItem = (id) => {
+const handleDeleteItem = (cartItemId: number) => {
   ElMessageBox.confirm('确定要删除该商品吗?', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'
   }).then(() => {
-    // 这里调用删除API
-    cartItems.value = cartItems.value.filter(item => item.id !== id)
-    ElMessage.success('删除成功')
+    deleteCartProduct(cartItemId).then((res) => {
+      if (res.data.code === '200') {
+        cartItems.value = cartItems.value.filter(item => item.cartItemId !== cartItemId)
+        ElMessage.success('删除成功')
+      } else {
+        ElMessage({
+          message: res.data.msg,
+          type: 'error',
+          center: true,
+        })
+      }
+    })
   }).catch(() => {})
 }
 
-// 切换选中状态
-const toggleSelectItem = (item) => {
-  item.selected = !item.selected
+// 更新选中数组
+const toggleSelectItem = () => {
   selectedItems.value = cartItems.value.filter(item => item.selected)
 }
 
 // 全选/取消全选
-const toggleSelectAll = (isSelectAll) => {
+const toggleSelectAll = (isSelectAll: any) => {
   cartItems.value.forEach(item => {
     item.selected = isSelectAll
   })
@@ -92,10 +130,9 @@ const toggleSelectAll = (isSelectAll) => {
 
 // 计算总价
 const totalPrice = computed(() => {
-  return 0
-  // return selectedItems.value.reduce((sum, item) => {
-  //   return sum + (item.price * item.quantity)
-  // }, 0)
+  return selectedItems.value.reduce((sum, item) => {
+    return sum + (getCartProduct(item.productId).price * item.quantity)
+  }, 0)
 })
 
 // 结算
@@ -138,7 +175,7 @@ const handleCheckout = () => {
 
         <div v-else-if="cartItems.length === 0" class="empty-cart">
           <el-empty description="购物车空空如也">
-            <el-button type="primary" @click="$router.push('/index')">去逛逛</el-button>
+            <el-button type="primary" @click="$router.push('/')">去逛逛</el-button>
           </el-empty>
         </div>
 
@@ -147,30 +184,30 @@ const handleCheckout = () => {
             <div class="item-select">
               <el-checkbox
                   v-model="item.selected"
-                  @change="toggleSelectItem(item)"
+                  @change="toggleSelectItem()"
               />
             </div>
             <div class="item-info">
               <el-image
-                  :src="item.image"
+                  :src="getCartProduct(item.productId).cover"
                   fit="cover"
                   class="product-image"
               />
               <div class="product-info">
-                <div class="product-name">{{ item.productId }}</div>
+                <div class="product-name">{{ getCartProduct(item.productId).title }}</div>
                 <div class="product-spec">规格: 默认</div>
               </div>
             </div>
-            <div class="item-price">¥{{ item.productId }}</div>
+            <div class="item-price">¥{{ getCartProduct(item.productId).price }}</div>
             <div class="item-quantity">
               <el-input-number
                   v-model="item.quantity"
                   :min="1"
-                  :max="item.productId"
-                  @change="handleQuantityChange(item, $event)"
+                  :max="getCartStockpile(item.productId).amount"
+                  @change="handleQuantityChange(item, $event!)"
               />
             </div>
-            <div class="item-total">¥{{ (item.productId * item.quantity).toFixed(2) }}</div>
+            <div class="item-total">¥{{ (getCartProduct(item.productId).price * item.quantity).toFixed(2) }}</div>
             <div class="item-actions">
               <el-button
                   type="danger"

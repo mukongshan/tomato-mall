@@ -10,7 +10,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 public class CartListVO {
-    private List<CartVO> items;
+    private List<CartVO> cartItems;
     private Integer total;
     private double totalAmount;
 }

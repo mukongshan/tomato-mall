@@ -115,7 +115,7 @@ public class OrderServiceImpl implements OrderService {
 
             // 校验金额是否一致
             int paidAmount = Integer.parseInt(amount); // 你这边 totalAmount 是 Integer
-            if (!order.getTotalAmount().equals(paidAmount)) {
+            if (order.getTotalAmount() != paidAmount) {
                 return false; // 金额不一致
             }
 

@@ -10,7 +10,6 @@ import lombok.Setter;
 @NoArgsConstructor
 public class CartVO {
 
-
     private Integer cartItemId;
     private Integer accountId;
     private Integer productId;
@@ -21,7 +20,6 @@ public class CartVO {
     private String cover;
     private String detail;
 
-
     public Cart toPO(){
         Cart cart = new Cart();
         cart.setCartItemId(this.cartItemId);
@@ -30,7 +28,5 @@ public class CartVO {
         cart.setQuantity(this.quantity);
         return cart;
     }
-
-
 
 }

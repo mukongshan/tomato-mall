@@ -12,6 +12,7 @@ import javax.persistence.*;
 @Entity
 @Table(name = "carts")  // 绑定数据库表
 public class Cart{
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "cart_item_id")
@@ -35,6 +36,5 @@ public class Cart{
         cartVO.setQuantity(this.quantity);
         return cartVO;
     }
-
 
 }

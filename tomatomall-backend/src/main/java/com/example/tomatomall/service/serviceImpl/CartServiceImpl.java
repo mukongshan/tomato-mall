@@ -24,7 +24,6 @@ import java.util.List;
 @Service
 public class CartServiceImpl implements CartService {
 
-
     @Resource
     private ProductRepository productRepository;
 
@@ -34,18 +33,18 @@ public class CartServiceImpl implements CartService {
     @Resource
     private StockpileRepository stockpileRepository;
 
-
     @Autowired
     SecurityUtil securityUtil;
     @Autowired
     private OrderRepository orderRepository;
 
     @Override
-    public CartVO addProduct(Integer productId, Integer quantity) {
+    public CartVO addCartItem(Integer productId, Integer quantity) {
         CartVO cartVO = new CartVO();
 
-        Product product = productRepository.findById(productId).get();
-        cartVO.setProductId(product.getProductId());
+        Product product = productRepository.findById(productId)
+                .orElseThrow(TomatoMallException::productNotExists);
+        cartVO.setProductId(product.getId());
         cartVO.setDescription(product.getDescription());
         cartVO.setTitle(product.getTitle());
         cartVO.setPrice(product.getPrice());
@@ -59,45 +58,45 @@ public class CartServiceImpl implements CartService {
         cartRepository.save(cartVO.toPO());
         return cartVO;
     }
+
     @Override
-    public String deleteProduct(Integer cartItemId) {
-        if (!cartRepository.existsById(cartItemId)) {
+    public String deleteCartItem(Integer cartItemId) {
+        if (cartRepository.findByCartItemId(cartItemId) == null) {
             throw TomatoMallException.cartNotExists();
         }
         cartRepository.deleteById(cartItemId);
         return "删除成功";
     }
+
     @Override
-    public String updateProduct(Integer cartItemId, Integer quantity) {
-        if (!cartRepository.existsById(cartItemId)) {
+    public String updateCartItem(Integer cartItemId, Integer quantity) {
+        Cart cartItem = cartRepository.findByCartItemId(cartItemId);
+        if (cartItem == null) {
             throw TomatoMallException.cartNotExists();
         }
-        Integer productId = cartRepository.findById(cartItemId).get().getProductId();
-
-        Product product = productRepository.findById(productId).get();
+        Integer productId = cartItem.getProductId();
         if (quantity > stockpileRepository.findByProductId(productId).getAmount()) {
             throw TomatoMallException.overStock();
         }
-        Cart cart = cartRepository.findByCartItemId(cartItemId);
-        cart.setQuantity(quantity);
-        cartRepository.save(cart);
+        cartItem.setQuantity(quantity);
+        cartRepository.save(cartItem);
         return "修改数量成功";
     }
 
     @Override
     public CartListVO getCart() {
-        Integer userId = securityUtil.getCurrentAccount().getId();
-        List<CartVO> itemVOList = new ArrayList<>();
+        Integer accountId = securityUtil.getCurrentAccount().getId();
+        List<CartVO> cartItemListVO = new ArrayList<>();
         double totalAmount = 0;
 
-        List<Cart> cartItems = cartRepository.findByAccountId(userId);
+        List<Cart> cartItems = cartRepository.findByAccountId(accountId);
         for (Cart cart : cartItems) {
-            Product product = productRepository.findById(cart.getProductId())
-                    .orElseThrow(() -> new TomatoMallException("商品不存在"));
-
+            Integer productId = cart.getProductId();
+            Product product = productRepository.findById(productId)
+                    .orElseThrow(TomatoMallException::productNotExists);
             CartVO itemVO = new CartVO();
             itemVO.setCartItemId(cart.getCartItemId());
-            itemVO.setProductId(product.getProductId());
+            itemVO.setProductId(product.getId());
             itemVO.setTitle(product.getTitle());
             itemVO.setPrice(product.getPrice());
             itemVO.setCover(product.getCover());
@@ -107,15 +106,14 @@ public class CartServiceImpl implements CartService {
 
             // 单项小计 = 单价 * 数量
             totalAmount += product.getPrice() * cart.getQuantity();
-            itemVOList.add(itemVO);
+            cartItemListVO.add(itemVO);
         }
         CartListVO vo = new CartListVO();
-        vo.setItems(itemVOList);
+        vo.setCartItems(cartItemListVO);
         vo.setTotalAmount(totalAmount);
         return vo;
-
-
     }
+
     @Override
     public OrderVO check() {
         OrderVO orderVO = new OrderVO();
@@ -127,11 +125,5 @@ public class CartServiceImpl implements CartService {
         orderRepository.save(orderVO.toPO());
         return orderVO;
     }
-
-
-
-
-
-
 
 }

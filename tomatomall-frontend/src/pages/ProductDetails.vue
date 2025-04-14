@@ -7,7 +7,6 @@ import type { Product } from '@/api/product.ts';
 
 const route = useRoute();
 const product = ref<Product | null>(null);
-console.log(route.params);
 
 onMounted(async () => {
     try {

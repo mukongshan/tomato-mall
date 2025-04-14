@@ -1,21 +1,17 @@
 package com.example.tomatomall.vo;
 
 import com.example.tomatomall.po.Product;
-import com.example.tomatomall.po.Specification;
-import com.example.tomatomall.repository.SpecificationRepository;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.annotation.Resource;
-import java.util.Date;
 import java.util.List;
 
 @Getter
 @Setter
 @NoArgsConstructor
 public class ProductVO {
-    private Integer productId;
+    private Integer id;
     private String title;
     private Double price;
     private Double rate;
@@ -26,7 +22,7 @@ public class ProductVO {
 
     public Product toPO(){
         Product product = new Product();
-        product.setProductId(this.productId);
+        product.setId(this.id);
         product.setTitle(this.title);
         product.setPrice(this.price);
         product.setRate(this.rate);
