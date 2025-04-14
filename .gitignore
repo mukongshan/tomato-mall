@@ -1,10 +1,4 @@
-# 忽略所有文件
-*
-*/
-
-# 取消忽略你想追踪的文件夹
-!/tomatomall-backend/src/
-!/tomatomall-frontend/src/
-
-# 取消忽略.gitignore文件本身
-!.gitignore
+tomatomall-backend/.idea
+tomatomall-backend/target
+tomatomall-frontend/.idea
+tomatomall-backend/src/main/resources/application.yml
