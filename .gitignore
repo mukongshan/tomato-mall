@@ -1,4 +1,5 @@
 tomatomall-backend/.idea
 tomatomall-backend/target
+tomatomall-backend/out
 tomatomall-frontend/.idea
 tomatomall-backend/src/main/resources/application.yml
