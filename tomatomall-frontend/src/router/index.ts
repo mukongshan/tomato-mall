@@ -5,7 +5,8 @@ import WarehousePage from "../pages/WarehousePage.vue";
 import Register from "@/pages/Register.vue";
 import Login from "@/pages/Login.vue";
 import User from "@/pages/User.vue";
-import Product from "@/pages/productDetails.vue";
+import Product from "@/pages/ProductDetails.vue";
+import Checkout from "@/pages/Checkout.vue";
 
 const routes = [
     {
@@ -47,6 +48,12 @@ const routes = [
         mata: { title: '商品详情' },
         component:Product,
         props: true,
+    },
+    {
+        path: '/checkout',
+        name: 'checkout',
+        mata: { title: '确认订单' },
+        component:Checkout,
     }
     //其他路由配置
 ];

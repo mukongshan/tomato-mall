@@ -1,5 +1,5 @@
 package com.example.tomatomall.enums;
 
 public enum RoleEnum {
-    CUSTOMER, STAFF, SHOPKEEPER, admin
+    CUSTOMER, STAFF, SHOPKEEPER, ADMINISTRATOR
 }

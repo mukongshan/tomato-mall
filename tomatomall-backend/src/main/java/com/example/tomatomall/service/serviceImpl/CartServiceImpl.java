@@ -3,16 +3,12 @@ package com.example.tomatomall.service.serviceImpl;
 import com.example.tomatomall.enums.PaymentStatusEnum;
 import com.example.tomatomall.exception.TomatoMallException;
 import com.example.tomatomall.po.Cart;
+import com.example.tomatomall.po.Order;
 import com.example.tomatomall.po.Product;
-import com.example.tomatomall.repository.CartRepository;
-import com.example.tomatomall.repository.OrderRepository;
-import com.example.tomatomall.repository.ProductRepository;
-import com.example.tomatomall.repository.StockpileRepository;
+import com.example.tomatomall.repository.*;
 import com.example.tomatomall.service.CartService;
 import com.example.tomatomall.util.SecurityUtil;
-import com.example.tomatomall.vo.CartListVO;
-import com.example.tomatomall.vo.CartVO;
-import com.example.tomatomall.vo.OrderVO;
+import com.example.tomatomall.vo.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +28,9 @@ public class CartServiceImpl implements CartService {
 
     @Resource
     private StockpileRepository stockpileRepository;
+
+    @Resource
+    private CartOrderRelationRepository cartOrderRelationRepository;
 
     @Autowired
     SecurityUtil securityUtil;
@@ -115,15 +114,22 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public OrderVO check() {
+    public OrderVO check(CheckRequestVO checkRequestVO) {
         OrderVO orderVO = new OrderVO();
         orderVO.setAccountId(securityUtil.getCurrentAccount().getId());
         orderVO.setTotalAmount(getCart().getTotalAmount());
         orderVO.setStatus(PaymentStatusEnum.PENDING);
         orderVO.setPaymentMethod("ALIPAY");
         orderVO.setCreateTime(new Date());
-        orderRepository.save(orderVO.toPO());
-        return orderVO;
+        Order order = orderRepository.save(orderVO.toPO());
+        for (int i = 0;i < checkRequestVO.cartIds.size();i++){
+            Integer cartItemId = checkRequestVO.cartIds.get(i);
+            CartOrderRelationVO cartOrderRelationVO = new CartOrderRelationVO();
+            cartOrderRelationVO.setOrderId(order.getOrderId());
+            cartOrderRelationVO.setCartItemId(cartItemId);
+            cartOrderRelationRepository.save(cartOrderRelationVO.toPO());
+        }
+        return order.toVO();
     }
 
 }

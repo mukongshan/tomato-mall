@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import {Cart, CartItem, deleteCartProduct, updateCartItem} from "@/api/cart.js";
+import { Cart, CartItem, deleteCartProduct, updateCartItem } from "@/api/cart.js";
 import { getCartProducts } from "@/api/cart.js";
-import {getProduct, getStockpile, Product, Stockpile} from "@/api/product.ts";
+import { getProduct, getStockpile, Product, Stockpile } from "@/api/product.ts";
+import { checkout } from "@/api/order.ts";
+import router from "../router/index.ts";
 
 // 购物车数据
 const cart = ref<Cart>()
@@ -142,9 +144,19 @@ const handleCheckout = () => {
     return
   }
 
-  // 这里跳转到结算页面或调用结算API
-  console.log('结算商品:', selectedItems.value)
-  ElMessage.success('跳转结算页面')
+  checkout([1, 2], "ALIPAY").then((res) => {
+    if (res.data.code === '200') {
+      console.log(res.data)
+      router.push("/checkout")
+      ElMessage.success('跳转结算页面')
+    } else {
+      ElMessage({
+        message: res.data.msg,
+        type: 'error',
+        center: true,
+      })
+    }
+  })
 }
 </script>
 
