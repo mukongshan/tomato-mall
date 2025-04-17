@@ -122,8 +122,8 @@ public class CartServiceImpl implements CartService {
         orderVO.setPaymentMethod("ALIPAY");
         orderVO.setCreateTime(new Date());
         Order order = orderRepository.save(orderVO.toPO());
-        for (int i = 0;i < checkRequestVO.cartIds.size();i++){
-            Integer cartItemId = checkRequestVO.cartIds.get(i);
+        for (int i = 0; i < checkRequestVO.cartItemIds.size(); i++){
+            Integer cartItemId = checkRequestVO.cartItemIds.get(i);
             CartOrderRelationVO cartOrderRelationVO = new CartOrderRelationVO();
             cartOrderRelationVO.setOrderId(order.getOrderId());
             cartOrderRelationVO.setCartItemId(cartItemId);

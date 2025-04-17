@@ -4,8 +4,9 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Cart, CartItem, deleteCartProduct, updateCartItem } from "@/api/cart.js";
 import { getCartProducts } from "@/api/cart.js";
 import { getProduct, getStockpile, Product, Stockpile } from "@/api/product.ts";
-import { checkout } from "@/api/order.ts";
+import { checkout, OrderInfo } from "@/api/order.ts";
 import router from "../router/index.ts";
+import { getUserDetails } from "@/api/account.ts";
 
 // 购物车数据
 const cart = ref<Cart>()
@@ -14,7 +15,28 @@ const products = ref<Product[]>([]);
 const stockpiles = ref<Stockpile[]>([]);
 const loading = ref(false)
 const selectedItems = ref<Array<CartItem & { selected: boolean }>>([]);
-
+const showConfirmDialog = ref(false)
+const orderInfo = ref<OrderInfo>({
+  name: '',
+  location: '',
+  telephone: '',
+  email: '',
+})
+//获取用户信息，赋值给orderInfo
+const fetchUserDetails = async () => {
+  try {
+    const response = await getUserDetails(sessionStorage.getItem('username')!)
+    console.log(response.data.data)
+    orderInfo.value.name = response.data.data.name;
+    orderInfo.value.location = response.data.data.location;
+    orderInfo.value.telephone = response.data.data.telephone;
+    orderInfo.value.email = response.data.data.email;
+  } catch (error) {
+    console.error('获取用户信息失败:', error)
+    ElMessage.error('获取用户信息失败')
+  }
+}
+fetchUserDetails()
 // 获取购物车数据
 const fetchCart = async () => {
   loading.value = true
@@ -143,8 +165,15 @@ const handleCheckout = () => {
     ElMessage.warning('请至少选择一件商品')
     return
   }
+  showConfirmDialog.value = true
+}
 
-  checkout([1, 2], "ALIPAY").then((res) => {
+const onConfirm = async () => {
+  const cartItemIds = selectedItems.value
+      .filter(item => item.selected)
+      .map(item => item.cartItemId)
+
+  checkout(cartItemIds, orderInfo.value, "ALIPAY").then((res) => {
     if (res.data.code === '200') {
       sessionStorage.setItem('checkoutData', JSON.stringify(res.data))
       router.push('/checkout')
@@ -265,6 +294,31 @@ const handleCheckout = () => {
         </div>
       </div>
     </div>
+    <el-dialog v-model="showConfirmDialog" title="订单信息" width="50%">
+      <el-form label-width="100px">
+        <el-form-item label="收货人姓名">
+          <el-input v-model="orderInfo.name" />
+        </el-form-item>
+
+        <el-form-item label="收货地址">
+          <el-input v-model="orderInfo.location" />
+        </el-form-item>
+
+        <el-form-item label="手机号">
+          <el-input v-model="orderInfo.telephone" />
+        </el-form-item>
+
+        <el-form-item label="电子邮箱">
+          <el-input v-model="orderInfo.email" />
+        </el-form-item>
+      </el-form>
+
+      <template #footer>
+        <el-button @click="showConfirmDialog = false">取消</el-button>
+        <el-button type="primary" @click="onConfirm">确认</el-button>
+      </template>
+    </el-dialog>
+
   </div>
 </template>
 

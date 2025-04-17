@@ -40,7 +40,7 @@ public class CartController {
     }
 
     @PostMapping("/checkout")
-    public Response<OrderVO> checkout(CheckRequestVO checkRequestVO) {
+    public Response<OrderVO> checkout(@RequestBody CheckRequestVO checkRequestVO) {
         return Response.buildSuccess(cartService.check(checkRequestVO));
     }
 

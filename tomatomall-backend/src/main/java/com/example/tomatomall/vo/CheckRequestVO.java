@@ -6,8 +6,7 @@ import java.util.List;
 
 @Data
 public class CheckRequestVO {
-    public List<Integer> cartIds;
-    public String payment_method;
-    public Object shipping_address;
-
+    public List<Integer> cartItemIds;
+    public OrderInfoVO orderInfo;
+    public String paymentMethod;
 }
