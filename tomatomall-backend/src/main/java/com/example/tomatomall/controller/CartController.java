@@ -40,8 +40,8 @@ public class CartController {
     }
 
     @PostMapping("/checkout")
-    public Response<OrderVO> checkout() {
-        return Response.buildSuccess(cartService.check());
+    public Response<OrderVO> checkout(CheckRequestVO checkRequestVO) {
+        return Response.buildSuccess(cartService.check(checkRequestVO));
     }
 
 }
