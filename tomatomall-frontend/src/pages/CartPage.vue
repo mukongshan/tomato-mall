@@ -146,8 +146,8 @@ const handleCheckout = () => {
 
   checkout([1, 2], "ALIPAY").then((res) => {
     if (res.data.code === '200') {
-      console.log(res.data)
-      router.push("/checkout")
+      sessionStorage.setItem('checkoutData', JSON.stringify(res.data))
+      router.push('/checkout')
       ElMessage.success('跳转结算页面')
     } else {
       ElMessage({

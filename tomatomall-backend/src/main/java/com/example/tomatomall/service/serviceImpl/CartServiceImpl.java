@@ -122,8 +122,7 @@ public class CartServiceImpl implements CartService {
         orderVO.setStatus(PaymentStatusEnum.PENDING);
         orderVO.setPaymentMethod("ALIPAY");
         orderVO.setCreateTime(new Date());
-        orderRepository.save(orderVO.toPO());
-        return orderVO;
+        return orderRepository.save(orderVO.toPO()).toVO();
     }
 
 }
