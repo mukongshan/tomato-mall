@@ -1,30 +1,50 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import {ElMessage} from "element-plus";
-import {payOrder} from "../api/order.ts"
+import { ref } from 'vue'
+import { ElMessage } from 'element-plus'
+import router from "../router/index.ts";
+import { payOrder } from "@/api/order.ts";
+import {getUserDetails, UserDetail} from "@/api/account.ts"
 
-// 定义订单ID（假设从父组件传入或从路由参数获取）
-const orderId = ref(1); // 示例订单ID，你可以根据实际情况动态设置
+const checkoutData = JSON.parse(sessionStorage.getItem('checkoutData') || '{}')
+const orderId = checkoutData.data.orderId
+const totalAmount = checkoutData.data.totalAmount
+const accountInfo = ref<UserDetail>({
+  username: '',
+  name: '',
+  role: '',
+  avatar: '',
+  telephone: '',
+  email: '',
+  location: ''
+})
 
-
-// 定义处理支付的方法
-const handlePayOrder = async () => {
+const fetchUserDetails = async () => {
   try {
-    const response = await payOrder(orderId.value); // 调用 payOrder 函数
-    if (response.data.code === '200') {
-      ElMessage.success('支付成功');
+    const response = await getUserDetails(sessionStorage.getItem('username')!)
+    Object.assign(accountInfo.value, response.data.data)
+  } catch (error) {
+    console.error('获取用户信息失败:', error)
+    ElMessage.error('获取用户信息失败')
+  }
+}
+fetchUserDetails()
+
+const handleCheckout = async () => {
+  payOrder(orderId).then((res) => {
+    if (res.data.code === '200') {
+      console.log(res.data)
+      router.push("/checkout")
+      ElMessage.success('跳转结算页面')
     } else {
       ElMessage({
-        message: response.data.msg || '支付失败，请稍后再试',
+        message: res.data.msg,
         type: 'error',
         center: true,
-      });
+      })
     }
-  } catch (error) {
-    ElMessage.error('支付失败，请稍后再试');
-    console.error('支付失败:', error);
-  }
-};
+  })
+}
+
 </script>
 
 <template>
@@ -34,100 +54,44 @@ const handlePayOrder = async () => {
     <div class="checkout-grid">
       <!-- 客户信息部分 -->
       <div class="checkout-section">
-        <h2 class="section-title">客户信息</h2>
+        <h2 class="section-title">基本信息</h2>
         <div class="form-group">
-          <label for="email">电子邮箱</label>
-          <input type="email" id="email" placeholder="example@email.com">
+          <label for="name">收货人姓名</label>
+          <input
+              type="text"
+              id="name"
+              v-model="accountInfo.name"
+          >
+        </div>
+        <div class="form-group">
+          <label for="address">收货地址</label>
+          <input
+              type="text"
+              id="address"
+              v-model:="accountInfo.location">
         </div>
         <div class="form-group">
           <label for="phone">手机号码</label>
-          <input type="tel" id="phone" placeholder="+86 138 0000 0000">
+          <input
+              type="tel"
+              id="phone"
+              v-model:="accountInfo.telephone">
+        </div>
+        <div class="form-group">
+          <label for="email">电子邮箱</label>
+          <input
+              type="email"
+              id="email"
+              v-model:="accountInfo.email">
         </div>
       </div>
 
-      <!-- 配送地址部分 -->
-      <div class="checkout-section">
-        <h2 class="section-title">配送地址</h2>
-        <div class="form-row">
-          <div class="form-group half-width">
-            <label for="first-name">名字</label>
-            <input type="text" id="first-name" placeholder="张三">
-          </div>
-          <div class="form-group half-width">
-            <label for="last-name">姓氏</label>
-            <input type="text" id="last-name" placeholder="李">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="address">详细地址</label>
-          <input type="text" id="address" placeholder="街道地址、公司名称等">
-        </div>
-
-        <div class="form-row">
-          <div class="form-group half-width">
-            <label for="city">城市</label>
-            <input type="text" id="city" placeholder="例如：北京市">
-          </div>
-          <div class="form-group half-width">
-            <label for="postal-code">邮政编码</label>
-            <input type="text" id="postal-code" placeholder="100000">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="country">国家/地区</label>
-          <select id="country">
-            <option value="">请选择</option>
-            <option value="china">中国</option>
-            <option value="usa">美国</option>
-            <option value="uk">英国</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- 支付方式部分 -->
       <div class="checkout-section">
         <h2 class="section-title">支付方式</h2>
         <div class="payment-methods">
           <div class="payment-method">
-            <input type="radio" id="credit-card" name="payment" checked>
-            <label for="credit-card">信用卡/借记卡</label>
-          </div>
-          <div class="payment-method">
-            <input type="radio" id="paypal" name="payment">
-            <label for="paypal">PayPal</label>
-          </div>
-          <div class="payment-method">
             <input type="radio" id="alipay" name="payment">
             <label for="alipay">支付宝</label>
-          </div>
-          <div class="payment-method">
-            <input type="radio" id="wechat-pay" name="payment">
-            <label for="wechat-pay">微信支付</label>
-          </div>
-        </div>
-
-        <div class="credit-card-form">
-          <div class="form-group">
-            <label for="card-number">卡号</label>
-            <input type="text" id="card-number" placeholder="1234 5678 9012 3456">
-          </div>
-
-          <div class="form-row">
-            <div class="form-group half-width">
-              <label for="expiry-date">有效期</label>
-              <input type="text" id="expiry-date" placeholder="MM/YY">
-            </div>
-            <div class="form-group half-width">
-              <label for="cvv">安全码</label>
-              <input type="text" id="cvv" placeholder="CVV">
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="card-name">持卡人姓名</label>
-            <input type="text" id="card-name" placeholder="与卡面一致">
           </div>
         </div>
       </div>
@@ -137,7 +101,7 @@ const handlePayOrder = async () => {
         <h2 class="section-title">订单摘要</h2>
         <div class="summary-item">
           <span>商品小计</span>
-          <span>¥1,299.00</span>
+          <span>¥{{ totalAmount }}</span>
         </div>
         <div class="summary-item">
           <span>运费</span>
@@ -145,15 +109,14 @@ const handlePayOrder = async () => {
         </div>
         <div class="summary-item">
           <span>优惠</span>
-          <span>-¥100.00</span>
+          <span>¥0.00</span>
         </div>
         <div class="summary-item total">
           <span>总计</span>
-          <span>¥1,199.00</span>
+          <span>¥{{ totalAmount }}</span>
         </div>
 
-        <!-- 绑定点击事件 -->
-        <button class="checkout-button" @click="handlePayOrder(orderId)">确认支付</button>
+        <button class="checkout-button" @click="handleCheckout">确认支付</button>
 
         <div class="secure-checkout">
           <svg class="lock-icon" viewBox="0 0 24 24">
@@ -270,10 +233,6 @@ const handlePayOrder = async () => {
 .payment-method label {
   font-size: 0.9375rem;
   cursor: pointer;
-}
-
-.credit-card-form {
-  margin-top: 1.5rem;
 }
 
 .order-summary {

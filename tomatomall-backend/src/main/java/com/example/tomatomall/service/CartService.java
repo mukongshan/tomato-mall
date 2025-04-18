@@ -3,6 +3,7 @@ package com.example.tomatomall.service;
 import com.example.tomatomall.po.Product;
 import com.example.tomatomall.vo.CartListVO;
 import com.example.tomatomall.vo.CartVO;
+import com.example.tomatomall.vo.CheckRequestVO;
 import com.example.tomatomall.vo.OrderVO;
 
 import java.util.List;
@@ -12,5 +13,5 @@ public interface CartService {
     public String deleteCartItem(Integer cartItemId);
     public String updateCartItem(Integer productId, Integer quantity);
     public CartListVO getCart();
-    public OrderVO check();
+    public OrderVO check(CheckRequestVO checkRequestVO);
 }
