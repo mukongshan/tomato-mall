@@ -1,6 +1,5 @@
 package com.example.tomatomall.controller;
 
-
 import com.alibaba.fastjson.JSONObject;
 import com.alipay.api.AlipayApiException;
 import com.alipay.api.AlipayClient;
@@ -35,7 +34,6 @@ import javax.annotation.Resource;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
 @RestController
 @RequestMapping("/api/orders")
 @ConfigurationProperties("alipay")
@@ -56,7 +54,7 @@ public class OrderController {
         return Response.buildSuccess(orderService.requestPayment(orderId));
     }
 
-    @PostMapping("/notify")
+    @PostMapping("/alipay/notify")
     public void handleAlipayNotify(HttpServletRequest request, HttpServletResponse response) throws IOException, AlipayApiException {
 
         // 1. 解析支付宝回调参数（通常是 application/x-www-form-urlencoded）

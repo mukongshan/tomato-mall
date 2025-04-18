@@ -1,5 +1,30 @@
 <script setup lang="ts">
-// 这里可以留空，只有样式
+import { ref } from 'vue';
+import {ElMessage} from "element-plus";
+import {payOrder} from "../api/order.ts"
+
+// 定义订单ID（假设从父组件传入或从路由参数获取）
+const orderId = ref(1); // 示例订单ID，你可以根据实际情况动态设置
+
+
+// 定义处理支付的方法
+const handlePayOrder = async () => {
+  try {
+    const response = await payOrder(orderId.value); // 调用 payOrder 函数
+    if (response.data.code === '200') {
+      ElMessage.success('支付成功');
+    } else {
+      ElMessage({
+        message: response.data.msg || '支付失败，请稍后再试',
+        type: 'error',
+        center: true,
+      });
+    }
+  } catch (error) {
+    ElMessage.error('支付失败，请稍后再试');
+    console.error('支付失败:', error);
+  }
+};
 </script>
 
 <template>
@@ -127,7 +152,8 @@
           <span>¥1,199.00</span>
         </div>
 
-        <button class="checkout-button">确认支付</button>
+        <!-- 绑定点击事件 -->
+        <button class="checkout-button" @click="handlePayOrder(orderId)">确认支付</button>
 
         <div class="secure-checkout">
           <svg class="lock-icon" viewBox="0 0 24 24">
