@@ -29,7 +29,7 @@ public class    OrderServiceImpl implements OrderService {
     OrderRepository orderRepository;
 
     @Value("${alipay.serverUrl}")
-    private String gatewayUrl;
+    private String serverUrl;
 
     @Value("${alipay.appId}")
     private String appId;
@@ -45,14 +45,16 @@ public class    OrderServiceImpl implements OrderService {
 
     public Map<String, Object> requestPayment(Integer orderId) {
         try {
-            Order order = orderRepository.findById(orderId)
-                    .orElseThrow(() -> new RuntimeException("订单不存在"));
+            Order order = orderRepository.findByOrderId(orderId);
+            if(order == null){
+                throw TomatoMallException.orderNotExists();
+            }
 
             AlipayClient alipayClient = new DefaultAlipayClient(
-                    gatewayUrl,
+                    serverUrl,
                     appId,
                     privateKey,
-                    "json",
+                    "JSON",
                     "UTF-8",
                     alipayPublicKey,
                     "RSA2"
@@ -67,6 +69,7 @@ public class    OrderServiceImpl implements OrderService {
             result.put("orderId", order.getOrderId());
             result.put("totalAmount", order.getTotalAmount());
             result.put("paymentMethod", "Alipay");
+
             return result;
 
         } catch (JsonProcessingException e) {

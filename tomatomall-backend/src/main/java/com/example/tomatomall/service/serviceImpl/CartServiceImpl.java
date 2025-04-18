@@ -50,6 +50,9 @@ public class CartServiceImpl implements CartService {
         cartVO.setCover(product.getCover());
         cartVO.setDetail(product.getDetail());
         cartVO.setAccountId(securityUtil.getCurrentAccount().getId());
+        if (stockpileRepository.findByProductId(productId) == null) {
+            throw TomatoMallException.productNotExists();
+        }
         if (quantity > stockpileRepository.findByProductId(productId).getAmount()) {
             throw TomatoMallException.overStock();
         }
