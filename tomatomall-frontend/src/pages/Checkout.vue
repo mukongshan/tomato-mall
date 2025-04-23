@@ -33,8 +33,10 @@ const handleCheckout = async () => {
   payOrder(orderId).then((res) => {
     if (res.data.code === '200') {
       console.log(res.data)
-      router.push("/checkout")
-      ElMessage.success('跳转结算页面')
+
+      submitAlipayForm(res.data.data.paymentForm)
+
+      ElMessage.success('跳转支付页面')
     } else {
       ElMessage({
         message: res.data.msg,
@@ -45,6 +47,36 @@ const handleCheckout = async () => {
   })
 }
 
+const submitAlipayForm = (formHtml: string) => {
+  console.log(formHtml)
+  // 1. 解析HTML获取form数据
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = formHtml;
+  const form = tempDiv.querySelector('form[name="punchout_form"]');
+
+  if (!form) throw new Error('支付宝表单解析失败');
+
+  // 2. 动态创建form
+  const newForm = document.createElement('form');
+  newForm.method = 'post';
+  newForm.action = form.action; // 提取原form的action
+  newForm.style.display = 'none';
+
+  // 3. 复制所有input参数
+  const inputs = form.querySelectorAll('input');
+  inputs.forEach(input => {
+    const newInput = document.createElement('input');
+    newInput.type = 'hidden';
+    newInput.name = input.name;
+    newInput.value = input.value;
+    newForm.appendChild(newInput);
+  });
+
+  // 4. 提交并清理
+  document.body.appendChild(newForm);
+  newForm.submit();
+  document.body.removeChild(newForm); // 提交后移除
+};
 </script>
 
 <template>
