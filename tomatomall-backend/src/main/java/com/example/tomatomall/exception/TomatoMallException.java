@@ -32,7 +32,7 @@ public class TomatoMallException extends RuntimeException {
     }
 
     public static TomatoMallException notLogin() {
-        return new TomatoMallException("未登录!", "401");
+        return new TomatoMallException("鉴权错误!", "401");
     }
 
     public static TomatoMallException usernameOrPasswordError() {

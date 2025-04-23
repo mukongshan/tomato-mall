@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+
 /**
  *
  * 这个类实现了WebMvcConfigurer接口，
@@ -25,7 +26,7 @@ public class MyWebMvcConfig implements WebMvcConfigurer {
         registry.addInterceptor(loginInterceptor)
                 .addPathPatterns("/**")
                 .excludePathPatterns("/api/accounts/login")
-                .excludePathPatterns("/api/orders/**")
+                .excludePathPatterns("/api/orders/alipay/notify")
                 .excludePathPatterns("/api/accounts/image")
                 .order(1);
     }

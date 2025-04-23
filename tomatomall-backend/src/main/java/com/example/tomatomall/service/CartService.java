@@ -14,4 +14,5 @@ public interface CartService {
     public String updateCartItem(Integer productId, Integer quantity);
     public CartListVO getCart();
     public OrderVO check(CheckRequestVO checkRequestVO);
+    public String deleteCartItemByOrder(String orderIdStr);
 }
