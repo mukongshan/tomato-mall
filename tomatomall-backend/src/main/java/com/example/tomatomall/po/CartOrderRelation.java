@@ -10,17 +10,17 @@ import javax.persistence.*;
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "cart_order_relation")
+@Table(name = "carts_orders_relation")
 public class CartOrderRelation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+    @Column(name = "carts_orders_relation_id")
     private Integer id;
 
-    @Column(name = "cartItemId")
+    @Column(name = "cartitem_id")
     private Integer cartItemId; // 与 Cart 实体类关联
 
-    @Column(name = "orderId")
+    @Column(name = "order_id")
     private Integer orderId; // 订单ID
 
 }

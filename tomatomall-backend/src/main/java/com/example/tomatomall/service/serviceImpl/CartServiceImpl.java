@@ -2,9 +2,7 @@ package com.example.tomatomall.service.serviceImpl;
 
 import com.example.tomatomall.enums.PaymentStatusEnum;
 import com.example.tomatomall.exception.TomatoMallException;
-import com.example.tomatomall.po.Cart;
-import com.example.tomatomall.po.Order;
-import com.example.tomatomall.po.Product;
+import com.example.tomatomall.po.*;
 import com.example.tomatomall.repository.*;
 import com.example.tomatomall.service.CartService;
 import com.example.tomatomall.util.SecurityUtil;
@@ -133,6 +131,25 @@ public class CartServiceImpl implements CartService {
             cartOrderRelationRepository.save(cartOrderRelationVO.toPO());
         }
         return order.toVO();
+    }
+
+    @Override
+    public String deleteCartItemByOrder(String orderIdStr) {
+        int orderId = Integer.parseInt(orderIdStr);
+
+        // 1. 获取订单下所有 cartItem 关联
+        List<CartOrderRelation> relationList = cartOrderRelationRepository.findByOrderId(orderId);
+
+        // 2. 遍历每一项关系
+        for (CartOrderRelation relation : relationList) {
+            Integer cartItemId = relation.getCartItemId();
+
+            cartOrderRelationRepository.delete(relation);
+            deleteCartItem(cartItemId);
+
+        }
+
+        return "删除购物车成功";
     }
 
 }

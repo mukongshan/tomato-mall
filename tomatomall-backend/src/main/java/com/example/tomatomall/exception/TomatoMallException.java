@@ -32,7 +32,7 @@ public class TomatoMallException extends RuntimeException {
     }
 
     public static TomatoMallException notLogin() {
-        return new TomatoMallException("未登录!", "401");
+        return new TomatoMallException("鉴权错误!", "401");
     }
 
     public static TomatoMallException usernameOrPasswordError() {
@@ -56,6 +56,8 @@ public class TomatoMallException extends RuntimeException {
     public static TomatoMallException orderNotExists() {
         return new TomatoMallException("订单不存在","400");
     }
+
+    public static TomatoMallException AdvertisementNotExists() {return new TomatoMallException("广告不存在","400");}
 
     // 提供一个静态方法用于抛出文件上传失败的异常
     public static TomatoMallException fileUploadFail() {

@@ -26,7 +26,9 @@ public class LoginInterceptor implements HandlerInterceptor {
 
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         // 允许注册请求（POST /api/accounts）不检查 token
+        System.out.println("访问："+request.getMethod()+" "+request.getRequestURI());
         if ("POST".equalsIgnoreCase(request.getMethod()) && "/api/accounts".equals(request.getRequestURI())) {
+//            System.out.println("注册，无需鉴权");
             return true;
         }
         String token = request.getHeader("token");
