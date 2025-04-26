@@ -57,6 +57,8 @@ public class TomatoMallException extends RuntimeException {
         return new TomatoMallException("订单不存在","400");
     }
 
+    public static TomatoMallException AdvertisementNotExists() {return new TomatoMallException("广告不存在","400");}
+
     // 提供一个静态方法用于抛出文件上传失败的异常
     public static TomatoMallException fileUploadFail() {
         return new TomatoMallException("文件上传失败，请检查文件格式或网络连接！", "500");
