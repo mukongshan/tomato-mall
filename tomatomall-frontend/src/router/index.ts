@@ -7,6 +7,7 @@ import Login from "@/pages/Login.vue";
 import User from "@/pages/User.vue";
 import Product from "@/pages/ProductDetails.vue";
 import Checkout from "@/pages/Checkout.vue";
+import Advertisement from '@/pages/advertisement.vue';
 
 const routes = [
     {
@@ -54,6 +55,12 @@ const routes = [
         name: 'checkout',
         mata: { title: '确认订单' },
         component:Checkout,
+    },
+    {
+        path: '/advertisement',
+        name: 'advertisement',
+        mata: { title: '广告管理' },
+        component: Advertisement,
     }
     //其他路由配置
 ];
