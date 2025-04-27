@@ -38,8 +38,8 @@ public class AdvertisementController {
         return Response.buildSuccess(advertisementService.updateAdvertisement(advertisementVO));
     }
 
-    @PostMapping("/{advertisementId}")
-    public Response<String> upload(@RequestParam Integer advertisementId){
+    @DeleteMapping("/{advertisementId}")
+    public Response<String> upload(@PathVariable Integer advertisementId){
         return Response.buildSuccess(advertisementService.deleteAdvertisement(advertisementId));
     }
 }
