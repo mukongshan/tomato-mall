@@ -14,6 +14,8 @@ import {
     ElLoading
 } from 'element-plus';
 
+import { Edit, Delete, Plus } from '@element-plus/icons-vue';
+
 // 当前广告列表
 const advertisementList = ref<AdvertisementUpdate[]>([]);
 
@@ -22,16 +24,16 @@ const currentAdvertisement = ref<AdvertisementUpdate>({
     id: 0,
     title: '',
     content: '',
-    image_url: '',
-    product_id: 0
+    imgUrl: '',
+    productId: 0
 });
 
 // 新建广告表单
 const newAdvertisement = ref<Advertisement>({
     title: '',
     content: '',
-    image_url: '',
-    product_id: 0
+    imgUrl: '',
+    productId: 0
 });
 
 const showCreateModal = ref(false);
@@ -43,7 +45,8 @@ const loadAdvertisements = async () => {
     try {
         loading.value = true;
         const response = await getAdvertisements();
-        advertisementList.value = response.data;
+        advertisementList.value = response.data.data;
+        console.log(advertisementList.value)
         ElMessage.success('广告列表加载成功');
     } catch (error) {
         console.error('加载广告失败:', error);
@@ -76,8 +79,8 @@ const resetNewAdvertisement = () => {
     newAdvertisement.value = {
         title: '',
         content: '',
-        image_url: '',
-        product_id: 0
+        imgUrl: '',
+        productId: 0
     };
 };
 
@@ -87,7 +90,7 @@ const validateAdvertisement = (ad: Advertisement): boolean => {
         ElMessage.warning('广告标题不能为空');
         return false;
     }
-    if (ad.product_id <= 0) {
+    if (ad.productId <= 0) {
         ElMessage.warning('商品ID必须大于0');
         return false;
     }
@@ -110,6 +113,7 @@ const createAdvertisement = async () => {
         showCreateModal.value = false;
         resetNewAdvertisement();
         ElMessage.success('广告创建成功');
+        await loadAdvertisements(); // 重新加载广告列表
     } catch (error) {
         console.error('创建广告失败:', error);
         ElMessage.error('创建广告失败，请稍后重试');
@@ -204,21 +208,22 @@ const closeAllModals = () => {
             <el-empty v-if="!loading && advertisementList.length === 0" description="暂无广告数据" />
 
             <el-skeleton v-else-if="loading && advertisementList.length === 0" :rows="5" animated />
-
+            <!-- 有数据 且加载完毕-->
             <el-row v-else :gutter="20">
                 <el-col v-for="ad in advertisementList" :key="ad.id" :xs="24" :sm="12" :md="8" :lg="6">
                     <el-card shadow="hover" class="ad-card">
+                        <!-- 标题-->
                         <template #header>
                             <div class="ad-header">
                                 <span class="ad-title">{{ ad.title }}</span>
                                 <div class="ad-actions">
-                                    <el-button type="primary" size="small" @click="openEditModal(ad)"
+                                    <el-button type="primary" size="default" @click="openEditModal(ad)"
                                         :loading="loading">
                                         <el-icon>
                                             <edit />
                                         </el-icon>
                                     </el-button>
-                                    <el-button type="danger" size="small" @click="deleteAdvertisement(ad.id)"
+                                    <el-button type="danger" size="default" @click="deleteAdvertisement(ad.id)"
                                         :loading="loading">
                                         <el-icon>
                                             <delete />
@@ -229,8 +234,7 @@ const closeAllModals = () => {
                         </template>
 
                         <div class="ad-image-container">
-                            <el-image v-if="ad.image_url" :src="ad.image_url" :alt="ad.title" fit="cover"
-                                class="ad-image">
+                            <el-image v-if="ad.imgUrl" :src="ad.imgUrl" :alt="ad.title" fit="cover" class="ad-image">
                                 <template #error>
                                     <div class="image-error">
                                         <el-icon>
@@ -251,7 +255,7 @@ const closeAllModals = () => {
                         <div class="ad-content">
                             <p class="ad-description">{{ ad.content }}</p>
                             <div class="ad-meta">
-                                <el-tag size="small">商品ID: {{ ad.product_id }}</el-tag>
+                                <el-tag size="small">商品ID: {{ ad.productId }}</el-tag>
                                 <el-tag size="small" type="info">广告ID: {{ ad.id }}</el-tag>
                             </div>
                         </div>
@@ -269,11 +273,12 @@ const closeAllModals = () => {
                 <el-form-item label="内容" prop="content">
                     <el-input v-model="newAdvertisement.content" type="textarea" :rows="4" placeholder="请输入广告内容" />
                 </el-form-item>
-                <el-form-item label="图片URL" prop="image_url">
-                    <el-input v-model="newAdvertisement.image_url" placeholder="https://example.com/image.jpg" />
+                <el-form-item label="图片URL" prop="imgUrl">
+                    <el-input v-model="newAdvertisement.imgUrl" type="url"
+                        placeholder="https://example.com/image.jpg" />
                 </el-form-item>
-                <el-form-item label="商品ID" prop="product_id" required>
-                    <el-input-number v-model="newAdvertisement.product_id" :min="1" controls-position="right" />
+                <el-form-item label="商品ID" prop="productId" required>
+                    <el-input-number v-model="newAdvertisement.productId" :min="1" controls-position="right" />
                 </el-form-item>
             </el-form>
             <template #footer>
@@ -296,11 +301,11 @@ const closeAllModals = () => {
                 <el-form-item label="内容" prop="content">
                     <el-input v-model="currentAdvertisement.content" type="textarea" :rows="4" placeholder="请输入广告内容" />
                 </el-form-item>
-                <el-form-item label="图片URL" prop="image_url">
-                    <el-input v-model="currentAdvertisement.image_url" placeholder="https://example.com/image.jpg" />
+                <el-form-item label="图片URL" prop="imgUrl">
+                    <el-input v-model="currentAdvertisement.imgUrl" placeholder="https://example.com/image.jpg" />
                 </el-form-item>
-                <el-form-item label="商品ID" prop="product_id" required>
-                    <el-input-number v-model="currentAdvertisement.product_id" :min="1" controls-position="right" />
+                <el-form-item label="商品ID" prop="productId" required>
+                    <el-input-number v-model="currentAdvertisement.productId" :min="1" controls-position="right" />
                 </el-form-item>
             </el-form>
             <template #footer>
@@ -318,6 +323,7 @@ const closeAllModals = () => {
 <style scoped>
 .container {
     padding: 20px;
+    /* 内边距20px */
 }
 
 .card-header {

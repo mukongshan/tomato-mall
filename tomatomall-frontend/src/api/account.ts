@@ -1,7 +1,7 @@
-import {ACCOUNT_MODULE} from "./_prefix.js";
-import {axios} from "../utils/request";
+import { ACCOUNT_MODULE } from "./_prefix.js";
+import { axios } from "../utils/request";
 
-export type UserRole = 'CUSTOMER'|'STAFF'|'SHOPKEEPER'|'ADMINISTRATOR'|''
+export type UserRole = 'CUSTOMER' | 'STAFF' | 'SHOPKEEPER' | 'admin' | ''
 
 export interface UserDetail {
     username: string,
@@ -24,22 +24,22 @@ export interface LoginCredentials {
     password: string
 }
 
-export const getUserDetails = async (username:string) =>{
+export const getUserDetails = async (username: string) => {
     return await axios.get(`${ACCOUNT_MODULE}/${username}`,
         { headers: { 'Content-Type': 'application/json' } });
 }
 
-export const createAccount = async (account :AccountDetail)=>{
-    return await axios.post(`${ACCOUNT_MODULE}`,account,
-        {headers: {'Content-Type': 'application/json'}});
+export const createAccount = async (account: AccountDetail) => {
+    return await axios.post(`${ACCOUNT_MODULE}`, account,
+        { headers: { 'Content-Type': 'application/json' } });
 }
 
-export const login = async (login:LoginCredentials)=>{
+export const login = async (login: LoginCredentials) => {
     return await axios.post(`${ACCOUNT_MODULE}/login`, login,
-        {headers: {'Content-Type': 'application/json'}});
+        { headers: { 'Content-Type': 'application/json' } });
 }
 
-export const updateUser = async (account:AccountDetail)=>{
+export const updateUser = async (account: AccountDetail) => {
     return await axios.put(`${ACCOUNT_MODULE}`, account,
-        {headers: {'Content-Type': 'application/json'}});
+        { headers: { 'Content-Type': 'application/json' } });
 }
