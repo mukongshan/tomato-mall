@@ -13,6 +13,7 @@ import {
     ElMessageBox,
     ElLoading
 } from 'element-plus';
+import router from '@/router/index';
 
 import { Edit, Delete, Plus } from '@element-plus/icons-vue';
 
@@ -40,6 +41,11 @@ const showCreateModal = ref(false);
 const showEditModal = ref(false);
 const loading = ref(false);
 
+// 点击跳转到商品详情页
+const gotoDetails = (productId: number) => {
+    router.push({ path: `/product/${productId}` });
+};
+
 // 加载广告列表
 const loadAdvertisements = async () => {
     try {
@@ -47,10 +53,16 @@ const loadAdvertisements = async () => {
         const response = await getAdvertisements();
         advertisementList.value = response.data.data;
         console.log(advertisementList.value)
-        ElMessage.success('广告列表加载成功');
+        ElMessage.success({
+            message: '广告列表加载成功',
+            duration: 1000
+        });
     } catch (error) {
         console.error('加载广告失败:', error);
-        ElMessage.error('加载广告失败，请稍后重试');
+        ElMessage.error({
+            message: '加载广告失败，请稍后重试',
+            duration: 1000  // 修改这里
+        });
     } finally {
         loading.value = false;
     }
@@ -59,6 +71,10 @@ const loadAdvertisements = async () => {
 // 初始化加载数据
 onMounted(() => {
     loadAdvertisements();
+    ElMessage.success({
+        message: '广告列表初始化成功',
+        duration: 1000
+    });
 });
 
 // 打开创建广告模态框
@@ -87,11 +103,17 @@ const resetNewAdvertisement = () => {
 // 验证广告数据
 const validateAdvertisement = (ad: Advertisement): boolean => {
     if (!ad.title.trim()) {
-        ElMessage.warning('广告标题不能为空');
+        ElMessage.warning({
+            message: '广告标题不能为空',
+            duration: 1000
+        });
         return false;
     }
     if (ad.productId <= 0) {
-        ElMessage.warning('商品ID必须大于0');
+        ElMessage.warning({
+            message: '商品ID必须大于0',
+            duration: 1000
+        });
         return false;
     }
     return true;
@@ -112,11 +134,17 @@ const createAdvertisement = async () => {
         advertisementList.value.push(response.data);
         showCreateModal.value = false;
         resetNewAdvertisement();
-        ElMessage.success('广告创建成功');
+        ElMessage.success({
+            message: '广告创建成功',
+            duration: 1000
+        });
         await loadAdvertisements(); // 重新加载广告列表
     } catch (error) {
         console.error('创建广告失败:', error);
-        ElMessage.error('创建广告失败，请稍后重试');
+        ElMessage.error({
+            message: '创建广告失败，请稍后重试',
+            duration: 1000
+        });
     } finally {
         loadingInstance.close();
     }
@@ -141,10 +169,16 @@ const updateAdvertisement = async () => {
             advertisementList.value[index] = { ...currentAdvertisement.value };
         }
         showEditModal.value = false;
-        ElMessage.success('广告更新成功');
+        ElMessage.success({
+            message: '广告更新成功',
+            duration: 1000
+        });
     } catch (error) {
         console.error('更新广告失败:', error);
-        ElMessage.error('更新广告失败，请稍后重试');
+        ElMessage.error({
+            message: '更新广告失败，请稍后重试',
+            duration: 1000
+        });
     } finally {
         loadingInstance.close();
     }
@@ -172,10 +206,16 @@ const deleteAdvertisement = async (id: number) => {
         try {
             await deleteAdAPI(id);
             advertisementList.value = advertisementList.value.filter(a => a.id !== id);
-            ElMessage.success('广告删除成功');
+            ElMessage.success({
+                message: '广告删除成功',
+                duration: 1000
+            });
         } catch (error) {
             console.error('删除广告失败:', error);
-            ElMessage.error('删除广告失败，请稍后重试');
+            ElMessage.error({
+                message: '删除广告失败，请稍后重试',
+                duration: 1000
+            });
         } finally {
             loadingInstance.close();
         }
@@ -233,7 +273,7 @@ const closeAllModals = () => {
                             </div>
                         </template>
 
-                        <div class="ad-image-container">
+                        <div class="ad-image-container" @click="gotoDetails(ad.productId)">
                             <el-image v-if="ad.imgUrl" :src="ad.imgUrl" :alt="ad.title" fit="cover" class="ad-image">
                                 <template #error>
                                     <div class="image-error">
@@ -356,6 +396,7 @@ const closeAllModals = () => {
 }
 
 .ad-image-container {
+    cursor: pointer;
     height: 200px;
     margin-bottom: 15px;
     display: flex;
