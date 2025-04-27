@@ -13,16 +13,19 @@ const routes = [
     {
         path: '/',
         name: 'index',
+        meta: { title: '首页' },
         component: HomePage
     },
     {
         path: '/cart',
         name: 'cart',
+        meta: { title: '购物车' },
         component: CartPage,
     },
     {
         path: '/warehouse',
         name: 'warehouse',
+        meta: { title: '商品管理' },
         component: WarehousePage,
     },
     {

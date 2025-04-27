@@ -11,17 +11,21 @@ import {
 import {
     ElMessage,
     ElMessageBox,
-    ElLoading
+    ElLoading,
+    UploadFile,
+    UploadProps
 } from 'element-plus';
 import router from '@/router/index';
 
 import { Edit, Delete, Plus } from '@element-plus/icons-vue';
+import { imageProcess } from "@/utils/UploadImage.ts";
+import { getProductsList } from '@/api/product';
 
 // 当前广告列表
 const advertisementList = ref<AdvertisementUpdate[]>([]);
 
-// 当前编辑的广告
-const currentAdvertisement = ref<AdvertisementUpdate>({
+// 统一表单数据  新建无id 编辑有id
+const formData = ref<AdvertisementUpdate>({
     id: 0,
     title: '',
     content: '',
@@ -29,16 +33,9 @@ const currentAdvertisement = ref<AdvertisementUpdate>({
     productId: 0
 });
 
-// 新建广告表单
-const newAdvertisement = ref<Advertisement>({
-    title: '',
-    content: '',
-    imgUrl: '',
-    productId: 0
-});
-
-const showCreateModal = ref(false);
-const showEditModal = ref(false);
+// 当前操作模式 ('create' | 'edit')
+const formMode = ref<'create' | 'edit'>('create');
+const showFormModal = ref(false);
 const loading = ref(false);
 
 // 点击跳转到商品详情页
@@ -71,28 +68,26 @@ const loadAdvertisements = async () => {
 // 初始化加载数据
 onMounted(() => {
     loadAdvertisements();
-    ElMessage.success({
-        message: '广告列表初始化成功',
-        duration: 1000
-    });
 });
 
 // 打开创建广告模态框
 const openCreateModal = () => {
-    resetNewAdvertisement();
-    showCreateModal.value = true;
+    resetFormData();
+    formMode.value = 'create';
+    showFormModal.value = true;
 };
 
 // 打开编辑广告模态框
 const openEditModal = (ad: AdvertisementUpdate) => {
-    // 拷贝广告数据，避免直接修改原数据
-    currentAdvertisement.value = { ...ad };
-    showEditModal.value = true;
+    formData.value = { ...ad };
+    formMode.value = 'edit';
+    showFormModal.value = true;
 };
 
-// 重置新建广告表单
-const resetNewAdvertisement = () => {
-    newAdvertisement.value = {
+// 重置表单数据
+const resetFormData = () => {
+    formData.value = {
+        id: 0,
         title: '',
         content: '',
         imgUrl: '',
@@ -119,64 +114,49 @@ const validateAdvertisement = (ad: Advertisement): boolean => {
     return true;
 };
 
-// 创建广告
-const createAdvertisement = async () => {
-    if (!validateAdvertisement(newAdvertisement.value)) return;
-
-    const loadingInstance = ElLoading.service({
-        lock: true,
-        text: '正在创建广告...',
-        background: 'rgba(0, 0, 0, 0.7)'
-    });
-
-    try {
-        const response = await addAdvertisement(newAdvertisement.value);
-        advertisementList.value.push(response.data);
-        showCreateModal.value = false;
-        resetNewAdvertisement();
-        ElMessage.success({
-            message: '广告创建成功',
-            duration: 1000
-        });
-        await loadAdvertisements(); // 重新加载广告列表
-    } catch (error) {
-        console.error('创建广告失败:', error);
-        ElMessage.error({
-            message: '创建广告失败，请稍后重试',
-            duration: 1000
-        });
-    } finally {
-        loadingInstance.close();
+// 提交表单 (根据模式创建或更新)
+const submitForm = async () => {
+    if (!validateAdvertisement(formData.value)) return;
+    const productList = (await getProductsList()).data.data;
+    const productId = formData.value.productId;
+    const product = productList.find((item: { id: number; }) => item.id === productId)
+    if (!product) {
+        ElMessage.error('商品ID不存在,请检查');
+        return;
     }
-};
-
-// 更新广告
-const updateAdvertisement = async () => {
-    if (!validateAdvertisement(currentAdvertisement.value)) return;
 
     const loadingInstance = ElLoading.service({
         lock: true,
-        text: '正在更新广告...',
+        text: formMode.value === 'create' ? '正在创建广告...' : '正在更新广告...',
         background: 'rgba(0, 0, 0, 0.7)'
     });
 
     try {
-        await updateAdAPI(currentAdvertisement.value);
-        const index = advertisementList.value.findIndex(
-            a => a.id === currentAdvertisement.value.id
-        );
-        if (index !== -1) {
-            advertisementList.value[index] = { ...currentAdvertisement.value };
+        if (formMode.value === 'create') {
+            const { id, ...dataWithoutId } = formData.value;
+            const response = await addAdvertisement(dataWithoutId);
+            advertisementList.value.push(response.data);
+            ElMessage.success({
+                message: '广告创建成功',
+                duration: 1000
+            });
+        } else {
+            await updateAdAPI(formData.value);
+            const index = advertisementList.value.findIndex(a => a.id === formData.value.id);
+            if (index !== -1) {
+                advertisementList.value[index] = { ...formData.value };
+            }
+            ElMessage.success({
+                message: '广告更新成功',
+                duration: 1000
+            });
         }
-        showEditModal.value = false;
-        ElMessage.success({
-            message: '广告更新成功',
-            duration: 1000
-        });
+        showFormModal.value = false;
+        await loadAdvertisements();
     } catch (error) {
-        console.error('更新广告失败:', error);
+        console.error(`${formMode.value === 'create' ? '创建' : '更新'}广告失败:`, error);
         ElMessage.error({
-            message: '更新广告失败，请稍后重试',
+            message: `${formMode.value === 'create' ? '创建' : '更新'}广告失败，请稍后重试`,
             duration: 1000
         });
     } finally {
@@ -226,9 +206,32 @@ const deleteAdvertisement = async (id: number) => {
 
 // 关闭所有模态框
 const closeAllModals = () => {
-    showCreateModal.value = false;
-    showEditModal.value = false;
+    showFormModal.value = false;
 };
+
+// 图片验证
+const beforeLogoUpload: UploadProps['beforeUpload'] = (rawFile) => {
+    const isImage = ['image/jpg', 'image/png'].includes(rawFile.type)
+    const isSizeValid = rawFile.size <= 5 * 1024 * 1024
+
+    if (!isImage) {
+        ElMessage.error('Logo必须为JPG/PNG格式')
+        return false
+    }
+    if (!isSizeValid) {
+        ElMessage.error('Logo大小不能超过5MB')
+        return false
+    }
+    return true
+}
+// 图片上传处理
+const handleAvatarChange: UploadProps['onChange'] = async (uploadFile: UploadFile) => {
+    if (uploadFile.raw) {
+        // 生成预览URL
+        formData.value.imgUrl = await imageProcess(uploadFile.raw)
+        console.log(formData.value.imgUrl)
+    }
+}
 </script>
 
 <template>
@@ -304,55 +307,39 @@ const closeAllModals = () => {
             </el-row>
         </el-card>
 
-        <!-- 创建广告模态框 -->
-        <el-dialog v-model="showCreateModal" title="创建新广告" width="50%" @close="closeAllModals">
-            <el-form :model="newAdvertisement" label-width="100px" label-position="top">
+        <el-dialog v-model="showFormModal" :title="formMode === 'create' ? '创建新广告' : `编辑广告 (ID: ${formData.id})`"
+            width="50%" @close="closeAllModals">
+            <el-form :model="formData" label-width="100px" label-position="top">
                 <el-form-item label="标题" prop="title" required>
-                    <el-input v-model="newAdvertisement.title" placeholder="请输入广告标题" />
+                    <el-input v-model="formData.title" placeholder="请输入广告标题" />
                 </el-form-item>
                 <el-form-item label="内容" prop="content">
-                    <el-input v-model="newAdvertisement.content" type="textarea" :rows="4" placeholder="请输入广告内容" />
+                    <el-input v-model="formData.content" type="textarea" :rows="4" placeholder="请输入广告内容" />
                 </el-form-item>
                 <el-form-item label="图片URL" prop="imgUrl">
-                    <el-input v-model="newAdvertisement.imgUrl" type="url"
-                        placeholder="https://example.com/image.jpg" />
+                    <el-upload class="avatar-uploader" :show-file-list="false" :on-change="handleAvatarChange"
+                        :before-upload="beforeLogoUpload" accept="image/*" :auto-upload="false">
+                        <!--图片上传模式-->
+                        <!-- 有头像是显示预览图-->
+                        <el-image v-if="formData.imgUrl" :src="formData.imgUrl" class="avatar" fit="cover" />
+                        <!-- 无图像时候显示上传图标-->
+                        <el-icon v-else class="avatar-uploader-icon">
+                            <Plus />
+                        </el-icon>
+                    </el-upload>
+                    <div class="el-upload__tip">
+                        支持JPG/PNG格式,且不超过5MB
+                    </div>
                 </el-form-item>
                 <el-form-item label="商品ID" prop="productId" required>
-                    <el-input-number v-model="newAdvertisement.productId" :min="1" controls-position="right" />
+                    <el-input-number v-model="formData.productId" :min="1" controls-position="right" />
                 </el-form-item>
             </el-form>
             <template #footer>
                 <span class="dialog-footer">
                     <el-button @click="closeAllModals">取消</el-button>
-                    <el-button type="primary" @click="createAdvertisement" :loading="loading">
-                        提交
-                    </el-button>
-                </span>
-            </template>
-        </el-dialog>
-
-        <!-- 编辑广告模态框 -->
-        <el-dialog v-model="showEditModal" :title="`编辑广告 (ID: ${currentAdvertisement.id})`" width="50%"
-            @close="closeAllModals">
-            <el-form :model="currentAdvertisement" label-width="100px" label-position="top">
-                <el-form-item label="标题" prop="title" required>
-                    <el-input v-model="currentAdvertisement.title" placeholder="请输入广告标题" />
-                </el-form-item>
-                <el-form-item label="内容" prop="content">
-                    <el-input v-model="currentAdvertisement.content" type="textarea" :rows="4" placeholder="请输入广告内容" />
-                </el-form-item>
-                <el-form-item label="图片URL" prop="imgUrl">
-                    <el-input v-model="currentAdvertisement.imgUrl" placeholder="https://example.com/image.jpg" />
-                </el-form-item>
-                <el-form-item label="商品ID" prop="productId" required>
-                    <el-input-number v-model="currentAdvertisement.productId" :min="1" controls-position="right" />
-                </el-form-item>
-            </el-form>
-            <template #footer>
-                <span class="dialog-footer">
-                    <el-button @click="closeAllModals">取消</el-button>
-                    <el-button type="primary" @click="updateAdvertisement" :loading="loading">
-                        更新
+                    <el-button type="primary" @click="submitForm" :loading="loading">
+                        {{ formMode === 'create' ? '提交' : '更新' }}
                     </el-button>
                 </span>
             </template>
@@ -374,7 +361,9 @@ const closeAllModals = () => {
 
 .ad-card {
     margin-bottom: 20px;
+    border-radius: 8px;
     transition: all 0.3s;
+    height: 100%;
 }
 
 .ad-card:hover {
@@ -453,5 +442,42 @@ const closeAllModals = () => {
 .dialog-footer {
     display: flex;
     justify-content: flex-end;
+}
+
+.avatar-uploader {
+    border: 1px dashed var(--el-border-color);
+    border-radius: 6px;
+    cursor: pointer;
+    overflow: hidden;
+    width: 150px;
+    height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--el-transition-duration-fast);
+}
+
+.avatar-uploader:hover {
+    border-color: var(--el-color-primary);
+}
+
+.avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-uploader-icon {
+    font-size: 28px;
+    color: #8c939d;
+    text-align: center;
+
+}
+
+.el-upload__tip {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+
 }
 </style>
