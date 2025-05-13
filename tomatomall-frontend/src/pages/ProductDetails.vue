@@ -7,6 +7,7 @@ import type { Product } from '@/api/product.ts';
 
 const route = useRoute();
 const product = ref<Product | null>(null);
+import { Picture } from '@element-plus/icons-vue';
 
 onMounted(async () => {
     try {
@@ -24,7 +25,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    
+
     <el-card v-if="product" class="product-card">
         <div class="product-header">
             <h1>{{ product.title }}</h1>
@@ -36,7 +37,16 @@ onMounted(async () => {
 
         <div class="product-content">
             <div class="image-section">
-                <img :src="product.cover" :alt="product.title" class="main-image" />
+                <el-image :src="product.cover" :alt="product.title" class="main-image">
+                    <template #error>
+                        <div class="image-error">
+                            <el-icon>
+                                <Picture />
+                            </el-icon>
+                            <span>图片加载失败</span>
+                        </div>
+                    </template>
+                </el-image>
             </div>
 
             <div class="info-section">
@@ -60,7 +70,7 @@ onMounted(async () => {
     <div v-else class="empty-state">
         <el-empty description="商品不存在或已下架" />
     </div>
-    
+
 </template>
 
 <style scoped>
@@ -145,5 +155,15 @@ onMounted(async () => {
     display: flex;
     justify-content: center;
     margin-top: 100px;
+}
+
+.image-error .el-icon {
+    font-size: 40px;
+    margin-bottom: 10px;
+}
+
+.image-error {
+    text-align: center;
+    color: red;
 }
 </style>

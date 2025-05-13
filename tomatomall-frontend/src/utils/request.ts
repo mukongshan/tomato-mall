@@ -1,9 +1,10 @@
 import axios from 'axios'
+import { ElMessage } from 'element-plus'
 
 //创建一个axios的实例service
 const service = axios.create({
     baseURL: "http://localhost:8080" // 在main.ts里设置不会生效 未知原因 可能是两个axios实例不同  但之前未出现此问题
-    }
+}
 )
 
 //判断是否登录
@@ -15,7 +16,7 @@ function hasToken() {
 //向后端发出请求时的拦截器  符合条件才能给后端
 service.interceptors.request.use(
     config => {
-        if(hasToken()) {
+        if (hasToken()) {
             config.headers['token'] = sessionStorage.getItem('token')
         }
         return config
@@ -37,7 +38,11 @@ service.interceptors.response.use(
         }
     },
     error => {
-        console.log(error);
+        ElMessage({
+            message: error.response.data.msg,
+            type: 'error',
+            duration: 1000
+        })
         return Promise.reject();
     }
 )

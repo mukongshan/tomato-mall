@@ -6,6 +6,7 @@ import { getProductsList } from "@/api/product.ts"
 import router from "@/router/index.ts"
 import { addCartProduct } from "@/api/cart.ts";
 import { getAdvertisements, AdvertisementUpdate } from "@/api/advertisements";
+import { Picture } from '@element-plus/icons-vue';
 
 // 存储商品列表数据
 const products = ref<Product[]>([]);
@@ -37,14 +38,11 @@ const handleAdd = (productId: number) => {
     addCartProduct(productId, amount).then((res) => {
         if (res.data.code === '200') {
             ElMessage.success('添加成功');
-        } else {
-            ElMessage({
-                message: res.data.msg,
-                type: 'error',
-                center: true,
-            })
         }
-    })
+    }).catch((error) => {
+        if (error == undefined) {
+        }
+    });
 }
 
 const pageInit = async () => {
@@ -75,7 +73,17 @@ pageInit();
         indicator-position="outside">
         <el-carousel-item v-for="ad in advertisementList" :key="ad.id" @click="gotoDetails(ad.productId)">
             <div class="ad-item">
-                <img :src="ad.imgUrl" :alt="ad.title" class="ad-image" />
+                <el-image :src="ad.imgUrl" :alt="ad.title" class="ad-image">
+                    <template #error>
+                        <div class="image-error">
+                            <el-icon>
+                                <Picture />
+                            </el-icon>
+                            <span>图片加载失败</span>
+                        </div>
+                    </template>
+                </el-image>
+
                 <div class="ad-title">{{ ad.title }}</div>
             </div>
         </el-carousel-item>
@@ -89,7 +97,17 @@ pageInit();
                 <!-- 图片-->
                 <div class="product-image-container" @click="gotoDetails(product.id)">
 
-                    <img :src="product.cover" alt="商品图片" class="product-image" />
+                    <el-image :src="product.cover" alt="商品图片" class="product-image">
+
+                        <template #error>
+                            <div class="image-error">
+                                <el-icon>
+                                    <Picture />
+                                </el-icon>
+                                <span>图片加载失败</span>
+                            </div>
+                        </template>
+                    </el-image>
                 </div>
                 <!-- 商品信息-->
                 <div class="product-info">
@@ -107,6 +125,24 @@ pageInit();
 .product-list {
     margin-top: 20px;
 }
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.product-item {
+    display: flex;
+    flex-direction: column;
+    background-color: #ebeef5;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    overflow: hidden;
+
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
 
 .product-grid {
     display: grid;
@@ -165,5 +201,15 @@ pageInit();
     color: #f56c6c;
     font-size: 14px;
     margin-bottom: 8px;
+}
+
+.image-error .el-icon {
+    font-size: 40px;
+    margin-bottom: 10px;
+}
+
+.image-error {
+    text-align: center;
+    color: red;
 }
 </style>

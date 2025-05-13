@@ -17,7 +17,7 @@ import {
 } from 'element-plus';
 import router from '@/router/index';
 
-import { Edit, Delete, Plus } from '@element-plus/icons-vue';
+import { Edit, Delete, Plus, Picture } from '@element-plus/icons-vue';
 import { imageProcess } from "@/utils/UploadImage.ts";
 import { getProductsList } from '@/api/product';
 
@@ -281,7 +281,7 @@ const handleAvatarChange: UploadProps['onChange'] = async (uploadFile: UploadFil
                                 <template #error>
                                     <div class="image-error">
                                         <el-icon>
-                                            <picture />
+                                            <Picture />
                                         </el-icon>
                                         <span>图片加载失败</span>
                                     </div>
@@ -289,7 +289,7 @@ const handleAvatarChange: UploadProps['onChange'] = async (uploadFile: UploadFil
                             </el-image>
                             <div v-else class="ad-image-placeholder">
                                 <el-icon>
-                                    <picture />
+                                    <Picture />
                                 </el-icon>
                                 <span>暂无图片</span>
                             </div>
@@ -416,6 +416,11 @@ const handleAvatarChange: UploadProps['onChange'] = async (uploadFile: UploadFil
     margin-bottom: 10px;
 }
 
+.image-error {
+    text-align: center;
+    color: red;
+}
+
 .ad-content {
     padding: 0 10px;
 }
@@ -478,6 +483,5 @@ const handleAvatarChange: UploadProps['onChange'] = async (uploadFile: UploadFil
     margin-top: 8px;
     font-size: 12px;
     color: var(--el-text-color-secondary);
-
 }
 </style>

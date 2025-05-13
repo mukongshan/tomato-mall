@@ -7,6 +7,7 @@ import { getUserDetails, updateUser } from '@/api/account.ts'
 import { UserFilled } from "@element-plus/icons-vue";
 import router from "@/router";
 import { imageProcess } from '@/utils/UploadImage'
+import { Picture } from '@element-plus/icons-vue'
 
 // 用户信息
 const userInfo = ref<UserDetail>({
@@ -206,7 +207,16 @@ const cancelEdit = () => {
                     <el-upload class="avatar-uploader" :show-file-list="false" :before-upload="beforeAvatarUpload"
                         :on-change="handleAvatarChange" :on-remove="handleAvatarRemove" accept="image/*"
                         :auto-upload="false" :disabled="!editMode">
-                        <el-image v-if="editForm.avatar" :src="editForm.avatar" class="avatar" />
+                        <el-image v-if="editForm.avatar" :src="editForm.avatar" class="avatar">
+                            <template #error>
+                                <div class="image-error">
+                                    <el-icon>
+                                        <Picture />
+                                    </el-icon>
+                                    <span>图片加载失败</span>
+                                </div>
+                            </template>
+                        </el-image>
                         <el-icon v-else class="avatar-uploader-icon">
                             <Plus />
                         </el-icon>
@@ -297,5 +307,15 @@ const cancelEdit = () => {
 .avatar-text {
     font-size: x-large;
     font-weight: bolder;
+}
+
+.image-error .el-icon {
+    font-size: 40px;
+    margin-bottom: 10px;
+}
+
+.image-error {
+    text-align: center;
+    color: red;
 }
 </style>
