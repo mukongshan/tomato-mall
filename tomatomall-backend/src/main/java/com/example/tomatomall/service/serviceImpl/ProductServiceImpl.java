@@ -21,7 +21,7 @@ public class ProductServiceImpl implements ProductService {
     private ProductRepository productRepository;
 
     @Autowired
-    private OssUtil ossUtil = new OssUtil();
+    private OssUtil ossUtil;
 
     @Resource
     private SpecificationRepository specificationRepository;

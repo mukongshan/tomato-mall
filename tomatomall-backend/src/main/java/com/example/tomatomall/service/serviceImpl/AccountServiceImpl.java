@@ -7,6 +7,7 @@ import com.example.tomatomall.service.AccountService;
 import com.example.tomatomall.util.OssUtil;
 import com.example.tomatomall.util.SecurityUtil;
 import com.example.tomatomall.util.TokenUtil;
+import com.example.tomatomall.util.ToolUtil;
 import com.example.tomatomall.vo.AccountVO;
 import com.example.tomatomall.vo.Response;
 import org.apache.coyote.http11.filters.VoidOutputFilter;
@@ -28,7 +29,7 @@ public class AccountServiceImpl implements AccountService {
     AccountRepository accountRepository;
 
     @Autowired
-    OssUtil ossUtil = new OssUtil();
+    ToolUtil toolUtil;
 
     @Autowired
     TokenUtil tokenUtil;
@@ -135,12 +136,6 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public String uploadImg(MultipartFile file){
-        try {
-            String url = ossUtil.upload(file.getOriginalFilename(),file.getInputStream());
-            return url;
-        }catch (Exception e){
-            e.printStackTrace();
-            throw TomatoMallException.fileUploadFail();
-        }
+        return toolUtil.uploadImg(file);
     }
 }
