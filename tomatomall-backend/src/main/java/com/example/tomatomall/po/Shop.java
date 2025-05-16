@@ -16,8 +16,8 @@ import javax.persistence.*;
 public class Shop {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "shop_id")
-    private Integer shopId;
+    @Column(name = "id")
+    private Integer id;
 
     @Basic
     @Column(name = "name", nullable = false, length = 100)
@@ -45,7 +45,7 @@ public class Shop {
 
     public ShopVO toVO() {
         ShopVO vo = new ShopVO();
-        vo.setShopId(this.shopId);
+        vo.setShopId(this.id);
         vo.setName(this.name);
         vo.setOwnerId(this.ownerId);
         vo.setIconUrl(this.iconUrl);

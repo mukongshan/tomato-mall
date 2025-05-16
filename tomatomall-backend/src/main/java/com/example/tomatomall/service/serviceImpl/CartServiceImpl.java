@@ -14,6 +14,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CartServiceImpl implements CartService {
@@ -61,7 +62,7 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public String deleteCartItem(Integer cartItemId) {
-        if (cartRepository.findByCartItemId(cartItemId) == null) {
+        if (!cartRepository.findById(cartItemId).isPresent()) {
             throw TomatoMallException.cartNotExists();
         }
         cartRepository.deleteById(cartItemId);
@@ -70,10 +71,11 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public String updateCartItem(Integer cartItemId, Integer quantity) {
-        Cart cartItem = cartRepository.findByCartItemId(cartItemId);
-        if (cartItem == null) {
+        Optional<Cart> opCartItem = cartRepository.findById(cartItemId);
+        if (!opCartItem.isPresent()) {
             throw TomatoMallException.cartNotExists();
         }
+        Cart cartItem = opCartItem.get();
         Integer productId = cartItem.getProductId();
         if (quantity > stockpileRepository.findByProductId(productId).getAmount()) {
             throw TomatoMallException.overStock();
@@ -95,7 +97,7 @@ public class CartServiceImpl implements CartService {
             Product product = productRepository.findById(productId)
                     .orElseThrow(TomatoMallException::productNotExists);
             CartVO itemVO = new CartVO();
-            itemVO.setCartItemId(cart.getCartItemId());
+            itemVO.setCartItemId(cart.getId());
             itemVO.setProductId(product.getId());
             itemVO.setTitle(product.getTitle());
             itemVO.setPrice(product.getPrice());
@@ -126,7 +128,7 @@ public class CartServiceImpl implements CartService {
         for (int i = 0; i < checkRequestVO.cartItemIds.size(); i++){
             Integer cartItemId = checkRequestVO.cartItemIds.get(i);
             CartOrderRelationVO cartOrderRelationVO = new CartOrderRelationVO();
-            cartOrderRelationVO.setOrderId(order.getOrderId());
+            cartOrderRelationVO.setOrderId(order.getId());
             cartOrderRelationVO.setCartItemId(cartItemId);
             cartOrderRelationRepository.save(cartOrderRelationVO.toPO());
         }

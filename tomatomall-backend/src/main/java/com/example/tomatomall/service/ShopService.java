@@ -5,6 +5,7 @@ import java.util.List;
 
 public interface ShopService {
     List<ShopVO> getAllShops();
+    ShopVO getOwnShop();
     String createShop(ShopVO shopVO);
     ShopVO getShopById(Integer shopId);
     String updateShop(ShopVO shopVO);

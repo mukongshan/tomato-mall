@@ -43,15 +43,6 @@ public class AccountServiceImpl implements AccountService {
     @Autowired
     private HttpServletRequest request;  // 注入 HttpServletRequest
 
-    @Override
-    public AccountVO getAccountByUsername(String username) {
-        Account account = accountRepository.findByUsername(username);
-        if (account == null) {
-            throw TomatoMallException.usernameNotExists();
-        }
-        return account.toVO(); // 确保 Account 类有 toVO() 方法
-    }
-
 
     @Override
     public String createAccount(AccountVO accountVO) {

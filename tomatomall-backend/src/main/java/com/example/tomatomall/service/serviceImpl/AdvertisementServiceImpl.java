@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,10 +33,11 @@ public class AdvertisementServiceImpl implements AdvertisementService {
     public String updateAdvertisement(AdvertisementVO advertisementVO) {
         Integer adId = advertisementVO.getId();
         System.out.println(adId);
-        Advertisement advertisement = advertisementRepository.findById(adId).get();
-        if (advertisement == null){
-            throw TomatoMallException.AdvertisementNotExists();
+        Optional<Advertisement> opAdvertisement = advertisementRepository.findById(advertisementVO.getId());
+        if (!opAdvertisement.isPresent()){
+            throw  TomatoMallException.AdvertisementNotExists();
         }
+        Advertisement advertisement = opAdvertisement.get();
         String title = advertisementVO.getTitle();
         String content = advertisementVO.getContent();
         String imageUrl = advertisementVO.getImgUrl();
@@ -67,10 +69,11 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 
     @Override
     public String deleteAdvertisement(Integer advertisementId) {
-        Advertisement advertisement = advertisementRepository.findById(advertisementId).get();
-        if (advertisement == null){
+        Optional<Advertisement> opAdvertisement = advertisementRepository.findById(advertisementId);
+        if (!opAdvertisement.isPresent()){
             throw  TomatoMallException.AdvertisementNotExists();
         }
+        Advertisement advertisement = opAdvertisement.get();
         advertisementRepository.delete(advertisement);
         return "删除成功";
     }

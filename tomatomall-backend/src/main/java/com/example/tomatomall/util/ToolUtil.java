@@ -14,8 +14,7 @@ public class ToolUtil {
         
         public String uploadImg(MultipartFile file) {
             try {
-            String url = ossUtil.upload(file.getOriginalFilename(),file.getInputStream());
-            return url;
+                return ossUtil.upload(file.getOriginalFilename(),file.getInputStream());
         }catch (Exception e){
             e.printStackTrace();
             throw TomatoMallException.fileUploadFail();

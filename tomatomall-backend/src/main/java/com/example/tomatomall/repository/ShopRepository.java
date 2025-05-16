@@ -8,5 +8,4 @@ import org.springframework.stereotype.Repository;
 public interface ShopRepository extends JpaRepository<Shop, Integer> {
     // 可以添加自定义查询方法
     Shop findByOwnerId(Integer ownerId);
-    Shop findByShopId(Integer shopId);
 } 

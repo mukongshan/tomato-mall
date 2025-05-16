@@ -17,7 +17,7 @@ public class ShopVO {
 
     public Shop toPO() {
         Shop shop = new Shop();
-        shop.setShopId(this.shopId);
+        shop.setId(this.shopId);
         shop.setName(this.name);
         shop.setOwnerId(this.ownerId);
         shop.setIconUrl(this.iconUrl);

@@ -16,7 +16,7 @@ public class Stockpile {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "stockpile_id")
+    @Column(name = "id")
     private Integer id;
 
     @Basic

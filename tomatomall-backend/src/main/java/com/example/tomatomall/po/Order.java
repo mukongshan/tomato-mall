@@ -18,8 +18,8 @@ import java.util.Date;
 public class Order{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "order_id", nullable = false)
-    private Integer orderId;
+    @Column(name = "id", nullable = false)
+    private Integer id;
 
     @Column(name = "account_id", nullable = false)
     private Integer accountId;
@@ -40,7 +40,7 @@ public class Order{
 
     public OrderVO toVO() {
         OrderVO orderVO = new OrderVO();
-        orderVO.setOrderId(this.orderId);
+        orderVO.setOrderId(this.id);
         orderVO.setAccountId(this.accountId);
         orderVO.setTotalAmount(this.totalAmount);
         orderVO.setPaymentMethod(this.paymentMethod);

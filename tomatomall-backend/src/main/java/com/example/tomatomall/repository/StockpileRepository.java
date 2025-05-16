@@ -9,6 +9,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface StockpileRepository extends JpaRepository<Stockpile, Integer> {
     Stockpile findByProductId(int product_id);
-    Stockpile findById(int id);
     void deleteByProductId(int product_id);
 }

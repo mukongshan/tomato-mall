@@ -16,7 +16,7 @@ public class Specification {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "specification_id")
+    @Column(name = "id")
     private Integer id;
 
     @Basic

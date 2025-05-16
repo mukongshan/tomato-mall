@@ -1,5 +1,6 @@
 package com.example.tomatomall.service.serviceImpl;
 
+import com.alipay.api.domain.Car;
 import com.example.tomatomall.exception.TomatoMallException;
 import com.example.tomatomall.po.*;
 import com.example.tomatomall.repository.*;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -163,10 +165,11 @@ public class ProductServiceImpl implements ProductService {
             Integer cartItemId = relation.getCartItemId();
 
             // 3. 查找对应 Cart
-            Cart cart = cartRepository.findByCartItemId(cartItemId);
-            if (cart == null) {
+            Optional<Cart> opCart = cartRepository.findById(cartItemId);
+            if (!opCart.isPresent()) {
                 throw new RuntimeException("找不到 cartItemId = " + cartItemId);
             }
+            Cart cart = opCart.get();
 
             // 4. 查找对应 Product
             Integer productId = cart.getProductId();

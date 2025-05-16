@@ -13,6 +13,7 @@ import com.example.tomatomall.exception.TomatoMallException;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.example.tomatomall.enums.RoleEnum.SHOPKEEPER;
@@ -35,6 +36,16 @@ public class ShopServiceImpl implements ShopService {
     }
 
     @Override
+    public ShopVO getOwnShop(){
+        int ownerId = securityUtil.getCurrentAccount().getId();
+        Shop shop = shopRepository.findByOwnerId(ownerId);
+        if (shop == null){
+            return null;
+        }
+        return shop.toVO();
+    }
+
+    @Override
     @Transactional
     public String createShop(ShopVO shopVO) {
         try {
@@ -42,31 +53,35 @@ public class ShopServiceImpl implements ShopService {
             if (account.getRole() != SHOPKEEPER){
                 throw TomatoMallException.forbidden();
             }
+
+            shopVO.setIsValid(0);
             Shop shop = shopVO.toPO();
-            shop.setIsValid(0);
+            System.out.println("=====1=====");
             shopRepository.save(shop);
+            System.out.println("=====2=====");
             return "创建成功";
         } catch (Exception e) {
-            throw new RuntimeException("创建失败");
+            return "创建失败";
         }
     }
 
     @Override
     public ShopVO getShopById(Integer shopId) {
-        Shop shop = shopRepository.findByShopId(shopId);
-        if (shop == null) {
+        Optional<Shop> opShop = shopRepository.findById(shopId);
+        if (!opShop.isPresent()) {
             throw TomatoMallException.shopNotExists();
         }
-        return shop.toVO();
+        return opShop.get().toVO();
     }
 
     @Override
     public String updateShop(ShopVO shopVO) {
         try {
-            Shop shop = shopRepository.findByShopId(shopVO.getShopId());
-            if (shop == null) {
+            Optional<Shop> opShop = shopRepository.findById(shopVO.getShopId());
+            if (!opShop.isPresent()) {
                 throw TomatoMallException.shopNotExists();
             }
+            Shop shop = opShop.get();
             Account account = securityUtil.getCurrentAccount();
             if (account.getRole() != SHOPKEEPER || !Objects.equals(account.getId(), shop.getOwnerId())){
                 throw TomatoMallException.forbidden();
@@ -85,10 +100,11 @@ public class ShopServiceImpl implements ShopService {
     @Override
     public String deleteShop(Integer shopId) {
         try {
-            Shop shop = shopRepository.findByShopId(shopId);
-            if (shop == null) {
+            Optional<Shop> opShop = shopRepository.findById(shopId);
+            if (!opShop.isPresent()) {
                 throw TomatoMallException.shopNotExists();
             }
+            Shop shop = opShop.get();
             shopRepository.delete(shop);
             return "删除成功";
         } catch (Exception e) {

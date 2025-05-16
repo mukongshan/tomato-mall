@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.web.bind.annotation.*;
 
@@ -59,10 +60,11 @@ public class    OrderServiceImpl implements OrderService {
 
     public Map<String, Object> requestPayment(Integer orderId) {
         try {
-            Order order = orderRepository.findByOrderId(orderId);
-            if(order == null){
+            Optional<Order> opOrder = orderRepository.findById(orderId);
+            if(!opOrder.isPresent()){
                 throw TomatoMallException.orderNotExists();
             }
+            Order order = opOrder.get();
 
             AlipayClient alipayClient = new DefaultAlipayClient(
                     serverUrl,
@@ -80,7 +82,7 @@ public class    OrderServiceImpl implements OrderService {
 
             Map<String, Object> result = new HashMap<>();
             result.put("paymentForm", form);
-            result.put("orderId", order.getOrderId());
+            result.put("orderId", order.getId());
             result.put("totalAmount", order.getTotalAmount());
             result.put("paymentMethod", "Alipay");
 
@@ -170,9 +172,9 @@ public class    OrderServiceImpl implements OrderService {
         request.setNotifyUrl(notifyUrl);  // 支付宝异步通知回调地址
 
         Map<String, String> bizContent = new HashMap<>();
-        bizContent.put("out_trade_no", String.valueOf(order.getOrderId()));
+        bizContent.put("out_trade_no", String.valueOf(order.getId()));
         bizContent.put("total_amount", String.valueOf(order.getTotalAmount()));
-        bizContent.put("subject", "订单编号：" + order.getOrderId());
+        bizContent.put("subject", "订单编号：" + order.getId());
         bizContent.put("product_code", "FAST_INSTANT_TRADE_PAY");
 
         // 序列化 Map 为 JSON 字符串

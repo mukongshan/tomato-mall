@@ -22,7 +22,7 @@ public class CartVO {
 
     public Cart toPO(){
         Cart cart = new Cart();
-        cart.setCartItemId(this.cartItemId);
+        cart.setId(this.cartItemId);
         cart.setAccountId(this.accountId);
         cart.setProductId(this.productId);
         cart.setQuantity(this.quantity);

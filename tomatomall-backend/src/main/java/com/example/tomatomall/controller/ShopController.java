@@ -20,6 +20,11 @@ public class ShopController {
         return Response.buildSuccess(shopService.getAllShops());
     }
 
+    @GetMapping("/owner")
+    public Response<ShopVO> getOwnShop() {
+        return Response.buildSuccess(shopService.getOwnShop());
+    }
+
     @PostMapping("/create")
     public Response<String> createShop(@RequestBody ShopVO shopVO) {
         return Response.buildSuccess(shopService.createShop(shopVO));
