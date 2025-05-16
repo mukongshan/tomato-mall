@@ -8,6 +8,10 @@ import User from "@/pages/User.vue";
 import Product from "@/pages/ProductDetails.vue";
 import Checkout from "@/pages/Checkout.vue";
 import Advertisement from '@/pages/advertisement.vue';
+import Shops from '@/pages/shops.vue';
+import ShopCreate from '@/pages/shopCreate.vue';
+import shopManage from '@/pages/shopManage.vue';
+import myShop from '@/pages/myShop.vue';
 
 const routes = [
     {
@@ -64,6 +68,31 @@ const routes = [
         name: 'advertisements',
         mata: { title: '广告管理' },
         component: Advertisement,
+    },
+    {
+        path: '/shops',
+        name: 'shops',
+        meta: { title: '全部商店' },
+        component: Shops,
+    },
+    {
+        path: '/shopCreate',
+        name: 'shopCreate',
+        meta: { title: '创建商店' },
+        component: ShopCreate,
+    },
+    {
+        path: '/shopManage',
+        name: 'shopManage',
+        meta: { title: '店铺管理' },
+        component: shopManage,
+    },
+    {
+        path: '/myShop/:id',
+        name: 'myShop',
+        meta: { title: '我的店铺' },
+        component: myShop,
+        props: true,
     }
     //其他路由配置
 ];

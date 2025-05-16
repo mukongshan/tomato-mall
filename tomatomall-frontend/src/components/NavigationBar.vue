@@ -1,8 +1,10 @@
-<script setup>
-import { ref, onMounted, watch } from "vue";
+<script setup lang="ts">
+import { onMounted, } from "vue";
 import { ElMenu, ElMenuItem } from "element-plus";
 import router from "@/router";
-import { isLogin, checkRole, isAdmin } from "./LoginEvent";
+import { isLogin, checkRole, isAdmin, isShopOwner, isStaff } from "./LoginEvent";
+import { getUserDetails } from "@/api/account";
+
 const checkLogin = () => {
     const token = sessionStorage.getItem('token');
     if (token) {
@@ -19,6 +21,12 @@ const Logout = () => {
     isLogin.value = false;
     router.push("/login"); // 跳转到登录页面
 };
+const navigateToMyShop = async () => {
+    const username = sessionStorage.getItem('username') as string;
+    const response = await getUserDetails(username);
+    const id = response.data.data.id;
+
+};
 
 onMounted(checkLogin);
 onMounted(checkRole);
@@ -30,14 +38,21 @@ onMounted(checkRole);
             <div class="mid-items">
                 <el-menu-item index="/">番茄书城</el-menu-item>
                 <el-menu-item index="/cart">购物车</el-menu-item>
-                <el-menu-item v-if="isAdmin" index="/warehouse">商品管理</el-menu-item>
-                <el-menu-item v-if="isAdmin" index="/advertisements">广告管理</el-menu-item>
+                <el-menu-item index="/shops">全部店铺</el-menu-item>
+                <el-menu-item v-if="isAdmin || isShopOwner || isStaff" index="/warehouse">商品管理</el-menu-item>
+                <el-menu-item v-if="isAdmin || isShopOwner" index="/advertisements">广告管理</el-menu-item>
             </div>
+
 
             <div class="right-items">
                 <template v-if="isLogin">
                     <el-menu-item index="/user">个人中心</el-menu-item>
                     <el-menu-item @click="Logout">退出登录</el-menu-item>
+                    <el-menu-item index="/shopManage" v-if="isAdmin">商店管理</el-menu-item>
+                    <el-menu-item @click="navigateToMyShop" v-else-if="isShopOwner">我的店铺</el-menu-item>
+                    <el-menu-item index="/shopCreate" v-else>开店</el-menu-item>
+                    <el-menu-item index="/user">消息</el-menu-item>
+
                 </template>
 
                 <template v-else>
