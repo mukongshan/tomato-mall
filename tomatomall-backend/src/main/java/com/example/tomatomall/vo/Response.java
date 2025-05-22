@@ -23,4 +23,8 @@ public class Response<T> {
         response.setData(null);
         return response;
     }
+
+    public static <T> Response<T> buildFailure(String msg, String code) {
+        return buildError(code, msg);
+    }
 }
