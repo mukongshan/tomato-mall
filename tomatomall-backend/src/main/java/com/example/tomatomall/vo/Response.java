@@ -1,26 +1,26 @@
 package com.example.tomatomall.vo;
 
-import lombok.*;
+import lombok.Data;
 
-import java.io.Serializable;
-
-@NoArgsConstructor
-@AllArgsConstructor
-@Getter
-@Setter
-public class Response<T> implements Serializable {
-
+@Data
+public class Response<T> {
     private String code;
-
     private String msg;
-
     private T data;
 
-    public static <T> Response<T> buildSuccess(T result) {
-        return new Response<T>("200", null, result);
+    public static <T> Response<T> buildSuccess(T data) {
+        Response<T> response = new Response<>();
+        response.setCode("200");
+        response.setMsg(null);
+        response.setData(data);
+        return response;
     }
 
-    public static <T> Response<T> buildFailure(String msg, String code) {
-        return new Response<T>(code, msg, null);
+    public static <T> Response<T> buildError(String code, String msg) {
+        Response<T> response = new Response<>();
+        response.setCode(code);
+        response.setMsg(msg);
+        response.setData(null);
+        return response;
     }
 }
