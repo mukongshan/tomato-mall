@@ -11,7 +11,7 @@ import Advertisement from '@/pages/advertisement.vue';
 import Shops from '@/pages/shops.vue';
 import ShopCreate from '@/pages/shopCreate.vue';
 import shopManage from '@/pages/shopManage.vue';
-import myShop from '@/pages/myShop.vue';
+import shopDetail from '@/pages/ShopDetail.vue';
 
 const routes = [
     {
@@ -88,10 +88,10 @@ const routes = [
         component: shopManage,
     },
     {
-        path: '/myShop/:id',
-        name: 'myShop',
-        meta: { title: '我的店铺' },
-        component: myShop,
+        path: '/shop/detail/:shopId',
+        name: 'shopDetail',
+        meta: { title: '店铺详情' },
+        component: shopDetail,
         props: true,
     }
     //其他路由配置

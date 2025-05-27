@@ -64,7 +64,7 @@ onMounted(checkRole);
                         <span>管理</span>
                     </template>
                     <el-menu-item index="/warehouse">商品管理</el-menu-item>
-                    <el-menu-item index="/shop-management" v-if="isAdmin || isShopOwner">商店管理</el-menu-item>
+                    <el-menu-item index="/shopManage" v-if="isAdmin">商店管理</el-menu-item>
                     <el-menu-item index="/advertisements" v-if="isAdmin || isShopOwner">广告管理</el-menu-item>
                 </el-sub-menu>
             </div>
