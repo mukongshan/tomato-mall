@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { onMounted, } from "vue";
+import { onMounted } from "vue";
 import { ElMenu, ElMenuItem } from "element-plus";
+import { HomeFilled, ShoppingCart, Shop, Setting, User, Bell, SwitchButton, Edit } from '@element-plus/icons-vue'
 import router from "@/router";
 import { isLogin, checkRole, isAdmin, isShopOwner, isStaff } from "./LoginEvent";
 import { getUserDetails } from "@/api/account";
@@ -33,30 +34,76 @@ onMounted(checkRole);
 
 <template>
     <div class="nav-bar-container">
-        <el-menu class="nav-bar" mode="horizontal" :router="true">
-            <div class="mid-items">
-                <el-menu-item index="/">番茄书城</el-menu-item>
-                <el-menu-item index="/cart">购物车</el-menu-item>
-                <el-menu-item index="/shops">全部店铺</el-menu-item>
-                <el-menu-item v-if="isAdmin || isShopOwner || isStaff" index="/warehouse">商品管理</el-menu-item>
-                <el-menu-item v-if="isAdmin || isShopOwner" index="/advertisements">广告管理</el-menu-item>
+        <el-menu mode="horizontal" :router="true" class="nav-bar" background-color="#fff" text-color="#333"
+            active-text-color="#409EFF">
+            <!-- 中间 -->
+            <div class="center-menu">
+                <el-menu-item index="/" class="left-item">
+                    <el-icon>
+                        <HomeFilled />
+                    </el-icon>
+                    <span>番茄书城</span>
+                </el-menu-item>
+                <el-menu-item index="/cart">
+                    <el-icon>
+                        <ShoppingCart />
+                    </el-icon>
+                    <span>购物车</span>
+                </el-menu-item>
+                <el-menu-item index="/shops">
+                    <el-icon>
+                        <Shop />
+                    </el-icon>
+                    <span>全部店铺</span>
+                </el-menu-item>
+                <el-sub-menu index="management" v-if="isAdmin || isShopOwner || isStaff">
+                    <template #title>
+                        <el-icon>
+                            <Setting />
+                        </el-icon>
+                        <span>管理</span>
+                    </template>
+                    <el-menu-item index="/warehouse">商品管理</el-menu-item>
+                    <el-menu-item index="/shop-management" v-if="isAdmin || isShopOwner">商店管理</el-menu-item>
+                    <el-menu-item index="/advertisements" v-if="isAdmin || isShopOwner">广告管理</el-menu-item>
+                </el-sub-menu>
             </div>
 
-
-            <div class="right-items">
+            <!-- 右侧 -->
+            <div class="right-menu">
                 <template v-if="isLogin">
-                    <el-menu-item index="/user">个人中心</el-menu-item>
-                    <el-menu-item @click="Logout">退出登录</el-menu-item>
-                    <el-menu-item index="/shopManage" v-if="isAdmin">商店管理</el-menu-item>
-                    <el-menu-item @click="navigateToMyShop" v-else-if="isShopOwner">我的店铺</el-menu-item>
-                    <el-menu-item index="/shopCreate" v-else>开店</el-menu-item>
-                    <el-menu-item>消息</el-menu-item>
-
+                    <el-menu-item index="/user">
+                        <el-icon>
+                            <User />
+                        </el-icon>
+                        <span>个人中心</span>
+                    </el-menu-item>
+                    <el-menu-item index="/user">
+                        <el-icon>
+                            <Bell />
+                        </el-icon>
+                        <span>消息</span>
+                    </el-menu-item>
+                    <el-menu-item @click="Logout">
+                        <el-icon>
+                            <SwitchButton />
+                        </el-icon>
+                        <span>退出登录</span>
+                    </el-menu-item>
                 </template>
-
                 <template v-else>
-                    <el-menu-item index="/login">登录</el-menu-item>
-                    <el-menu-item index="/register">注册</el-menu-item>
+                    <el-menu-item index="/login">
+                        <el-icon>
+                            <User />
+                        </el-icon>
+                        <span>登录</span>
+                    </el-menu-item>
+                    <el-menu-item index="/register">
+                        <el-icon>
+                            <Edit />
+                        </el-icon>
+                        <span>注册</span>
+                    </el-menu-item>
                 </template>
             </div>
         </el-menu>
@@ -69,35 +116,57 @@ onMounted(checkRole);
     top: 0;
     left: 0;
     width: 100%;
-    z-index: 1000;
     height: 60px;
+    z-index: 1000;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* el-menu整体样式 */
 .nav-bar {
-    display: grid;
-    grid-template-columns: 40% 20% 40%;
-    width: 100%;
-    height: 100%;
     position: relative;
+    height: 60px;
+    padding: 0 20px;
+    white-space: nowrap;
 }
 
-.mid-items {
-    grid-column: 2;
+/* 左侧按钮正常流 */
+.left-item {
+    float: left;
+}
+
+/* 中间菜单用绝对定位，水平居中 */
+.center-menu {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    height: 60px;
     display: flex;
-    justify-content: center;
+    align-items: center;
+    transform: translateX(-50%);
+    white-space: nowrap;
     gap: 10px;
 }
 
-.right-items {
+/* 右侧菜单用绝对定位靠右 */
+.right-menu {
     position: absolute;
-    right: 10%;
+    right: 20px;
     top: 0;
-    display: flex;
-}
-
-.el-menu-item {
-    height: 100%;
+    height: 60px;
     display: flex;
     align-items: center;
+    gap: 10px;
+}
+
+/* 统一菜单项高度 */
+.el-menu-item,
+.el-sub-menu__title {
+    height: 60px !important;
+    padding: 0 12px !important;
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+    font-size: 14px;
 }
 </style>
