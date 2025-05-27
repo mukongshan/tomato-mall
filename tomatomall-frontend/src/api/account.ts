@@ -4,6 +4,7 @@ import { axios } from "../utils/request";
 export type UserRole = 'CUSTOMER' | 'STAFF' | 'SHOPKEEPER' | 'admin' | ''
 
 export interface UserDetail {
+    id: number,
     username: string,
     name: string,
     role: UserRole,

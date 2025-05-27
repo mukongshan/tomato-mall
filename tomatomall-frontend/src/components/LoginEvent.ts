@@ -3,6 +3,7 @@ export const isLogin = ref(false);
 export const isAdmin = ref(false);
 export const isShopOwner = ref(false);
 export const isStaff = ref(false);
+export const isCustomer = ref(false);
 
 export const checkRole = () => {
     const role = sessionStorage.getItem('role');
@@ -21,5 +22,11 @@ export const checkRole = () => {
         isStaff.value = true;
     } else {
         isStaff.value = false;
+    }
+
+    if (role === "CUSTOMER") {
+        isCustomer.value = true;
+    } else {
+        isCustomer.value = false;
     }
 }

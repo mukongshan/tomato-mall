@@ -11,6 +11,7 @@ import { Picture } from '@element-plus/icons-vue'
 
 // 用户信息
 const userInfo = ref<UserDetail>({
+    id: 0,
     username: '',
     name: '',
     role: '',

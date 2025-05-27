@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { onMounted } from "vue";
 import { ElMenu, ElMenuItem } from "element-plus";
-import { HomeFilled, ShoppingCart, Shop, Setting, User, Bell, SwitchButton, Edit } from '@element-plus/icons-vue'
+import { HomeFilled, ShoppingCart, Shop, Setting, User, Bell, SwitchButton, Edit, CirclePlus } from '@element-plus/icons-vue'
 import router from "@/router";
-import { isLogin, checkRole, isAdmin, isShopOwner, isStaff } from "./LoginEvent";
+import { isLogin, checkRole, isAdmin, isShopOwner, isStaff, isCustomer } from "./LoginEvent";
 import { getUserDetails } from "@/api/account";
 
 const checkLogin = () => {
@@ -72,13 +72,19 @@ onMounted(checkRole);
             <!-- 右侧 -->
             <div class="right-menu">
                 <template v-if="isLogin">
+                    <el-menu-item index="/shopCreate" v-if="isAdmin || isCustomer">
+                        <el-icon>
+                            <CirclePlus />
+                        </el-icon>
+                        <span>我要开店</span>
+                    </el-menu-item>
                     <el-menu-item index="/user">
                         <el-icon>
                             <User />
                         </el-icon>
                         <span>个人中心</span>
                     </el-menu-item>
-                    <el-menu-item index="/user">
+                    <el-menu-item>
                         <el-icon>
                             <Bell />
                         </el-icon>

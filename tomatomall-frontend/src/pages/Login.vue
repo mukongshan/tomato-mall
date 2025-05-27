@@ -47,6 +47,7 @@ const handleLogin = async () => {
                     const response = await getUserDetails(ruleForm.username); // 等待 Promise 解析
                     const userDetail: UserDetail = response.data.data; // 提取 Axios 返回的实际数据
                     sessionStorage.setItem('role', userDetail.role);
+                    sessionStorage.setItem('id', String(userDetail.id));
                 } catch (error) {
                     console.error("获取用户详情失败:", error);
                 }

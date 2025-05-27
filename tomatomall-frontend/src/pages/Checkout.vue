@@ -8,6 +8,7 @@ const checkoutData = JSON.parse(sessionStorage.getItem('checkoutData') || '{}')
 const orderId = checkoutData.data.orderId
 const totalAmount = checkoutData.data.totalAmount
 const accountInfo = ref<UserDetail>({
+    id: 0,
     username: '',
     name: '',
     role: '',
