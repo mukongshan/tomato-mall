@@ -25,7 +25,6 @@ const navigateToMyShop = async () => {
     const username = sessionStorage.getItem('username') as string;
     const response = await getUserDetails(username);
     const id = response.data.data.id;
-
 };
 
 onMounted(checkLogin);
@@ -51,7 +50,7 @@ onMounted(checkRole);
                     <el-menu-item index="/shopManage" v-if="isAdmin">商店管理</el-menu-item>
                     <el-menu-item @click="navigateToMyShop" v-else-if="isShopOwner">我的店铺</el-menu-item>
                     <el-menu-item index="/shopCreate" v-else>开店</el-menu-item>
-                    <el-menu-item index="/user">消息</el-menu-item>
+                    <el-menu-item>消息</el-menu-item>
 
                 </template>
 
