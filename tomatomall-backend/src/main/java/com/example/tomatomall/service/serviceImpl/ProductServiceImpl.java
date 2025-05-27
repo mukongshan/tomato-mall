@@ -44,7 +44,11 @@ public class ProductServiceImpl implements ProductService {
     public List<ProductVO> getAllProducts() {
         List<Product> products = productRepository.findAll();
         return products.stream().map(this::convertToVO).collect(Collectors.toList());
-
+    }
+    @Override
+    public List<ProductVO> getProductsByShopId(int shopId) {
+        List<Product> products = productRepository.findByShopId(shopId).get();
+        return products.stream().map(this::convertToVO).collect(Collectors.toList());
     }
 
 

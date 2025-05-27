@@ -30,6 +30,10 @@ public class ProductController {
     public Response<ProductVO> getProductById(@PathVariable Integer id) {
         return Response.buildSuccess(productService.getProductById(id));
     }
+    @GetMapping("/shop/{shopId}")
+    public Response<List<ProductVO>> getProductsByShopId(@PathVariable Integer shopId) {
+        return Response.buildSuccess(productService.getProductsByShopId(shopId));
+    }
 
 
     @PostMapping

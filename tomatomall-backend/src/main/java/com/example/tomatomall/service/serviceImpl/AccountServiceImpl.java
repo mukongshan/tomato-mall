@@ -114,6 +114,12 @@ public class AccountServiceImpl implements AccountService {
         if (!accountVO.getLocation().isEmpty()) {
             account.setLocation(accountVO.getLocation());
         }
+        if (accountVO.getShopId() != 0) {
+            account.setShopId(accountVO.getShopId());
+        }
+        if (accountVO.getIsValidStaff()!= 0) {
+            account.setIsValidStaff(accountVO.getIsValidStaff());
+        }
 
         accountRepository.save(account);
 
