@@ -43,6 +43,10 @@ public class Product {
     @Column(name = "detail")
     private String detail;
 
+    @Basic
+    @Column(name = "shop_id", nullable = false)
+    private Integer shopId;
+
     public ProductVO toVO() {
         ProductVO vo = new ProductVO();
         vo.setId(this.id);
@@ -51,6 +55,7 @@ public class Product {
         vo.setRate(this.rate);
         vo.setDescription(this.description);
         vo.setCover(this.cover);
+        vo.setShopId(this.shopId);
         vo.setDetail(this.detail);
         return vo;
     }

@@ -18,6 +18,7 @@ public class ProductVO {
     private String description;
     private String cover;
     private String detail;
+    private Integer shopId;
     private List<SpecificationVO> specifications;
 
     public Product toPO(){

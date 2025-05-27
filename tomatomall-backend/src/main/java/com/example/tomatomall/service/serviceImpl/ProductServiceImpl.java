@@ -109,7 +109,7 @@ public class ProductServiceImpl implements ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(TomatoMallException::productNotExists);        // 删除商品封面
         if (product.getCover()!=null&&!product.getCover().isEmpty()) {
-            String res  = ossUtil.deleteFileByUrl(product.getCover());
+            String res = ossUtil.deleteFileByUrl(product.getCover());
             System.out.println(res);
         }
         stockpileRepository.deleteByProductId(id);
