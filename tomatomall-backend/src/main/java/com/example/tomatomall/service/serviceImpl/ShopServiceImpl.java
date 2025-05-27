@@ -11,16 +11,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.example.tomatomall.exception.TomatoMallException;
 
+
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.example.tomatomall.enums.RoleEnum.SHOPKEEPER;
+import static com.example.tomatomall.enums.RoleEnum.*;
 
 @Service
-public class ShopServiceImpl implements ShopService {
-
+    public class ShopServiceImpl implements ShopService {
     @Autowired
     private ShopRepository shopRepository;
 
@@ -50,7 +50,9 @@ public class ShopServiceImpl implements ShopService {
     public String createShop(ShopVO shopVO) {
         try {
             Account account = securityUtil.getCurrentAccount();
-            if (account.getRole() != SHOPKEEPER){
+            if ((account.getRole() != CUSTOMER) &&
+                    (account.getRole() != admin)) {
+                // 只有普通用户和管理员可以创建店铺
                 throw TomatoMallException.forbidden();
             }
 

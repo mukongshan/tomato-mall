@@ -12,7 +12,7 @@ public class ShopVO {
     private Integer ownerId;
     private String iconUrl;
     private String description;
-    private Double rating;
+    private Double rate;
     private Integer isValid;
 
     public Shop toPO() {
@@ -22,7 +22,7 @@ public class ShopVO {
         shop.setOwnerId(this.ownerId);
         shop.setIconUrl(this.iconUrl);
         shop.setDescription(this.description);
-        shop.setRating(this.rating);
+        shop.setRate(this.rate);
         shop.setIsValid(this.isValid);
         return shop;
     }

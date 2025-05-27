@@ -51,4 +51,4 @@ public class MessageController {
         long count = messageService.getUnreadMessageCount(userId);
         return Response.buildSuccess(count);
     }
-} 
+}
