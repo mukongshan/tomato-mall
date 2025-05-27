@@ -50,7 +50,7 @@ public class Shop {
         vo.setOwnerId(this.ownerId);
         vo.setIconUrl(this.iconUrl);
         vo.setDescription(this.description);
-        vo.setRating(this.rate);
+        vo.setRate(this.rate);
         vo.setIsValid(this.isValid);
         return vo;
     }
