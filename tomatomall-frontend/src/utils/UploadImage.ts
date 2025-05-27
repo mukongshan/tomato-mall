@@ -1,5 +1,5 @@
 import { imageUpload } from "@/api/image";
-import { ElMain, ElMessage, UploadRawFile } from "element-plus";
+import { ElMessage, UploadRawFile } from "element-plus";
 
 export const imageProcess = async (uploadFile: UploadRawFile) => {
     const formData = new FormData();
