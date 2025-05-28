@@ -85,8 +85,12 @@ import static com.example.tomatomall.enums.RoleEnum.*;
             }
             Shop shop = opShop.get();
             Account account = securityUtil.getCurrentAccount();
-            // 只有店主或管理员可以更新店铺信息
-            if ((account.getRole() != SHOPKEEPER&&account.getRole()!=admin) || !Objects.equals(account.getId(), shop.getOwnerId())){
+
+            if ((account.getRole() != SHOPKEEPER && account.getRole()!=admin)){
+                throw TomatoMallException.forbidden();
+            }
+            // 如果是店主且不是店主本人，也不能更新店铺信息
+            if (account.getRole() == SHOPKEEPER && !Objects.equals(account.getId(), shop.getOwnerId())){
                 throw TomatoMallException.forbidden();
             }
             if (shopVO.getName() != null) shop.setName(shopVO.getName());

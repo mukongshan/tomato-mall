@@ -21,8 +21,8 @@ public class AccountVO {
     private RoleEnum role;  // 对应 Account 类中的 role
     private String email;  // 对应 Account 类中的 email
     private String location;  // 对应 Account 类中的 location
-    private int shopId;
-    private int isValidStaff;
+    private Integer shopId;
+    private Integer isValidStaff;
 
     // 将 AccountVO 转换为 Account PO 对象
     public Account toPO() {

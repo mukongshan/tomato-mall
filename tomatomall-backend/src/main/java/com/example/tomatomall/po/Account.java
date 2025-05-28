@@ -56,11 +56,11 @@ public class Account {
 
     @Basic
     @Column(name = "shop_id")
-    private int shopId;
+    private Integer shopId;
 
     @Basic
     @Column(name = "is_valid_staff")
-    private int isValidStaff;
+    private Integer isValidStaff;
 
     public AccountVO toVO() {
         AccountVO accountVO = new AccountVO();

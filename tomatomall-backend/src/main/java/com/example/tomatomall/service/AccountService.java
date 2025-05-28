@@ -5,9 +5,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface AccountService {
+
     AccountVO getAccountInfo(String username);
     String createAccount(AccountVO accountVO);
     String updateAccount(AccountVO accountVO);
     String login(AccountVO accountVO);
     String uploadImg(MultipartFile file);
+    String updateRole(Integer id, String role);
+    String getRole(Integer id);
 }

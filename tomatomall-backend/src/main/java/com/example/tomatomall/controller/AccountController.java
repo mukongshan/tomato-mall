@@ -53,9 +53,20 @@ public class AccountController {
     public Response<String> updateAccount(@RequestBody AccountVO accountVO) {
         return Response.buildSuccess(accountService.updateAccount(accountVO));
     }
+    // 根据id更新用户身份
+    @PutMapping("/role/{id}")
+    public Response<String> updateRole(@PathVariable Integer id, @RequestBody String role) {
+        return Response.buildSuccess(accountService.updateRole(id, role.substring(1, role.length()-1)));
+    }
+    // 根据id获取用户role
+    @GetMapping("/role/{id}")
+    public Response<String> getRole(@PathVariable Integer id) {
+        return Response.buildSuccess(accountService.getRole(id));
+    }
 
     @PostMapping("/image")
     public Response<String> upload(@RequestParam MultipartFile file){
         return Response.buildSuccess(accountService.uploadImg(file));
     }
+
 }

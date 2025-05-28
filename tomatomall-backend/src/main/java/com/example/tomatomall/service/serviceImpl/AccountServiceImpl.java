@@ -1,5 +1,6 @@
 package com.example.tomatomall.service.serviceImpl;
 
+import com.example.tomatomall.enums.RoleEnum;
 import com.example.tomatomall.exception.TomatoMallException;
 import com.example.tomatomall.po.Account;
 import com.example.tomatomall.repository.AccountRepository;
@@ -128,6 +129,19 @@ public class AccountServiceImpl implements AccountService {
         session.setAttribute("currentAccount", account);
 
         return "更新成功";
+    }
+
+    @Override
+    public String updateRole(Integer id, String role) {
+        Account account = accountRepository.findById(id).orElseThrow(() -> TomatoMallException.usernameNotExists());
+        account.setRole(RoleEnum.valueOf(role));
+        accountRepository.save(account);
+        return "更新成功";
+    }
+    @Override
+    public String getRole(Integer id) {
+        Account account = accountRepository.findById(id).orElseThrow(() -> TomatoMallException.usernameNotExists());
+        return account.getRole().name();
     }
 
 
