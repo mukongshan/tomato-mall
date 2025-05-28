@@ -30,6 +30,7 @@ public class ProductVO {
         product.setDescription(this.description);
         product.setCover(this.cover);
         product.setDetail(this.detail);
+        product.setShopId(this.shopId);
 //        for (SpecificationVO specificationVO : specifications) {
 //            Specification specification = specificationVO.toPO();
 //            specificationRepository.save(specification);

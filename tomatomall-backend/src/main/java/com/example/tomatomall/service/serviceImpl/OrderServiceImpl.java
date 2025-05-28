@@ -82,7 +82,7 @@ public class    OrderServiceImpl implements OrderService {
 
             Map<String, Object> result = new HashMap<>();
             result.put("paymentForm", form);
-            result.put("orderId", order.getId());
+            result.put("orderId", order.getOrderId());
             result.put("totalAmount", order.getTotalAmount());
             result.put("paymentMethod", "Alipay");
 
@@ -172,9 +172,9 @@ public class    OrderServiceImpl implements OrderService {
         request.setNotifyUrl(notifyUrl);  // 支付宝异步通知回调地址
 
         Map<String, String> bizContent = new HashMap<>();
-        bizContent.put("out_trade_no", String.valueOf(order.getId()));
+        bizContent.put("out_trade_no", String.valueOf(order.getOrderId()));
         bizContent.put("total_amount", String.valueOf(order.getTotalAmount()));
-        bizContent.put("subject", "订单编号：" + order.getId());
+        bizContent.put("subject", "订单编号：" + order.getOrderId());
         bizContent.put("product_code", "FAST_INSTANT_TRADE_PAY");
 
         // 序列化 Map 为 JSON 字符串

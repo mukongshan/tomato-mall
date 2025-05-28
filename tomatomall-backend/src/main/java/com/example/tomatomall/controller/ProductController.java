@@ -62,4 +62,5 @@ public class ProductController {
         Integer amount = (Integer) body.get("amount");
         return Response.buildSuccess(productService.updateStockpile(productId,amount));
     }
+
 }

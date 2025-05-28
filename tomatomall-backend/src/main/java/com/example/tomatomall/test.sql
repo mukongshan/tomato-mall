@@ -198,7 +198,7 @@
 #     IF NEW.type = 'PRODUCT' THEN
 #         UPDATE products p
 #         SET p.rate = (
-#             SELECT IFNULL(AVG(r.rating), 0.00)
+#             SELECT IFNULL(AVG(r.rate), 0.00)
 #             FROM reviews r
 #             WHERE r.type = 'PRODUCT' AND r.product_id = NEW.product_id
 #         )
@@ -209,7 +209,7 @@
 #     IF NEW.type = 'SHOP' THEN
 #         UPDATE shops s
 #         SET s.rate = (
-#             SELECT IFNULL(AVG(r.rating), 0.00)
+#             SELECT IFNULL(AVG(r.rate), 0.00)
 #             FROM reviews r
 #             WHERE r.type = 'SHOP' AND r.shop_id = NEW.shop_id
 #         )
@@ -229,7 +229,7 @@
 #     IF OLD.type = 'PRODUCT' THEN
 #         UPDATE products p
 #         SET p.rate = (
-#             SELECT IFNULL(AVG(r.rating), 0.00)
+#             SELECT IFNULL(AVG(r.rate), 0.00)
 #             FROM reviews r
 #             WHERE r.type = 'PRODUCT' AND r.product_id = OLD.product_id
 #         )
@@ -240,7 +240,7 @@
 #     IF OLD.type = 'SHOP' THEN
 #         UPDATE shops s
 #         SET s.rate = (
-#             SELECT IFNULL(AVG(r.rating), 0.00)
+#             SELECT IFNULL(AVG(r.rate), 0.00)
 #             FROM reviews r
 #             WHERE r.type = 'SHOP' AND r.shop_id = OLD.shop_id
 #         )
@@ -249,3 +249,5 @@
 # END //
 #
 # DELIMITER ;
+
+

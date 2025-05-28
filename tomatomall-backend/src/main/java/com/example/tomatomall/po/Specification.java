@@ -16,8 +16,8 @@ public class Specification {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private Integer id;
+    @Column(name = "specification_id")
+    private Integer specificationId;
 
     @Basic
     @Column(name = "item", nullable = false)
@@ -36,7 +36,7 @@ public class Specification {
         vo.setItem(this.item);
         vo.setValue(this.value);
         vo.setProductId(this.productId);
-
+        vo.setId(this.specificationId);
         return vo;
     }
 }

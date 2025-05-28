@@ -81,7 +81,7 @@ public class ProductServiceImpl implements ProductService {
 
         if (productVO.getTitle() != null) product.setTitle(productVO.getTitle());
         if (productVO.getPrice() != null) product.setPrice(productVO.getPrice());
-        if (productVO.getRate() != null) product.setRate(productVO.getRate());
+        //if (productVO.getRate() != null) product.setRate(productVO.getRate());
         if (productVO.getDescription() != null) product.setDescription(productVO.getDescription());
         if (productVO.getCover() != null) product.setCover(productVO.getCover());
         if (productVO.getDetail() != null) product.setDetail(productVO.getDetail());

@@ -97,7 +97,7 @@ public class CartServiceImpl implements CartService {
             Product product = productRepository.findById(productId)
                     .orElseThrow(TomatoMallException::productNotExists);
             CartVO itemVO = new CartVO();
-            itemVO.setCartItemId(cart.getId());
+            itemVO.setCartItemId(cart.getCartitemId());
             itemVO.setProductId(product.getId());
             itemVO.setTitle(product.getTitle());
             itemVO.setPrice(product.getPrice());
@@ -128,7 +128,7 @@ public class CartServiceImpl implements CartService {
         for (int i = 0; i < checkRequestVO.cartItemIds.size(); i++){
             Integer cartItemId = checkRequestVO.cartItemIds.get(i);
             CartOrderRelationVO cartOrderRelationVO = new CartOrderRelationVO();
-            cartOrderRelationVO.setOrderId(order.getId());
+            cartOrderRelationVO.setOrderId(order.getOrderId());
             cartOrderRelationVO.setCartItemId(cartItemId);
             cartOrderRelationRepository.save(cartOrderRelationVO.toPO());
         }

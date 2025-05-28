@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.tomatomall.exception.TomatoMallException;
 
 
+import javax.persistence.criteria.CriteriaBuilder;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -36,13 +37,12 @@ import static com.example.tomatomall.enums.RoleEnum.*;
     }
 
     @Override
-    public ShopVO getOwnShop(){
-        int ownerId = securityUtil.getCurrentAccount().getId();
+    public Integer getOwnShopId(Integer ownerId) {
         Shop shop = shopRepository.findByOwnerId(ownerId);
-        if (shop == null){
-            return null;
+        if (shop==null) {
+            return 0; // 如果没有找到店铺，返回null
         }
-        return shop.toVO();
+        return shop.getId();  // 返回第一个店铺的ID
     }
 
     @Override
@@ -50,9 +50,8 @@ import static com.example.tomatomall.enums.RoleEnum.*;
     public String createShop(ShopVO shopVO) {
         try {
             Account account = securityUtil.getCurrentAccount();
-            if ((account.getRole() != CUSTOMER) &&
-                    (account.getRole() != admin)) {
-                // 只有普通用户和管理员可以创建店铺
+            if (account.getRole() != CUSTOMER) {
+                // 只有普通用户可以申请创建店铺
                 throw TomatoMallException.forbidden();
             }
 
@@ -104,6 +103,7 @@ import static com.example.tomatomall.enums.RoleEnum.*;
             throw new RuntimeException("更新失败");
         }
     }
+
 
     @Override
     public String deleteShop(Integer shopId) {

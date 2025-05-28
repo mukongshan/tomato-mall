@@ -16,8 +16,8 @@ public class Stockpile {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private Integer id;
+    @Column(name = "stockpile_id")
+    private Integer stockpileId;
 
     @Basic
     @Column(name = "product_id", nullable = false)
@@ -36,7 +36,7 @@ public class Stockpile {
         vo.setAmount(this.amount);
         vo.setFrozen(this.frozen);
         vo.setProductId(this.productId);
-        vo.setId(this.id);
+        vo.setId(this.stockpileId);
         return vo;
     }
 }

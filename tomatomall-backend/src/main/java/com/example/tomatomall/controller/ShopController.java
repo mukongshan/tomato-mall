@@ -20,10 +20,7 @@ public class ShopController {
         return Response.buildSuccess(shopService.getAllShops());
     }
 
-    @GetMapping("/owner")
-    public Response<ShopVO> getOwnShop() {
-        return Response.buildSuccess(shopService.getOwnShop());
-    }
+
 
     @PostMapping("/create")
     public Response<String> createShop(@RequestBody ShopVO shopVO) {
@@ -44,5 +41,11 @@ public class ShopController {
     @DeleteMapping("/delete/{shopId}")
     public Response<String> deleteShop(@PathVariable Integer shopId) {
         return Response.buildSuccess(shopService.deleteShop(shopId));
+    }
+
+    // 根据ownerId获得商店id
+    @GetMapping("/owner/{ownerId}")
+    public Response<Integer> getOwnShop(@PathVariable Integer ownerId) {
+        return Response.buildSuccess(shopService.getOwnShopId(ownerId));
     }
 } 

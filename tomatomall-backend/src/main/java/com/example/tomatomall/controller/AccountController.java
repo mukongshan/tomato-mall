@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 
 @RestController
@@ -53,6 +54,15 @@ public class AccountController {
     public Response<String> updateAccount(@RequestBody AccountVO accountVO) {
         return Response.buildSuccess(accountService.updateAccount(accountVO));
     }
+
+    /**
+     * 更新用户信息（不需要密码）（需要 token）
+     */
+    @PutMapping("/info")
+    public Response<String> updateAccountWithoutPassword(@RequestBody AccountVO accountVO) {
+        return Response.buildSuccess(accountService.updateAccountWithoutPassword(accountVO));
+    }
+
     // 根据id更新用户身份
     @PutMapping("/role/{id}")
     public Response<String> updateRole(@PathVariable Integer id, @RequestBody String role) {
@@ -63,6 +73,13 @@ public class AccountController {
     public Response<String> getRole(@PathVariable Integer id) {
         return Response.buildSuccess(accountService.getRole(id));
     }
+
+    // 根据shopId获取店铺员工
+    @GetMapping("/shop/{shopId}")
+    public Response<List<AccountVO>> getShopStaff(@PathVariable Integer shopId) {
+        return Response.buildSuccess(accountService.getShopStaff(shopId));
+    }
+
 
     @PostMapping("/image")
     public Response<String> upload(@RequestParam MultipartFile file){
