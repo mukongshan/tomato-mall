@@ -6,6 +6,7 @@ import { Picture } from '@element-plus/icons-vue';
 import { Shop, getShopDetail } from '@/api/shop';
 import { Product, getProductsByShopId } from '@/api/product';
 import router from '@/router';
+import { isCustomer } from '@/components/LoginEvent';
 
 const route = useRoute();
 const shopId = ref<number>(Number(route.params.shopId));
@@ -75,6 +76,7 @@ onMounted(async () => {
                     <el-rate v-model="shopInfo.rate" disabled show-score text-color="#ff9900"
                         score-template="{value} 分" />
                     <p class="shop-description">{{ shopInfo.description }}</p>
+
                 </div>
             </div>
         </div>

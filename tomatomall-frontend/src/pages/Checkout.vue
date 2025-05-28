@@ -15,7 +15,10 @@ const accountInfo = ref<UserDetail>({
     avatar: '',
     telephone: '',
     email: '',
-    location: ''
+    location: '',
+    shopId: 0,
+    isValidStaff: 0
+
 })
 
 const fetchUserDetails = async () => {

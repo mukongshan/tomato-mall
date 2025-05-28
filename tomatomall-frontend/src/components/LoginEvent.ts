@@ -5,7 +5,7 @@ export const isShopOwner = ref(false);
 export const isStaff = ref(false);
 export const isCustomer = ref(false);
 
-export const checkRole = () => {
+export const checkRole = async () => {
     const role = sessionStorage.getItem('role');
     if (role === "admin") {
         isAdmin.value = true;

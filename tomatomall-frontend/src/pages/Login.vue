@@ -48,6 +48,8 @@ const handleLogin = async () => {
                     const userDetail: UserDetail = response.data.data; // 提取 Axios 返回的实际数据
                     sessionStorage.setItem('role', userDetail.role);
                     sessionStorage.setItem('id', String(userDetail.id));
+                    sessionStorage.setItem('shopId', String(userDetail.shopId));
+                    sessionStorage.setItem('isValidStaff', String(userDetail.isValidStaff));
                 } catch (error) {
                     console.error("获取用户详情失败:", error);
                 }

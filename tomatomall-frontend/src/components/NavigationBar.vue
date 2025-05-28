@@ -4,7 +4,7 @@ import { ElMenu, ElMenuItem } from "element-plus";
 import { HomeFilled, ShoppingCart, Shop, Setting, User, Bell, SwitchButton, Edit, CirclePlus } from '@element-plus/icons-vue'
 import router from "@/router";
 import { isLogin, checkRole, isAdmin, isShopOwner, isStaff, isCustomer } from "./LoginEvent";
-import { getUserDetails } from "@/api/account";
+import { getUserDetails, getUserRoleById } from "@/api/account";
 
 const checkLogin = () => {
     const token = sessionStorage.getItem('token');
@@ -22,14 +22,25 @@ const Logout = () => {
     isLogin.value = false;
     router.push("/login"); // 跳转到登录页面
 };
-const navigateToMyShop = async () => {
-    const username = sessionStorage.getItem('username') as string;
-    const response = await getUserDetails(username);
-    const id = response.data.data.id;
+// const navigateToMyShop = async () => {
+//     const username = sessionStorage.getItem('username') as string;
+//     const response = await getUserDetails(username);
+//     const id = response.data.data.id;
+// };
+
+const checkChange = async () => {
+    if (!isLogin.value) return;
+    const role = sessionStorage.getItem('role');
+    const trueRole = await getUserRoleById(Number(sessionStorage.getItem('id')));
+    if (role !== trueRole.data.data) {
+        sessionStorage.setItem('role', trueRole.data.data);
+        checkRole();
+    }
 };
 
 onMounted(checkLogin);
 onMounted(checkRole);
+onMounted(checkChange);
 </script>
 
 <template>
@@ -78,12 +89,25 @@ onMounted(checkRole);
                         </el-icon>
                         <span>我要开店</span>
                     </el-menu-item>
+
                     <el-menu-item index="/user">
                         <el-icon>
                             <User />
                         </el-icon>
                         <span>个人中心</span>
                     </el-menu-item>
+
+                    <el-sub-menu index="mine" v-if="isAdmin || isShopOwner || isStaff">
+                        <template #title>
+                            <el-icon>
+                                <Setting />
+                            </el-icon>
+                            <span>我的</span>
+                        </template>
+                        <el-menu-item index="/user">个人中心</el-menu-item>
+                        <el-menu-item @click="navigateToMyShop" v-if="isShopOwner">我的店铺</el-menu-item>
+                    </el-sub-menu>
+
                     <el-menu-item>
                         <el-icon>
                             <Bell />

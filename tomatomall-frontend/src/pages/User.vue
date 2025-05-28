@@ -18,7 +18,9 @@ const userInfo = ref<UserDetail>({
     avatar: '',
     telephone: '',
     email: '',
-    location: ''
+    location: '',
+    shopId: 0,
+    isValidStaff: 0
 })
 
 const username = sessionStorage.getItem('username') as string

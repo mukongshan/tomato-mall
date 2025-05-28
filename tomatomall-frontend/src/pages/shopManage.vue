@@ -5,6 +5,9 @@ import { Shop, getShopList, updateShop, deleteShop } from '@/api/shop';
 import router from '@/router';
 
 import { Picture } from '@element-plus/icons-vue';
+import { getUserRoleById, updateUserRole } from '@/api/account';
+import { checkRole } from '@/components/LoginEvent';
+
 
 // 数据状态
 const pendingShops = ref<Shop[]>([]);  // 待审核店铺列表
@@ -44,6 +47,14 @@ const handleApprove = async (shop: Shop) => {
 
         // 更新店铺状态为已通过(1)
         const updatedShop = { ...shop, isValid: 1 };
+        // 把用户身份更新为店主
+        const userRole = await getUserRoleById(shop.ownerId);
+        console.log('User Role:', userRole.data.data);
+        if (userRole.data.data == "CUSTOMER") {
+            await updateUserRole(shop.ownerId, 'SHOPKEEPER');
+            await checkRole(); // 更新角色状态
+        }
+        // 更新店铺信息
         await updateShop(updatedShop);
         ElMessage.success('店铺已成功通过审核');
         fetchShops(); // 刷新列表

@@ -11,7 +11,9 @@ export interface UserDetail {
     avatar: string,
     telephone: string,
     email: string,
-    location: string
+    location: string,
+    shopId: number,
+    isValidStaff: number
 }
 
 // 账户类型（包含密码）
@@ -42,5 +44,15 @@ export const login = async (login: LoginCredentials) => {
 
 export const updateUser = async (account: AccountDetail) => {
     return await axios.put(`${ACCOUNT_MODULE}`, account,
+        { headers: { 'Content-Type': 'application/json' } });
+}
+//通过id更新用户身份
+export const updateUserRole = async (id: number, role: UserRole) => {
+    return await axios.put(`${ACCOUNT_MODULE}/role/${id}`, role,
+        { headers: { 'Content-Type': 'application/json' } });
+}
+// 根据id获取用户role
+export const getUserRoleById = async (id: number) => {
+    return await axios.get(`${ACCOUNT_MODULE}/role/${id}`,
         { headers: { 'Content-Type': 'application/json' } });
 }
