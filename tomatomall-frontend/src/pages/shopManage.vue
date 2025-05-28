@@ -52,7 +52,6 @@ const handleApprove = async (shop: Shop) => {
         console.log('User Role:', userRole.data.data);
         if (userRole.data.data == "CUSTOMER") {
             await updateUserRole(shop.ownerId, 'SHOPKEEPER');
-            await checkRole(); // 更新角色状态
         }
         // 更新店铺信息
         await updateShop(updatedShop);

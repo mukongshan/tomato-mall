@@ -4,7 +4,8 @@ import { ElMenu, ElMenuItem } from "element-plus";
 import { HomeFilled, ShoppingCart, Shop, Setting, User, Bell, SwitchButton, Edit, CirclePlus } from '@element-plus/icons-vue'
 import router from "@/router";
 import { isLogin, checkRole, isAdmin, isShopOwner, isStaff, isCustomer } from "./LoginEvent";
-import { getUserDetails, getUserRoleById } from "@/api/account";
+import { getUserRoleById } from "@/api/account";
+import { getShopIdByOwnerId } from "@/api/shop";
 
 const checkLogin = () => {
     const token = sessionStorage.getItem('token');
@@ -22,11 +23,11 @@ const Logout = () => {
     isLogin.value = false;
     router.push("/login"); // 跳转到登录页面
 };
-// const navigateToMyShop = async () => {
-//     const username = sessionStorage.getItem('username') as string;
-//     const response = await getUserDetails(username);
-//     const id = response.data.data.id;
-// };
+const navigateToMyShop = async () => {
+    const id = sessionStorage.getItem('id');
+    const shopId = await getShopIdByOwnerId(Number(id));
+    router.push(`/myshop/${shopId.data.data}`);
+};
 
 const checkChange = async () => {
     if (!isLogin.value) return;
@@ -83,7 +84,7 @@ onMounted(checkChange);
             <!-- 右侧 -->
             <div class="right-menu">
                 <template v-if="isLogin">
-                    <el-menu-item index="/shopCreate" v-if="isAdmin || isCustomer">
+                    <el-menu-item index="/shopCreate" v-if="isCustomer">
                         <el-icon>
                             <CirclePlus />
                         </el-icon>

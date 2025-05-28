@@ -33,3 +33,8 @@ export const updateShop = async (shop: Shop) => {
 export const deleteShop = async (shopId: number) => {
     return await axios.delete(`${SHOP_MODULE}/delete/${shopId}`);
 };
+
+// 根据ownerId获取对应的店铺
+export const getShopIdByOwnerId = async (ownerId: number) => {
+    return await axios.get(`${SHOP_MODULE}/owner/${ownerId}`);
+};

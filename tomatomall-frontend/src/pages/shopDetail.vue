@@ -7,6 +7,7 @@ import { Shop, getShopDetail } from '@/api/shop';
 import { Product, getProductsByShopId } from '@/api/product';
 import router from '@/router';
 import { isCustomer } from '@/components/LoginEvent';
+import { getUserDetails, updateUserInfo, UserDetail } from '@/api/account';
 
 const route = useRoute();
 const shopId = ref<number>(Number(route.params.shopId));
@@ -46,6 +47,24 @@ onMounted(async () => {
     await Promise.all([fetchShopDetail(), fetchShopProducts()]);
 });
 
+const handleApplyForStaff = async () => {
+    const username = sessionStorage.getItem('username') as string;
+    const userDetail = await getUserDetails(username);
+    const updateUser = {
+        ...userDetail.data.data,
+        isValidStaff: 0, // 设置为待审核状态
+        shopId: shopInfo.value?.shopId
+    } as unknown as UserDetail;
+    console.log('申请成为店员的用户信息:', updateUser);
+    try {
+        await updateUserInfo(updateUser);
+        ElMessage.success('申请已提交，请等待审核');
+    } catch (error) {
+        ElMessage.error('申请提交失败，请稍后重试');
+        console.error(error);
+    }
+};
+
 </script>
 
 <template>
@@ -76,6 +95,14 @@ onMounted(async () => {
                     <el-rate v-model="shopInfo.rate" disabled show-score text-color="#ff9900"
                         score-template="{value} 分" />
                     <p class="shop-description">{{ shopInfo.description }}</p>
+
+                    <!-- 新增：申请成为店员按钮 -->
+                    <div class="apply-section" v-if="isCustomer">
+                        <el-button type="primary" @click="handleApplyForStaff">
+                            申请成为店员
+                        </el-button>
+                        <p class="apply-tip">审核通过后即可参与店铺管理</p>
+                    </div>
 
                 </div>
             </div>
@@ -131,6 +158,19 @@ onMounted(async () => {
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
+}
+
+/* 新增样式 */
+.apply-section {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.apply-tip {
+    font-size: 12px;
+    color: #909399;
+    margin-top: 8px;
 }
 
 /* 店铺信息样式 */
