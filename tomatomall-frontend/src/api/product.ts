@@ -11,6 +11,7 @@ export interface Product {
     cover: string;
     detail: string;
     specifications: Specification[];
+    shopId: number; // 店铺ID
 }
 
 // 商品规格说明
@@ -33,6 +34,7 @@ export interface Stockpile {
 export const getProductsList = async () => {
     return await axios.get(`${PRODUCT_MODULE}`);
 }
+
 // 通过商品ID获取单个商品
 export const getProduct = async (productId: number) => {
     return await axios.get(`${PRODUCT_MODULE}/${productId}`);

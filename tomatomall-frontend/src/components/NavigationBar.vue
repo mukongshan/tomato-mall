@@ -4,7 +4,7 @@ import { ElMenu, ElMenuItem } from "element-plus";
 import { HomeFilled, ShoppingCart, Shop, Setting, User, Bell, SwitchButton, Edit, CirclePlus } from '@element-plus/icons-vue'
 import router from "@/router";
 import { isLogin, checkRole, isAdmin, isShopOwner, isStaff, isCustomer } from "./LoginEvent";
-import { getUserRoleById } from "@/api/account";
+import { getUserDetails, getUserRoleById } from "@/api/account";
 import { getShopIdByOwnerId } from "@/api/shop";
 
 const checkLogin = () => {
@@ -37,6 +37,20 @@ const checkChange = async () => {
         sessionStorage.setItem('role', trueRole.data.data);
         checkRole();
     }
+};
+
+const navigateToWarehouse = async () => {
+    if (!isLogin.value) return;
+    const id = sessionStorage.getItem('id') as string;
+    let shopId = 0;
+    if (isStaff.value) {
+        shopId = await getUserDetails(id).then(res => res.data.data.shopId);
+    }
+    if (isShopOwner.value) {
+        shopId = await getShopIdByOwnerId(Number(id)).then(res => res.data.data);
+    }
+
+    router.push(`/warehouse/${shopId}`);
 };
 
 onMounted(checkLogin);
@@ -75,7 +89,7 @@ onMounted(checkChange);
                         </el-icon>
                         <span>管理</span>
                     </template>
-                    <el-menu-item index="/warehouse">商品管理</el-menu-item>
+                    <el-menu-item v-if="isShopOwner || isStaff" @click="navigateToWarehouse">商品管理</el-menu-item>
                     <el-menu-item index="/shopManage" v-if="isAdmin">商店管理</el-menu-item>
                     <el-menu-item index="/advertisements" v-if="isAdmin || isShopOwner">广告管理</el-menu-item>
                 </el-sub-menu>

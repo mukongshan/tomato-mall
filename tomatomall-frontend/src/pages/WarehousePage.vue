@@ -1,12 +1,19 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { ElMessageBox, ElMessage, UploadProps, UploadFile } from "element-plus";
-import { Product, Stockpile } from "@/api/product.ts"
-import { getProductsList, addProduct, deleteProduct, updateProduct } from "@/api/product.ts"
+import { getProductsByShopId, Product, Stockpile } from "@/api/product.ts"
+import { addProduct, deleteProduct, updateProduct } from "@/api/product.ts"
 import { updateStockpile, getStockpile } from "@/api/product.ts"
 import router from "@/router/index.ts"
 import { imageProcess } from "@/utils/UploadImage";
 import { Plus, Picture } from '@element-plus/icons-vue';
+import { useRoute } from "vue-router";
+
+const route = useRoute();
+const shopId = ref<number>(Number(route.params.id)); // 获取路由参数中的 shopId
+
+
+
 
 // 1. 商品规格表
 // 2. 图片上传
@@ -29,7 +36,8 @@ const editProduct = ref<Product>({
     description: '',
     cover: '',
     detail: '',
-    specifications: []
+    specifications: [],
+    shopId: shopId.value // 使用路由参数中的 shopId
 });
 
 // 添加新规格
@@ -60,7 +68,8 @@ const handleAdd = async () => {
         description: '',
         cover: '',
         detail: '',
-        specifications: []
+        specifications: [],
+        shopId: shopId.value // 使用路由参数中的 shopId
     };
     dialogProductVisible.value = true;
 }
@@ -166,7 +175,7 @@ const getStockpileAmount = (productId: number): number => {
 
 const pageInit = async () => {
     // 这里是异步请求 但是for是同步的 所以会先执行完for循环 再执行异步请求 所以导致无法获取库存数据
-    await getProductsList().then(res => {
+    await getProductsByShopId(shopId.value).then(res => {
         if (res.data.code === '200') {
             products.value = res.data.data;
 
@@ -281,9 +290,7 @@ pageInit();
                 <el-input-number v-model="editProduct.price" :min="0" :precision="2" />
             </el-form-item>
 
-            <el-form-item label="商品评分">
-                <el-input-number v-model="editProduct.rate" :min="0" :max="10.0" :precision="1" />
-            </el-form-item>
+
 
             <el-form-item label="商品描述">
                 <el-input v-model="editProduct.description" type="textarea" :rows="3" />
