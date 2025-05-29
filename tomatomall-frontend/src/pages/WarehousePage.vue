@@ -11,10 +11,6 @@ import { useRoute } from "vue-router";
 
 const route = useRoute();
 const shopId = ref<number>(Number(route.params.id)); // 获取路由参数中的 shopId
-
-
-
-
 // 1. 商品规格表
 // 2. 图片上传
 

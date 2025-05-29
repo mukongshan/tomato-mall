@@ -1,11 +1,39 @@
 <script setup lang="ts">
-import { onMounted } from "vue";
-import { ElMenu, ElMenuItem } from "element-plus";
+import { onMounted, ref } from "vue";
+import { ElMenu, ElMenuItem, ElPopover, ElTabPane, ElTabs, ElBadge, ElMessage } from "element-plus";
 import { HomeFilled, ShoppingCart, Shop, Setting, User, Bell, SwitchButton, Edit, CirclePlus } from '@element-plus/icons-vue'
 import router from "@/router";
-import { isLogin, checkRole, isAdmin, isShopOwner, isStaff, isCustomer } from "./LoginEvent";
+import { isLogin, checkRole, isAdmin, isShopOwner, isStaff, isCustomer, messageLoad, unreadCount, receivedMessages, sentMessages } from "./LoginEvent";
 import { getUserDetails, getUserRoleById } from "@/api/account";
 import { getShopIdByOwnerId } from "@/api/shop";
+import { markMessageAsRead, Message } from "@/api/message";
+
+
+const messagePopoverVisible = ref(false);
+
+
+
+const NavigateToMessage = (message: Message) => {
+    if (message.content === "NEW_EMPLOYEE_APPLICATION") {
+        navigateToMyShop();
+    } else if (message.content === "NEW_STORE_APPLICATION") {
+        router.push("/shopManage");
+    } else if (message.content === "LOW_INVENTORY") {
+        navigateToWarehouse();
+    } else if (message.content === "APPLICATION_APPROVED") {
+        ElMessage.success({
+            'message': "恭喜,申请已通过",
+            'duration': 2000,
+        });
+        navigateToWarehouse();
+    } else if (message.content === "APPLICATION_REJECTED") {
+        ElMessage.info("申请未通过");
+    } else if (message.content === "YOU_ARE_FIRED") {
+        ElMessage.error("您已被解雇,请不要灰心");
+    } else {
+        ElMessage.warning("未知消息类型");
+    }
+};
 
 const checkLogin = () => {
     const token = sessionStorage.getItem('token');
@@ -21,8 +49,9 @@ const Logout = () => {
     sessionStorage.removeItem('username');
     sessionStorage.removeItem('role');
     isLogin.value = false;
-    router.push("/login"); // 跳转到登录页面
+    router.push("/login");
 };
+
 const navigateToMyShop = async () => {
     const id = sessionStorage.getItem('id');
     const shopId = await getShopIdByOwnerId(Number(id));
@@ -49,13 +78,20 @@ const navigateToWarehouse = async () => {
     if (isShopOwner.value) {
         shopId = await getShopIdByOwnerId(Number(id)).then(res => res.data.data);
     }
-
     router.push(`/warehouse/${shopId}`);
 };
+
+const markAsRead = async (messageId: number) => {
+    await markMessageAsRead(messageId);
+    // 重新加载消息
+    await messageLoad();
+};
+
 
 onMounted(checkLogin);
 onMounted(checkRole);
 onMounted(checkChange);
+onMounted(messageLoad);
 </script>
 
 <template>
@@ -123,12 +159,50 @@ onMounted(checkChange);
                         <el-menu-item @click="navigateToMyShop" v-if="isShopOwner">我的店铺</el-menu-item>
                     </el-sub-menu>
 
-                    <el-menu-item>
-                        <el-icon>
-                            <Bell />
-                        </el-icon>
-                        <span>消息</span>
-                    </el-menu-item>
+                    <!-- 消息通知改为Popover -->
+                    <el-popover v-model:visible="messagePopoverVisible" placement="bottom-end" :width="400"
+                        trigger="hover">
+                        <template #reference>
+                            <div class="message-trigger">
+                                <el-badge :value="unreadCount" :max="99" class="badge-item">
+                                    <el-icon :size="20">
+                                        <Bell />
+                                    </el-icon>
+                                </el-badge>
+                            </div>
+                        </template>
+
+                        <el-tabs type="border-card" stretch>
+                            <el-tab-pane label="收到的消息">
+                                <div class="message-list">
+                                    <div v-for="message in receivedMessages" :key="'received-' + message.id"
+                                        class="message-item" :class="{ 'unread': !message.isRead }"
+                                        @click="!message.isRead && markAsRead(message.id)">
+                                        <div class="message-content" @click="NavigateToMessage(message)">
+                                            {{ message.content }}
+                                        </div>
+                                        <div class="message-time">{{ message.createdTime }}</div>
+                                    </div>
+                                    <div v-if="receivedMessages.length === 0" class="empty-message">
+                                        暂无消息
+                                    </div>
+                                </div>
+                            </el-tab-pane>
+                            <el-tab-pane label="发出的消息">
+                                <div class="message-list">
+                                    <div v-for="message in sentMessages" :key="'sent-' + message.id"
+                                        class="message-item">
+                                        <div class="message-content">{{ message.content }}</div>
+                                        <div class="message-time">{{ message.createdTime }}</div>
+                                    </div>
+                                    <div v-if="sentMessages.length === 0" class="empty-message">
+                                        暂无消息
+                                    </div>
+                                </div>
+                            </el-tab-pane>
+                        </el-tabs>
+                    </el-popover>
+
                     <el-menu-item @click="Logout">
                         <el-icon>
                             <SwitchButton />
@@ -167,7 +241,6 @@ onMounted(checkChange);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* el-menu整体样式 */
 .nav-bar {
     position: relative;
     height: 60px;
@@ -175,12 +248,10 @@ onMounted(checkChange);
     white-space: nowrap;
 }
 
-/* 左侧按钮正常流 */
 .left-item {
     float: left;
 }
 
-/* 中间菜单用绝对定位，水平居中 */
 .center-menu {
     position: absolute;
     left: 50%;
@@ -193,7 +264,6 @@ onMounted(checkChange);
     gap: 10px;
 }
 
-/* 右侧菜单用绝对定位靠右 */
 .right-menu {
     position: absolute;
     right: 20px;
@@ -204,7 +274,6 @@ onMounted(checkChange);
     gap: 10px;
 }
 
-/* 统一菜单项高度 */
 .el-menu-item,
 .el-sub-menu__title {
     height: 60px !important;
@@ -213,5 +282,62 @@ onMounted(checkChange);
     align-items: center;
     font-weight: 500;
     font-size: 14px;
+}
+
+/* 消息触发器样式 */
+.message-trigger {
+    display: flex;
+    align-items: center;
+    height: 60px;
+    padding: 0 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.message-trigger:hover {
+    color: var(--el-color-primary);
+}
+
+.badge-item {
+    margin-top: 4px;
+}
+
+/* 消息列表样式 */
+.message-list {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 8px 0;
+}
+
+.message-item {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--el-border-color-light);
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.message-item:hover {
+    background-color: var(--el-color-primary-light-9);
+}
+
+.message-item.unread {
+    background-color: var(--el-color-primary-light-9);
+    font-weight: 500;
+}
+
+.message-content {
+    margin-bottom: 4px;
+    line-height: 1.5;
+}
+
+.message-time {
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+}
+
+.empty-message {
+    padding: 16px;
+    text-align: center;
+    color: var(--el-text-color-secondary);
 }
 </style>

@@ -8,10 +8,11 @@ import { Product, getProductsByShopId } from '@/api/product';
 import router from '@/router';
 import { isCustomer } from '@/components/LoginEvent';
 import { getUserDetails, updateUserInfo, UserDetail } from '@/api/account';
+import { Message, sendMessage } from '@/api/message';
 
 const route = useRoute();
 const shopId = ref<number>(Number(route.params.shopId));
-const shopInfo = ref<Shop | null>(null);
+const shopInfo = ref<Shop>();
 const products = ref<Product[]>([]);
 const loading = ref(true);
 
@@ -53,8 +54,19 @@ const handleApplyForStaff = async () => {
     const updateUser = {
         ...userDetail.data.data,
         isValidStaff: 0, // 设置为待审核状态
-        shopId: shopInfo.value?.shopId
+        shopId: (shopInfo.value as Shop).shopId
     } as unknown as UserDetail;
+    // 发送申请成为店员的消息
+    const message: Message = {
+        id: 0,
+        isRead: false,
+        fromUser: userDetail.data.data.id,
+        toUser: (shopInfo.value as Shop).ownerId,
+        content: "NEW_EMPLOYEE_APPLICATION",
+        createdTime: new Date().getTime().toString()
+    };
+    await sendMessage(message);
+
     console.log('申请成为店员的用户信息:', updateUser);
     try {
         await updateUserInfo(updateUser);
@@ -103,6 +115,8 @@ const handleApplyForStaff = async () => {
                         </el-button>
                         <p class="apply-tip">审核通过后即可参与店铺管理</p>
                     </div>
+
+
 
                 </div>
             </div>

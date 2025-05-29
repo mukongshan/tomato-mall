@@ -6,6 +6,8 @@ import { UploadFile, UploadProps, ElLoading } from 'element-plus';
 import { imageProcess } from "@/utils/UploadImage.ts";
 import router from "../router/index.ts";
 import { Plus } from "@element-plus/icons-vue";
+import { getAdmin } from '@/api/account.ts';
+import { Message, sendMessage } from '@/api/message.ts';
 
 // 表单数据（根据你的接口调整）
 const form = ref<Shop>({
@@ -57,9 +59,19 @@ const handleCreate = async () => {
     })
     try {
         const response = await createShop(form.value);
+        const adminId = (await getAdmin()).data.data;
+        const message: Message = {
+            id: 0,
+            content: "NEW_STORE_APPLICATION",
+            isRead: false,
+            fromUser: adminId,
+            toUser: form.value.ownerId,
+            createdTime: new Date().toISOString()
+        };
+        await sendMessage(message);
         console.log(response)
         if (response.data.code === '200') {
-            ElMessage.success("创建成功")
+            ElMessage.success("创建成功 请等待审核")
             await router.push("/")
         } else {
             ElMessage.warning(response.data.data);

@@ -4,7 +4,8 @@ import { ComponentSize, ElLoading, ElMessage, FormInstance, FormRules } from 'el
 import router from "../router/index.ts";
 import { getUserDetails, LoginCredentials, UserDetail } from "@/api/account";
 import { login } from "@/api/account";
-import { isLogin, checkRole } from '@/components/LoginEvent.ts';
+import { isLogin, checkRole, messageLoad } from '@/components/LoginEvent.ts';
+
 
 // 表单尺寸
 const formSize = ref<ComponentSize>('default')
@@ -55,6 +56,7 @@ const handleLogin = async () => {
                 }
                 isLogin.value = true; // 更新登录状态
                 checkRole(); // 检查用户角色
+                messageLoad(); // 重新加载消息
                 await router.push("/user") // 跳转到首页或其他页面
             } else {
                 ElMessage.warning(response.data.message || "登录失败");

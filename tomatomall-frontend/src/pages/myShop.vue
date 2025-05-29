@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import { ElMessage, ElMessageBox, ElTag } from 'element-plus';
+import { ElMessage, ElMessageBox, ElTag, } from 'element-plus';
 import { Shop, getShopDetail } from '@/api/shop';
-import { UserDetail, UserRole, getUserListByShopId, updateUserInfo } from '@/api/account';
+import { UserDetail, getUserListByShopId, updateUserInfo } from '@/api/account';
 import { Picture, Clock, User } from '@element-plus/icons-vue';
+import router from '@/router';
+import { Message, sendMessage } from '@/api/message';
 
 const route = useRoute();
 const shopId = ref<number>(Number(route.params.id));
@@ -62,6 +64,15 @@ const handleStaffApprove = async (userId: number) => {
 
         const updatedUser = { ...userDetail, role: 'STAFF', isValidStaff: 1 } as UserDetail;
 
+        const message: Message = {
+            id: 0,
+            content: "APPLICATION_APPROVED",
+            isRead: false,
+            fromUser: Number(sessionStorage.getItem('id')),
+            toUser: userId,
+            createdTime: new Date().toISOString()
+        };
+        await sendMessage(message);
         await updateUserInfo(updatedUser);
         ElMessage.success('员工已通过审核')
         fetchStaffList(); // 刷新员工列表
@@ -83,6 +94,15 @@ const handleStaffReject = async (userId: number) => {
         const userDetail = pendingStaffList.value.find(user => user.id === userId)
         const updatedUser = { ...userDetail, role: 'CUSTOMER', shopId: null, isValidStaff: 0 } as unknown as UserDetail;
 
+        const message: Message = {
+            id: 0,
+            content: "APPLICATION_REJECTED",
+            isRead: false,
+            fromUser: Number(sessionStorage.getItem('id')),
+            toUser: userId,
+            createdTime: new Date().toISOString()
+        };
+        await sendMessage(message);
         await updateUserInfo(updatedUser);
         ElMessage.success('已拒绝员工申请')
         fetchStaffList(); // 刷新员工列表
@@ -104,6 +124,15 @@ const handleStaffFire = async (userId: number) => {
         const userDetail = staffList.value.find(user => user.id === userId)
         const updatedUser = { ...userDetail, role: 'CUSTOMER', shopId: null, isValidStaff: 0 } as unknown as UserDetail;
 
+        const message: Message = {
+            id: 0,
+            content: "YOU_ARE_FIRED",
+            isRead: false,
+            fromUser: Number(sessionStorage.getItem('id')),
+            toUser: userId,
+            createdTime: new Date().toISOString()
+        };
+        await sendMessage(message);
         await updateUserInfo(updatedUser);
         ElMessage.success('已解雇员工')
         fetchStaffList(); // 刷新员工列表
@@ -142,6 +171,11 @@ onMounted(async () => {
                     <div class="shop-meta">
                         <el-tag type="info">店铺ID: {{ shopInfo.shopId }}</el-tag>
                         <el-tag type="success">店主ID: {{ shopInfo.ownerId }}</el-tag>
+                    </div>
+                    <div class="apply-section">
+                        <el-button type="primary" @click="router.push(`/warehouse/${shopId}`)">
+                            商品管理
+                        </el-button>
                     </div>
                 </div>
             </div>
@@ -209,6 +243,12 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+.apply-section {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
 .my-shop-container {
     max-width: 1200px;
     margin: 0 auto;

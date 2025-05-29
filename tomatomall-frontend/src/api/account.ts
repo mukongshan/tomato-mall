@@ -68,3 +68,9 @@ export const getUserListByShopId = async (shopId: number) => {
     return await axios.get(`${ACCOUNT_MODULE}/shop/${shopId}`,
         { headers: { 'Content-Type': 'application/json' } });
 }
+
+// 获取管理员
+export const getAdmin = async () => {
+    return await axios.get(`${ACCOUNT_MODULE}/fetchAdmin`,
+        { headers: { 'Content-Type': 'application/json' } });
+}
