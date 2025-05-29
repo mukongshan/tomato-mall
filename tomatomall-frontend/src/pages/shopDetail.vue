@@ -8,13 +8,20 @@ import { Product, getProductsByShopId } from '@/api/product';
 import router from '@/router';
 import { isCustomer } from '@/components/LoginEvent';
 import { getUserDetails, updateUserInfo, UserDetail } from '@/api/account';
-import { Message, sendMessage } from '@/api/message';
+import { getMessageByFromUserAndContent, Message, sendMessage } from '@/api/message';
 
 const route = useRoute();
 const shopId = ref<number>(Number(route.params.shopId));
 const shopInfo = ref<Shop>();
 const products = ref<Product[]>([]);
 const loading = ref(true);
+const applied = ref(false);
+
+
+const checkEmployeeStatus = async () => {
+    const response = await getMessageByFromUserAndContent(Number(sessionStorage.getItem('id')), "NEW_EMPLOYEE_APPLICATION");
+    return response.data.data;
+};
 
 // 获取店铺详情
 const fetchShopDetail = async () => {
@@ -46,6 +53,7 @@ const gotoProductDetail = (productId: number) => {
 };
 onMounted(async () => {
     await Promise.all([fetchShopDetail(), fetchShopProducts()]);
+    applied.value = await checkEmployeeStatus();
 });
 
 const handleApplyForStaff = async () => {
@@ -110,7 +118,12 @@ const handleApplyForStaff = async () => {
 
                     <!-- 新增：申请成为店员按钮 -->
                     <div class="apply-section" v-if="isCustomer">
-                        <el-button type="primary" @click="handleApplyForStaff">
+
+                        <el-button v-if="applied" disabled type="info">
+                            您已有店员申请
+                        </el-button>
+
+                        <el-button v-else type="primary" @click="handleApplyForStaff">
                             申请成为店员
                         </el-button>
                         <p class="apply-tip">审核通过后即可参与店铺管理</p>

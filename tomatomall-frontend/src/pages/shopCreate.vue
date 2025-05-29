@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { componentSizes, ElMessage } from 'element-plus';
 import { Shop, createShop } from '@/api/shop';
 import { UploadFile, UploadProps, ElLoading } from 'element-plus';
@@ -7,7 +7,7 @@ import { imageProcess } from "@/utils/UploadImage.ts";
 import router from "../router/index.ts";
 import { Plus } from "@element-plus/icons-vue";
 import { getAdmin } from '@/api/account.ts';
-import { Message, sendMessage } from '@/api/message.ts';
+import { getMessageByFromUserAndContent, Message, sendMessage } from '@/api/message.ts';
 
 // 表单数据（根据你的接口调整）
 const form = ref<Shop>({
@@ -20,6 +20,11 @@ const form = ref<Shop>({
     isValid: 0,
 });
 
+const applied = ref(false);
+const checkEmployeeStatus = async () => {
+    const response = await getMessageByFromUserAndContent(Number(sessionStorage.getItem('id')), "NEW_STORE_APPLICATION");
+    return response.data.data;
+};
 
 // 图片验证
 const beforeLogoUpload: UploadProps['beforeUpload'] = (rawFile) => {
@@ -82,6 +87,11 @@ const handleCreate = async () => {
         loading.close()
     }
 }
+
+onMounted(async () => {
+    applied.value = await checkEmployeeStatus();
+});
+
 </script>
 
 <template>
@@ -121,7 +131,10 @@ const handleCreate = async () => {
             </el-form-item>
 
             <el-form-item class="button-group">
-                <el-button plain type="primary" @click="handleCreate">
+                <el-button v-if="applied" disabled type="info">
+                    您已有商店申请
+                </el-button>
+                <el-button v-else plain type="primary" @click="handleCreate">
                     创建商店
                 </el-button>
             </el-form-item>

@@ -46,3 +46,12 @@ export const deleteMessage = async (messageId: number) => {
 export const getUnreadMessageCount = async (userId: number) => {
     return await axios.get(`${MESSAGE_MODULE}/unread-count/${userId}`);
 }
+
+export const getMessageByFromUserAndContent = async (fromUserId: number, content: messageContentType) => {
+    return await axios.get(`${MESSAGE_MODULE}/query`, {
+        params: {
+            fromUserId,
+            content
+        }
+    });
+}
