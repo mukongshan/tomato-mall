@@ -188,6 +188,7 @@ public class ProductServiceImpl implements ProductService {
         return "减少库存成功";
     }
 
+
     @Override
     public String reduceStockpileByOrder(String orderIdStr) {
         int orderId = Integer.parseInt(orderIdStr);
@@ -198,6 +199,7 @@ public class ProductServiceImpl implements ProductService {
         // 2. 遍历每一项关系
         for (CartOrderRelation relation : relationList) {
             Integer cartItemId = relation.getCartItemId();
+
 
             // 3. 查找对应 Cart
             Optional<Cart> opCart = cartRepository.findById(cartItemId);
