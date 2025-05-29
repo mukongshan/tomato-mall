@@ -1,16 +1,18 @@
 package com.example.tomatomall.service.serviceImpl;
 
-import com.alipay.api.domain.Car;
 import com.example.tomatomall.exception.TomatoMallException;
 import com.example.tomatomall.po.*;
 import com.example.tomatomall.repository.*;
+import com.example.tomatomall.service.MessageService;
 import com.example.tomatomall.service.ProductService;
 import com.example.tomatomall.util.OssUtil;
+import com.example.tomatomall.vo.MessageVO;
 import com.example.tomatomall.vo.ProductVO;
 import com.example.tomatomall.vo.SpecificationVO;
 import com.example.tomatomall.vo.StockpileVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import java.time.LocalDateTime;
 
 import javax.annotation.Resource;
 import javax.transaction.Transactional;
@@ -39,6 +41,14 @@ public class ProductServiceImpl implements ProductService {
 
     @Resource
     private CartOrderRelationRepository cartOrderRelationRepository;
+
+    @Resource
+    private ShopRepository shopRepository;
+
+    @Resource
+    private MessageService messageService;
+
+    private int stockpileAlert = 20;
 
     @Override
     public List<ProductVO> getAllProducts() {
@@ -132,6 +142,7 @@ public class ProductServiceImpl implements ProductService {
         return stockpile.toVO();
     }
 
+    
     @Override
     public String updateStockpile(int id,int amount) {
         Stockpile stockpile = stockpileRepository.findByProductId(id);
@@ -140,6 +151,27 @@ public class ProductServiceImpl implements ProductService {
         }
         stockpile.setAmount(amount);
         stockpileRepository.save(stockpile);
+        if (amount <= stockpileAlert){
+            Optional<Product> opProduct = productRepository.findById(stockpile.getProductId());
+            if (!opProduct.isPresent()){
+                throw TomatoMallException.productNotExists();
+            }
+            Product product = opProduct.get();
+            Optional<Shop> opShop = shopRepository.findById(product.getShopId());
+            if (!opShop.isPresent()){
+                throw TomatoMallException.shopNotExists();
+            }
+            Shop shop = opShop.get();
+            int ownerId = shop.getOwnerId();
+
+            MessageVO messageVO = new MessageVO();
+            messageVO.setContent("LOW_INVENTORY");
+            messageVO.setIsRead(false);
+            messageVO.setToUser(ownerId);
+            messageVO.setCreatedTime(LocalDateTime.now());
+
+            messageService.sendMessage(messageVO);
+        }
         return "调整库存成功";
     }
 
@@ -157,6 +189,7 @@ public class ProductServiceImpl implements ProductService {
         return "减少库存成功";
     }
 
+
     @Override
     public String reduceStockpileByOrder(String orderIdStr) {
         int orderId = Integer.parseInt(orderIdStr);
@@ -167,6 +200,7 @@ public class ProductServiceImpl implements ProductService {
         // 2. 遍历每一项关系
         for (CartOrderRelation relation : relationList) {
             Integer cartItemId = relation.getCartItemId();
+
 
             // 3. 查找对应 Cart
             Optional<Cart> opCart = cartRepository.findById(cartItemId);
@@ -187,10 +221,8 @@ public class ProductServiceImpl implements ProductService {
             if (newStock < 0) {
                 throw new RuntimeException("库存不足，productId = " + productId);
             }
-            stockpile.setAmount(newStock);
+            this.updateStockpile(stockpile.getStockpileId(), newStock);
 
-            // 6. 保存新库存
-            stockpileRepository.save(stockpile);
         }
 
         return "订单库存已全部扣除成功";
