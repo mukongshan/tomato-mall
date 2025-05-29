@@ -59,4 +59,10 @@ public class MessageController {
         long count = messageService.getUnreadMessageCount(userId);
         return Response.buildSuccess(count);
     }
+
+    @GetMapping("/query")
+    public Response<Integer> queryMessageCount(@RequestParam Integer fromUserId, @RequestParam String content) {
+        return Response.buildSuccess(messageService.queryMessageCount(fromUserId, content));
+
+    }
 }

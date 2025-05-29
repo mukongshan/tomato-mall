@@ -194,8 +194,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public Integer fetchAdminId(){
-        Integer adminAccount = accountRepository.findIdByRole(RoleEnum.admin);
-
+        Integer adminAccount = accountRepository.findByRole(RoleEnum.admin).getId();
         return adminAccount;
     }
 }

@@ -12,4 +12,5 @@ public interface MessageService {
     void markMessageAsRead(Integer messageId);
     void deleteMessage(Integer messageId);
     long getUnreadMessageCount(Integer userId);
+    Integer queryMessageCount(Integer fromUserId , String content);
 } 

@@ -14,5 +14,5 @@ public interface AccountRepository extends JpaRepository<Account, Integer> {
 
     List<Account> findByShopId(Integer shopId);
 
-    Integer findIdByRole(RoleEnum role);
+    Account findByRole(RoleEnum role);
 }

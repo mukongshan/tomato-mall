@@ -10,4 +10,6 @@ public interface MessageRepository extends JpaRepository<Message, Integer> {
     List<Message> findByToUserOrderByCreatedTimeDesc(Integer toUser);
     List<Message> findByFromUserOrderByCreatedTimeDesc(Integer fromUser);
     long countByToUserAndIsReadFalse(Integer toUser);
+
+     List<Message> findByFromUserAndContentAndIsReadFalse(Integer fromUser, String content);
 } 

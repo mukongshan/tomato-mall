@@ -63,4 +63,10 @@ public class MessageServiceImpl implements MessageService {
     public long getUnreadMessageCount(Integer userId) {
         return messageRepository.countByToUserAndIsReadFalse(userId);
     }
+
+    @Override
+    public Integer queryMessageCount(Integer fromUserId, String content) {
+        List<Message> result = messageRepository.findByFromUserAndContentAndIsReadFalse(fromUserId, content);
+        return result.size();
+    }
 }
