@@ -86,4 +86,9 @@ public class AccountController {
         return Response.buildSuccess(accountService.uploadImg(file));
     }
 
+    @GetMapping("/fetchAdmin")
+    public Response<Integer> fetchAdminId() {
+        return Response.buildSuccess(accountService.fetchAdminId());
+    }
+
 }

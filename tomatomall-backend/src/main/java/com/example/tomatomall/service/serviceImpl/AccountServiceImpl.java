@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.persistence.criteria.CriteriaBuilder;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.List;
@@ -189,5 +190,12 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public String uploadImg(MultipartFile file){
         return toolUtil.uploadImg(file);
+    }
+
+    @Override
+    public Integer fetchAdminId(){
+        Integer adminAccount = accountRepository.findIdByRole(RoleEnum.admin);
+
+        return adminAccount;
     }
 }

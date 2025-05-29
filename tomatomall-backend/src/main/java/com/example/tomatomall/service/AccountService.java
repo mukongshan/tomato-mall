@@ -16,4 +16,6 @@ public interface AccountService {
     String updateRole(Integer id, String role);
     String getRole(Integer id);
     List<AccountVO> getShopStaff(Integer shopId);
+
+    Integer fetchAdminId();
 }
