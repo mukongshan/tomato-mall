@@ -63,7 +63,7 @@ const handleApplyForStaff = async () => {
         fromUser: userDetail.data.data.id,
         toUser: (shopInfo.value as Shop).ownerId,
         content: "NEW_EMPLOYEE_APPLICATION",
-        createdTime: new Date().getTime().toString()
+        createdTime: new Date().toISOString()
     };
     await sendMessage(message);
 

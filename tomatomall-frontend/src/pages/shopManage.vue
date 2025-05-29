@@ -78,7 +78,7 @@ const handleApprove = async (shop: Shop) => {
  * 处理店铺拒绝申请
  * @param shopId 店铺ID
  */
-const handleReject = async (shopId: number) => {
+const handleReject = async (shop: Shop) => {
     try {
         // 确认弹窗
         await ElMessageBox.confirm('确定要拒绝该店铺的申请吗？', '操作确认', {
@@ -89,12 +89,12 @@ const handleReject = async (shopId: number) => {
             content: "APPLICATION_REJECTED",
             isRead: false,
             fromUser: Number(sessionStorage.getItem('id')),
-            toUser: shopId,
+            toUser: shop.ownerId,
             createdTime: new Date().toISOString()
         };
         await sendMessage(message);
         // 删除店铺记录
-        await deleteShop(shopId);
+        await deleteShop(shop.shopId);
         ElMessage.success('店铺已成功拒绝');
         fetchShops(); // 刷新列表
     } catch (error) {
@@ -149,7 +149,7 @@ onMounted(() => {
                     <!-- 操作按钮 -->
                     <div class="action-buttons">
                         <el-button type="success" @click.stop="handleApprove(shop)">通过</el-button>
-                        <el-button type="danger" @click.stop="handleReject(shop.shopId)">拒绝</el-button>
+                        <el-button type="danger" @click.stop="handleReject(shop)">拒绝</el-button>
                     </div>
                 </el-card>
             </div>

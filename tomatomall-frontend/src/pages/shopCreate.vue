@@ -64,8 +64,8 @@ const handleCreate = async () => {
             id: 0,
             content: "NEW_STORE_APPLICATION",
             isRead: false,
-            fromUser: adminId,
-            toUser: form.value.ownerId,
+            fromUser: form.value.ownerId,
+            toUser: adminId,
             createdTime: new Date().toISOString()
         };
         await sendMessage(message);
