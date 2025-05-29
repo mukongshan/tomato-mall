@@ -18,7 +18,7 @@ public class SpecificationVO {
     private Integer productId; // 所属商品 ID
     public Specification toPO(){
         Specification specification = new Specification();
-        specification.setId(this.id);
+        specification.setSpecificationId(this.id);
         specification.setItem(this.item);
         specification.setValue(this.value);
         specification.setProductId(this.productId);

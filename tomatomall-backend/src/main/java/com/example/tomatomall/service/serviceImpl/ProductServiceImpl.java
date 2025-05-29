@@ -44,7 +44,11 @@ public class ProductServiceImpl implements ProductService {
     public List<ProductVO> getAllProducts() {
         List<Product> products = productRepository.findAll();
         return products.stream().map(this::convertToVO).collect(Collectors.toList());
-
+    }
+    @Override
+    public List<ProductVO> getProductsByShopId(int shopId) {
+        List<Product> products = productRepository.findByShopId(shopId).get();
+        return products.stream().map(this::convertToVO).collect(Collectors.toList());
     }
 
 
@@ -77,7 +81,7 @@ public class ProductServiceImpl implements ProductService {
 
         if (productVO.getTitle() != null) product.setTitle(productVO.getTitle());
         if (productVO.getPrice() != null) product.setPrice(productVO.getPrice());
-        if (productVO.getRate() != null) product.setRate(productVO.getRate());
+        //if (productVO.getRate() != null) product.setRate(productVO.getRate());
         if (productVO.getDescription() != null) product.setDescription(productVO.getDescription());
         if (productVO.getCover() != null) product.setCover(productVO.getCover());
         if (productVO.getDetail() != null) product.setDetail(productVO.getDetail());
@@ -109,7 +113,7 @@ public class ProductServiceImpl implements ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(TomatoMallException::productNotExists);        // 删除商品封面
         if (product.getCover()!=null&&!product.getCover().isEmpty()) {
-            String res  = ossUtil.deleteFileByUrl(product.getCover());
+            String res = ossUtil.deleteFileByUrl(product.getCover());
             System.out.println(res);
         }
         stockpileRepository.deleteByProductId(id);

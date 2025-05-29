@@ -9,6 +9,7 @@ import java.util.List;
 public interface ProductService {
     List<ProductVO> getAllProducts();
     ProductVO getProductById(int id);
+    List<ProductVO> getProductsByShopId(int shopId);
     ProductVO createProduct(ProductVO productVO);
     String updateProduct(ProductVO productVO);
     String deleteProduct(int id);

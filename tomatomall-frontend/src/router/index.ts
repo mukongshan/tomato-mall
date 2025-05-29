@@ -11,6 +11,7 @@ import Advertisement from '@/pages/advertisement.vue';
 import Shops from '@/pages/shops.vue';
 import ShopCreate from '@/pages/shopCreate.vue';
 import shopManage from '@/pages/shopManage.vue';
+import shopDetail from '@/pages/shopDetail.vue';
 import myShop from '@/pages/myShop.vue';
 
 const routes = [
@@ -27,46 +28,47 @@ const routes = [
         component: CartPage,
     },
     {
-        path: '/warehouse',
+        path: '/warehouse/:id',
         name: 'warehouse',
         meta: { title: '商品管理' },
         component: WarehousePage,
+        props: true,
     },
     {
         path: '/register',
         name: 'register',
-        mata: { title: '用户注册' },
+        meta: { title: '用户注册' },
         component: Register,
     },
     {
         path: '/login',
         name: 'login',
-        mata: { title: '用户登录' },
+        meta: { title: '用户登录' },
         component: Login,
     },
     {
         path: '/user',
         name: 'user',
-        mata: { title: '用户主页' },
+        meta: { title: '用户主页' },
         component: User,
     },
     {
         path: '/product/:id',
         name: 'product',
-        mata: { title: '商品详情' },
+        meta: { title: '商品详情' },
         component: Product,
         props: true,
     },
     {
         path: '/checkout',
         name: 'checkout',
-        mata: { title: '确认订单' },
+        meta: { title: '确认订单' },
         component: Checkout,
     },
     {
         path: '/advertisements',
         name: 'advertisements',
-        mata: { title: '广告管理' },
+        meta: { title: '广告管理' },
         component: Advertisement,
     },
     {
@@ -88,12 +90,19 @@ const routes = [
         component: shopManage,
     },
     {
-        path: '/myShop/:id',
-        name: 'myShop',
-        meta: { title: '我的店铺' },
-        component: myShop,
+        path: '/shop/detail/:shopId',
+        name: 'shopDetail',
+        meta: { title: '店铺详情' },
+        component: shopDetail,
         props: true,
-    }
+    },
+    {
+        path: '/myshop/:id',
+        name: 'myshop',
+        component: myShop,
+        meta: { title: '我的店铺' },
+        props: true,
+    },
     //其他路由配置
 ];
 

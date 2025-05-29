@@ -3,11 +3,13 @@ package com.example.tomatomall.service.serviceImpl;
 import com.example.tomatomall.po.Message;
 import com.example.tomatomall.repository.MessageRepository;
 import com.example.tomatomall.service.MessageService;
+import com.example.tomatomall.vo.MessageVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class MessageServiceImpl implements MessageService {
@@ -17,14 +19,29 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     @Transactional
-    public String sendMessage(Message message) {
-        messageRepository.save(message);
+    public String sendMessage(MessageVO message) {
+        messageRepository.save(message.toPO());
         return "消息成功发送";
     }
 
     @Override
-    public List<Message> getMessagesByUserId(Integer userId) {
-        return messageRepository.findByToUserOrderByCreatedTimeDesc(userId);
+    public List<MessageVO> getMessagesByToUserId(Integer userId) {
+        // 收到的消息
+
+        List<Message> messageList = messageRepository.findByToUserOrderByCreatedTimeDesc(userId);
+        List<MessageVO> messageVOList = messageList.stream()
+                .map(Message::toVO)
+                .collect(Collectors.toList());
+        return messageVOList;
+    }
+    @Override
+    public List<MessageVO> getMessagesByFromUserId(Integer userId) {
+        // 发送的消息
+        List<Message> messageList = messageRepository.findByFromUserOrderByCreatedTimeDesc(userId);
+        List<MessageVO> messageVOList = messageList.stream()
+                .map(Message::toVO)
+                .collect(Collectors.toList());
+        return messageVOList;
     }
 
     @Override

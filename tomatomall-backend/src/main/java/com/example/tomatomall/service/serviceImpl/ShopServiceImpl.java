@@ -11,16 +11,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.example.tomatomall.exception.TomatoMallException;
 
+
+import javax.persistence.criteria.CriteriaBuilder;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.example.tomatomall.enums.RoleEnum.SHOPKEEPER;
+import static com.example.tomatomall.enums.RoleEnum.*;
 
 @Service
-public class ShopServiceImpl implements ShopService {
-
+    public class ShopServiceImpl implements ShopService {
     @Autowired
     private ShopRepository shopRepository;
 
@@ -36,13 +37,12 @@ public class ShopServiceImpl implements ShopService {
     }
 
     @Override
-    public ShopVO getOwnShop(){
-        int ownerId = securityUtil.getCurrentAccount().getId();
+    public Integer getOwnShopId(Integer ownerId) {
         Shop shop = shopRepository.findByOwnerId(ownerId);
-        if (shop == null){
-            return null;
+        if (shop==null) {
+            return 0; // 如果没有找到店铺，返回null
         }
-        return shop.toVO();
+        return shop.getId();  // 返回第一个店铺的ID
     }
 
     @Override
@@ -50,7 +50,8 @@ public class ShopServiceImpl implements ShopService {
     public String createShop(ShopVO shopVO) {
         try {
             Account account = securityUtil.getCurrentAccount();
-            if (account.getRole() != SHOPKEEPER){
+            if (account.getRole() != CUSTOMER) {
+                // 只有普通用户可以申请创建店铺
                 throw TomatoMallException.forbidden();
             }
 
@@ -83,19 +84,26 @@ public class ShopServiceImpl implements ShopService {
             }
             Shop shop = opShop.get();
             Account account = securityUtil.getCurrentAccount();
-            if (account.getRole() != SHOPKEEPER || !Objects.equals(account.getId(), shop.getOwnerId())){
+
+            if ((account.getRole() != SHOPKEEPER && account.getRole()!=admin)){
+                throw TomatoMallException.forbidden();
+            }
+            // 如果是店主且不是店主本人，也不能更新店铺信息
+            if (account.getRole() == SHOPKEEPER && !Objects.equals(account.getId(), shop.getOwnerId())){
                 throw TomatoMallException.forbidden();
             }
             if (shopVO.getName() != null) shop.setName(shopVO.getName());
             if (shopVO.getOwnerId() != null) shop.setOwnerId(shopVO.getOwnerId());
             if (shopVO.getDescription() != null) shop.setDescription(shopVO.getDescription());
             if (shopVO.getIconUrl() != null) shop.setIconUrl(shopVO.getIconUrl());
+            if (shopVO.getIsValid() != null) shop.setIsValid(shopVO.getIsValid());
             shopRepository.save(shop);
             return "更新成功";
         } catch (Exception e) {
             throw new RuntimeException("更新失败");
         }
     }
+
 
     @Override
     public String deleteShop(Integer shopId) {

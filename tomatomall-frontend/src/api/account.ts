@@ -4,13 +4,16 @@ import { axios } from "../utils/request";
 export type UserRole = 'CUSTOMER' | 'STAFF' | 'SHOPKEEPER' | 'admin' | ''
 
 export interface UserDetail {
+    id: number,
     username: string,
     name: string,
     role: UserRole,
     avatar: string,
     telephone: string,
     email: string,
-    location: string
+    location: string,
+    shopId: number,
+    isValidStaff: number
 }
 
 // 账户类型（包含密码）
@@ -41,5 +44,33 @@ export const login = async (login: LoginCredentials) => {
 
 export const updateUser = async (account: AccountDetail) => {
     return await axios.put(`${ACCOUNT_MODULE}`, account,
+        { headers: { 'Content-Type': 'application/json' } });
+}
+//更新用户信息(不更新密码)
+export const updateUserInfo = async (account: UserDetail) => {
+    return await axios.put(`${ACCOUNT_MODULE}/info`, account,
+        { headers: { 'Content-Type': 'application/json' } });
+}
+
+//通过id更新用户身份
+export const updateUserRole = async (id: number, role: UserRole) => {
+    return await axios.put(`${ACCOUNT_MODULE}/role/${id}`, role,
+        { headers: { 'Content-Type': 'application/json' } });
+}
+// 根据id获取用户role
+export const getUserRoleById = async (id: number) => {
+    return await axios.get(`${ACCOUNT_MODULE}/role/${id}`,
+        { headers: { 'Content-Type': 'application/json' } });
+}
+
+// 根据shopId获取用户列表
+export const getUserListByShopId = async (shopId: number) => {
+    return await axios.get(`${ACCOUNT_MODULE}/shop/${shopId}`,
+        { headers: { 'Content-Type': 'application/json' } });
+}
+
+// 获取管理员
+export const getAdmin = async () => {
+    return await axios.get(`${ACCOUNT_MODULE}/fetchAdmin`,
         { headers: { 'Content-Type': 'application/json' } });
 }

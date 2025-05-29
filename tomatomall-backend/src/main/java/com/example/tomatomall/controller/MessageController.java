@@ -2,6 +2,7 @@ package com.example.tomatomall.controller;
 
 import com.example.tomatomall.po.Message;
 import com.example.tomatomall.service.MessageService;
+import com.example.tomatomall.vo.MessageVO;
 import com.example.tomatomall.vo.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -16,15 +17,22 @@ public class MessageController {
     private MessageService messageService;
 
     @PostMapping("/send")
-    public Response<String> sendMessage(@RequestBody Message message) {
+    public Response<String> sendMessage(@RequestBody MessageVO message) {
         return Response.buildSuccess(messageService.sendMessage(message));
     }
 
-    @GetMapping("/list/{userId}")
-    public Response<List<Message>> getMessages(@PathVariable Integer userId) {
-        List<Message> messages = messageService.getMessagesByUserId(userId);
+    @GetMapping("/received-list/{toUserId}")
+    public Response<List<MessageVO>> getReceivedMessages(@PathVariable Integer toUserId) {
+        List<MessageVO> messages = messageService.getMessagesByToUserId(toUserId);
         return Response.buildSuccess(messages);
     }
+
+    @GetMapping("/sent-list/{fromUserId}")
+    public Response<List<MessageVO>> getSentMessages(@PathVariable Integer fromUserId) {
+        List<MessageVO> messages = messageService.getMessagesByFromUserId(fromUserId);
+        return Response.buildSuccess(messages);
+    }
+
 
     @PutMapping("/mark-read/{messageId}")
     public Response<String> markMessageAsRead(@PathVariable Integer messageId) {
@@ -51,4 +59,4 @@ public class MessageController {
         long count = messageService.getUnreadMessageCount(userId);
         return Response.buildSuccess(count);
     }
-} 
+}

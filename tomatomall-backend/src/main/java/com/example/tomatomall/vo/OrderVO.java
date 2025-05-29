@@ -25,7 +25,7 @@ public class OrderVO {
 
     public Order toPO() {
         Order order = new Order();
-        order.setId(this.orderId);
+        order.setOrderId(this.orderId);
         order.setAccountId(this.accountId); // 修正为使用 accountId
         order.setTotalAmount(this.totalAmount);
         order.setPaymentMethod(this.paymentMethod);

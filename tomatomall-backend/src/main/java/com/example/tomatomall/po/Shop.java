@@ -36,8 +36,8 @@ public class Shop {
     private String description;
 
     @Basic
-    @Column(name = "rating", precision = 3, scale = 2)
-    private Double rating;
+    @Column(name = "rate", precision = 3, scale = 2)
+    private Double rate;
 
     @Basic
     @Column(name = "is_valid", nullable = false)
@@ -50,7 +50,7 @@ public class Shop {
         vo.setOwnerId(this.ownerId);
         vo.setIconUrl(this.iconUrl);
         vo.setDescription(this.description);
-        vo.setRating(this.rating);
+        vo.setRate(this.rate);
         vo.setIsValid(this.isValid);
         return vo;
     }

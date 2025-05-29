@@ -11,13 +11,16 @@ import { Picture } from '@element-plus/icons-vue'
 
 // 用户信息
 const userInfo = ref<UserDetail>({
+    id: 0,
     username: '',
     name: '',
     role: '',
     avatar: '',
     telephone: '',
     email: '',
-    location: ''
+    location: '',
+    shopId: 0,
+    isValidStaff: 0
 })
 
 const username = sessionStorage.getItem('username') as string

@@ -17,4 +17,7 @@ export const ORDER_MODULE = `${API_MODULE}/orders`
 export const AD_MODULE = `${API_MODULE}/advertisements`
 
 // 商店模块
-export const SHOP_MODULE = `${API_MODULE}/shops`
+export const SHOP_MODULE = `${API_MODULE}/shop`
+
+// 消息模块
+export const MESSAGE_MODULE = `${API_MODULE}/message`

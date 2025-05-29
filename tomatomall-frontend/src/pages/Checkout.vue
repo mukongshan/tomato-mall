@@ -8,13 +8,17 @@ const checkoutData = JSON.parse(sessionStorage.getItem('checkoutData') || '{}')
 const orderId = checkoutData.data.orderId
 const totalAmount = checkoutData.data.totalAmount
 const accountInfo = ref<UserDetail>({
+    id: 0,
     username: '',
     name: '',
     role: '',
     avatar: '',
     telephone: '',
     email: '',
-    location: ''
+    location: '',
+    shopId: 0,
+    isValidStaff: 0
+
 })
 
 const fetchUserDetails = async () => {

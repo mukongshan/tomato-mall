@@ -2,11 +2,13 @@ import { axios } from "@/utils/request";
 import { SHOP_MODULE } from "./_prefix";
 
 export interface Shop {
-    id: number;
+    shopId: number;
     name: string;
-    owner_id: string;
-    icon_url: string;
+    ownerId: number;
+    iconUrl: string;
     description: string;
+    rate: number;
+    isValid: number;
 }
 
 export const getShopList = async () => {
@@ -24,10 +26,15 @@ export const getShopDetail = async (shopId: number) => {
 }
 
 export const updateShop = async (shop: Shop) => {
-    return await axios.put(`${SHOP_MODULE}/update/${shop.id}`, shop, {
+    return await axios.put(`${SHOP_MODULE}/update/${shop.shopId}`, shop, {
         headers: { "Content-Type": "application/json" },
     });
 };
 export const deleteShop = async (shopId: number) => {
     return await axios.delete(`${SHOP_MODULE}/delete/${shopId}`);
+};
+
+// 根据ownerId获取对应的店铺
+export const getShopIdByOwnerId = async (ownerId: number) => {
+    return await axios.get(`${SHOP_MODULE}/owner/${ownerId}`);
 };

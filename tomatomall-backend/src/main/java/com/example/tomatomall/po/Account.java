@@ -54,6 +54,14 @@ public class Account {
     @Column(name = "location")
     private String location;
 
+    @Basic
+    @Column(name = "shop_id")
+    private Integer shopId;
+
+    @Basic
+    @Column(name = "is_valid_staff")
+    private Integer isValidStaff;
+
     public AccountVO toVO() {
         AccountVO accountVO = new AccountVO();
         accountVO.setId(this.id);
@@ -64,6 +72,8 @@ public class Account {
         accountVO.setTelephone(this.telephone);
         accountVO.setEmail(this.email);
         accountVO.setLocation(this.location);
+        accountVO.setShopId(this.shopId);
+        accountVO.setIsValidStaff(this.isValidStaff);
         return accountVO;
     }
 }

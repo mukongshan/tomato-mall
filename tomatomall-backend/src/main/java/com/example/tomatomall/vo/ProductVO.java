@@ -18,6 +18,7 @@ public class ProductVO {
     private String description;
     private String cover;
     private String detail;
+    private Integer shopId;
     private List<SpecificationVO> specifications;
 
     public Product toPO(){
@@ -29,6 +30,7 @@ public class ProductVO {
         product.setDescription(this.description);
         product.setCover(this.cover);
         product.setDetail(this.detail);
+        product.setShopId(this.shopId);
 //        for (SpecificationVO specificationVO : specifications) {
 //            Specification specification = specificationVO.toPO();
 //            specificationRepository.save(specification);
