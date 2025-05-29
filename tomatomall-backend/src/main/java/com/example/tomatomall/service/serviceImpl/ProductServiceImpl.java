@@ -142,6 +142,7 @@ public class ProductServiceImpl implements ProductService {
         return stockpile.toVO();
     }
 
+    
     @Override
     public String updateStockpile(int id,int amount) {
         Stockpile stockpile = stockpileRepository.findByProductId(id);
