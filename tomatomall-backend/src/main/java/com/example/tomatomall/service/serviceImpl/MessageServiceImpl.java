@@ -23,8 +23,14 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public List<Message> getMessagesByUserId(Integer userId) {
+    public List<Message> getMessagesByToUserId(Integer userId) {
+        // 收到的消息
         return messageRepository.findByToUserOrderByCreatedTimeDesc(userId);
+    }
+    @Override
+    public List<Message> getMessagesByFromUserId(Integer userId) {
+        // 发送的消息
+        return messageRepository.findByFromUserOrderByCreatedTimeDesc(userId);
     }
 
     @Override

@@ -20,11 +20,18 @@ public class MessageController {
         return Response.buildSuccess(messageService.sendMessage(message));
     }
 
-    @GetMapping("/list/{userId}")
-    public Response<List<Message>> getMessages(@PathVariable Integer userId) {
-        List<Message> messages = messageService.getMessagesByUserId(userId);
+    @GetMapping("/received-list/{toUserId}")
+    public Response<List<Message>> getReceivedMessages(@PathVariable Integer toUserId) {
+        List<Message> messages = messageService.getMessagesByToUserId(toUserId);
         return Response.buildSuccess(messages);
     }
+
+    @GetMapping("/sent-list/{fromUserId}")
+    public Response<List<Message>> getSentMessages(@PathVariable Integer fromUserId) {
+        List<Message> messages = messageService.getMessagesByFromUserId(fromUserId);
+        return Response.buildSuccess(messages);
+    }
+
 
     @PutMapping("/mark-read/{messageId}")
     public Response<String> markMessageAsRead(@PathVariable Integer messageId) {

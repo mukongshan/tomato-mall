@@ -148,23 +148,23 @@
 #     on stockpiles (product_id);
 #
 #
-# CREATE TABLE messages (
-#                           id INT AUTO_INCREMENT PRIMARY KEY COMMENT '消息ID',
-#     -- 1. 有新的员工申请 2. 有新的商店申请 3. 库存不足 4.您的申请已经通过/未通过
-#     -- 消息正文内容就是这四个  前三个消息对应用户到对应页面检查  前端界面 这些数据单独显示
-#                           content TEXT NOT NULL COMMENT '消息内容',
-#                           type ENUM('STOCK_ALERT', 'EMPLOYEE_APPLICATION', 'SHOP_APPLICATION','APPLICATION_RESULT') NOT NULL COMMENT '消息类型',
-#                           is_read TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否已读（0未读，1已读）',
-#                           from_user INT NOT NULL COMMENT '发送方用户ID',
-#                           to_user INT NOT NULL COMMENT '接收方用户ID',
-#                           shop_id INT COMMENT '关联的商店ID（可选）',
-#                           router_url VARCHAR(255) COMMENT '跳转进行处理的页面',
-#                           created_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '消息创建时间',
-#                           FOREIGN KEY (from_user) REFERENCES accounts(id),
-#                           FOREIGN KEY (to_user) REFERENCES accounts(id),
-#                           FOREIGN KEY (shop_id) REFERENCES shops(id)
-# ) COMMENT='用户消息表';
-#
+CREATE TABLE messages (
+                          id INT AUTO_INCREMENT PRIMARY KEY COMMENT '消息ID',
+-- 1. 有新的员工申请 2. 有新的商店申请 3. 库存不足 4.您的申请已经通过/未通过 5. 解雇员工 6 您已被解雇
+-- 消息正文内容就是这四个  前三个消息对应用户到对应页面检查  前端界面 这些数据单独显示
+                          content TEXT NOT NULL COMMENT '消息内容',
+                          type ENUM('SEND','REPLY') NOT NULL COMMENT '消息类型',
+                          is_read TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否已读（0未读，1已读）',
+                          from_user INT NOT NULL COMMENT '发送方用户ID',
+                          to_user INT NOT NULL COMMENT '接收方用户ID',
+                          -- shop_id INT COMMENT '关联的商店ID（可选）',
+                          created_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '消息创建时间',
+                          FOREIGN KEY (from_user) REFERENCES accounts(id),
+                          FOREIGN KEY (to_user) REFERENCES accounts(id)
+                          -- FOREIGN KEY (shop_id) REFERENCES shops(id)
+) COMMENT='用户消息表';
+
+
 # CREATE TABLE reviews (
 #                          id INT AUTO_INCREMENT PRIMARY KEY COMMENT '评论ID',
 #                          account_id INT NOT NULL COMMENT '评论用户ID',
@@ -249,5 +249,7 @@
 # END //
 #
 # DELIMITER ;
+
+
 
 

@@ -29,7 +29,6 @@ public class Message {
     @Column(nullable = false)
     private Integer toUser;
 
-    private Integer shopId;
 
     @Column(nullable = false)
     private LocalDateTime createdTime = LocalDateTime.now();
