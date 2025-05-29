@@ -1,6 +1,5 @@
 package com.example.tomatomall.po;
 
-import com.example.tomatomall.enums.MessageType;
 import javax.persistence.*;
 
 import com.example.tomatomall.vo.MessageVO;
@@ -18,9 +17,6 @@ public class Message {
     @Column(nullable = false)
     private String content;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private MessageType messageType;
 
     @Column(nullable = false)
     private Boolean isRead = false;
@@ -39,7 +35,6 @@ public class Message {
         MessageVO messageVO = new MessageVO();
         messageVO.setId(id);
         messageVO.setContent(content);
-        messageVO.setMessageType(messageType);
         messageVO.setIsRead(isRead);
         messageVO.setFromUser(fromUser);
         messageVO.setToUser(toUser);

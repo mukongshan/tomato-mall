@@ -48,6 +48,4 @@ public class Order{
         orderVO.setCreateTime(this.createTime);
         return orderVO;
     }
-
-
 }

@@ -1,6 +1,5 @@
 package com.example.tomatomall.vo;
 
-import com.example.tomatomall.enums.MessageType;
 import com.example.tomatomall.po.Message;
 import lombok.Data;
 import lombok.Getter;
@@ -16,7 +15,6 @@ import java.time.LocalDateTime;
 public class MessageVO {
     private Integer id;
     private String content;
-    private MessageType messageType;
     private Boolean isRead;
     private Integer fromUser;
     private Integer toUser;
@@ -26,7 +24,6 @@ public class MessageVO {
         Message message = new Message();
         message.setId(id);
         message.setContent(content);
-        message.setMessageType(messageType);
         message.setIsRead(isRead);
         message.setFromUser(fromUser);
         message.setToUser(toUser);

@@ -37,7 +37,7 @@ public class MessageServiceImpl implements MessageService {
     @Override
     public List<MessageVO> getMessagesByFromUserId(Integer userId) {
         // 发送的消息
-        List<Message> messageList = messageRepository.findByToUserOrderByCreatedTimeDesc(userId);
+        List<Message> messageList = messageRepository.findByFromUserOrderByCreatedTimeDesc(userId);
         List<MessageVO> messageVOList = messageList.stream()
                 .map(Message::toVO)
                 .collect(Collectors.toList());
