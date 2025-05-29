@@ -47,7 +47,9 @@ public class TomatoMallException extends RuntimeException {
         return new TomatoMallException("商店不存在", "404");
     }
 
-    public static TomatoMallException productNotExists() {return new TomatoMallException("商品不存在","404");}
+    public static TomatoMallException productNotExists() {
+        return new TomatoMallException("商品不存在", "404");
+    }
 
     public static TomatoMallException overStock() {
         return new TomatoMallException("超出库存数量" ,"400");
@@ -61,7 +63,13 @@ public class TomatoMallException extends RuntimeException {
         return new TomatoMallException("订单不存在","404");
     }
 
-    public static TomatoMallException AdvertisementNotExists() {return new TomatoMallException("广告不存在","404");}
+    public static TomatoMallException AdvertisementNotExists() {
+        return new TomatoMallException("广告不存在","404");
+    }
+
+    public static TomatoMallException reviewNotExists() {
+        return new TomatoMallException("评论不存在");
+    }
 
     // 提供一个静态方法用于抛出文件上传失败的异常
     public static TomatoMallException fileUploadFail() {

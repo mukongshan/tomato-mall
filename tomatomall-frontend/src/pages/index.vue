@@ -1,119 +1,87 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { ElMessage } from "element-plus";
-import { Product } from "@/api/product.ts"
-import { getProductsList } from "@/api/product.ts"
-import router from "@/router/index.ts"
+import { Product } from "@/api/product.ts";
+import { getProductsList } from "@/api/product.ts";
+import router from "@/router/index.ts";
 import { addCartProduct } from "@/api/cart.ts";
 import { getAdvertisements, AdvertisementUpdate } from "@/api/advertisements";
 import { Picture } from '@element-plus/icons-vue';
 
-// 存储商品列表数据
 const products = ref<Product[]>([]);
-
-// 当前广告列表
 const advertisementList = ref<AdvertisementUpdate[]>([]);
 
-// 加载广告列表
 const loadAdvertisements = async () => {
     try {
         const response = await getAdvertisements();
         advertisementList.value = response.data.data;
-        console.log(advertisementList.value)
-        ElMessage.success({
-            message: '广告列表加载成功',
-            duration: 1000
-        });
+        ElMessage.success({ message: '广告列表加载成功', duration: 1000 });
     } catch (error) {
         console.error('加载广告失败:', error);
-        ElMessage.error({
-            message: '加载广告失败，请稍后重试',
-            duration: 1000  // 修改这里
-        });
+        ElMessage.error({ message: '加载广告失败，请稍后重试', duration: 1000 });
     }
 };
 
 const handleAdd = (productId: number) => {
-    const amount = 1;
-    addCartProduct(productId, amount).then((res) => {
+    addCartProduct(productId, 1).then((res) => {
         if (res.data.code === '200') {
             ElMessage.success('添加成功');
         }
-    }).catch((error) => {
-        if (error == undefined) {
-        }
-    });
-}
+    }).catch((error) => {});
+};
 
 const pageInit = async () => {
-    await getProductsList().then(res => {
-        if (res.data.code === '200') {
-            products.value = res.data.data;
-        } else {
-            ElMessage({
-                message: res.data.msg,
-                type: 'error',
-                center: true,
-            });
-        }
-    });
-    await loadAdvertisements(); // 加载广告列表
+    const res = await getProductsList();
+    if (res.data.code === '200') {
+        products.value = res.data.data;
+    } else {
+        ElMessage({ message: res.data.msg, type: 'error', center: true });
+    }
+    await loadAdvertisements();
 };
 
 const gotoDetails = (productId: number) => {
     router.push({ path: `/product/${productId}` });
 };
+
 pageInit();
 </script>
 
 <template>
-    <h1>番茄书城</h1>
-    <!-- 广告轮播 -->
-    <el-carousel v-if="advertisementList.length > 0" class="ad-carousel" :interval="3000" height="300px"
-        indicator-position="outside">
+    <h1 class="page-title">番茄书城</h1>
+
+    <el-carousel v-if="advertisementList.length > 0" class="ad-carousel" :interval="3000" height="300px" indicator-position="outside">
         <el-carousel-item v-for="ad in advertisementList" :key="ad.id" @click="gotoDetails(ad.productId)">
             <div class="ad-item">
                 <el-image :src="ad.imgUrl" :alt="ad.title" class="ad-image">
                     <template #error>
                         <div class="image-error">
-                            <el-icon>
-                                <Picture />
-                            </el-icon>
+                            <el-icon><Picture /></el-icon>
                             <span>图片加载失败</span>
                         </div>
                     </template>
                 </el-image>
-
                 <div class="ad-title">{{ ad.title }}</div>
             </div>
         </el-carousel-item>
     </el-carousel>
 
     <el-card class="product-list">
-        <!--Grid布局-->
         <div class="product-grid">
-            <!--商品列表-->
             <div v-for="product in products" :key="product.id" class="product-item">
-                <!-- 图片-->
                 <div class="product-image-container" @click="gotoDetails(product.id)">
-
                     <el-image :src="product.cover" alt="商品图片" class="product-image">
-
                         <template #error>
                             <div class="image-error">
-                                <el-icon>
-                                    <Picture />
-                                </el-icon>
+                                <el-icon><Picture /></el-icon>
                                 <span>图片加载失败</span>
                             </div>
                         </template>
                     </el-image>
                 </div>
-                <!-- 商品信息-->
                 <div class="product-info">
                     <div class="product-name">{{ product.title }}</div>
                     <div class="product-price">¥{{ product.price }}</div>
-
                     <el-button @click="handleAdd(product.id)">加入购物车</el-button>
                 </div>
             </div>
@@ -122,8 +90,55 @@ pageInit();
 </template>
 
 <style scoped>
+/* 页面标题 */
+.page-title {
+    text-align: center;
+    font-size: 36px;
+    font-weight: bold;
+    color: #d62828;
+    margin: 30px 0 20px;
+    font-family: "华文中宋", serif;
+}
+
+/* 广告轮播 */
+.ad-carousel {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    margin: 0 auto 30px;
+    max-width: 960px;
+}
+
+.ad-item {
+    position: relative;
+    cursor: pointer;
+    height: 100%;
+}
+
+.ad-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.ad-title {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    font-weight: bold;
+    text-align: center;
+    font-size: 18px;
+}
+
+/* 商品区域 */
 .product-list {
     margin-top: 20px;
+    background: #fff;
+    border: none;
+    box-shadow: none;
 }
 
 .product-grid {
@@ -135,30 +150,12 @@ pageInit();
 .product-item {
     display: flex;
     flex-direction: column;
-    background-color: #ebeef5;
-    border: 1px solid #eee;
-    border-radius: 4px;
+    background: #fff;
+    border-radius: 12px;
     overflow: hidden;
-
-    transition: transform 0.3s, box-shadow 0.3s;
-}
-
-
-.product-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 20px;
-}
-
-.product-item {
-    display: flex;
-    flex-direction: column;
-    background-color: #ebeef5;
-    border: 1px solid #eee;
-    border-radius: 4px;
-    overflow: hidden;
-    transition: transform 0.3s, box-shadow 0.3s;
-    position: relative;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .product-item:hover {
@@ -184,13 +181,14 @@ pageInit();
 }
 
 .product-info {
-    padding: 12px;
+    padding: 16px;
     text-align: center;
-    position: relative;
 }
 
 .product-name {
-    font-weight: bold;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
     margin-bottom: 4px;
     white-space: nowrap;
     overflow: hidden;
@@ -198,9 +196,27 @@ pageInit();
 }
 
 .product-price {
-    color: #f56c6c;
-    font-size: 14px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #d62828;
     margin-bottom: 8px;
+}
+
+.el-button {
+    background-color: #d62828;
+    border: none;
+    color: white;
+    width: 100%;
+}
+
+.el-button:hover {
+    background-color: #b71c1c;
+}
+
+/* 图片加载失败 */
+.image-error {
+    text-align: center;
+    color: red;
 }
 
 .image-error .el-icon {
@@ -208,8 +224,18 @@ pageInit();
     margin-bottom: 10px;
 }
 
-.image-error {
-    text-align: center;
-    color: red;
+/* 响应式优化 */
+@media (max-width: 600px) {
+    .page-title {
+        font-size: 24px;
+    }
+
+    .product-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+
+    .ad-carousel {
+        height: 200px;
+    }
 }
 </style>
