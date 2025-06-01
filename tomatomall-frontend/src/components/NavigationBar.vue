@@ -141,13 +141,6 @@ onMounted(messageLoad);
                         <span>我要开店</span>
                     </el-menu-item>
 
-                    <el-menu-item index="/user">
-                        <el-icon>
-                            <User />
-                        </el-icon>
-                        <span>个人中心</span>
-                    </el-menu-item>
-
                     <el-sub-menu index="mine" v-if="isAdmin || isShopOwner || isStaff">
                         <template #title>
                             <el-icon>

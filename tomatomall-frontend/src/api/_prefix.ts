@@ -21,3 +21,6 @@ export const SHOP_MODULE = `${API_MODULE}/shop`
 
 // 消息模块
 export const MESSAGE_MODULE = `${API_MODULE}/message`
+
+// 评价模块
+export const REVIEW_MODULE = `${API_MODULE}/reviews`
