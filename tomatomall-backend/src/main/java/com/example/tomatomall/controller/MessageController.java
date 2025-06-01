@@ -63,6 +63,5 @@ public class MessageController {
     @GetMapping("/query")
     public Response<Integer> queryMessageCount(@RequestParam Integer fromUserId, @RequestParam String content) {
         return Response.buildSuccess(messageService.queryMessageCount(fromUserId, content));
-
     }
 }

@@ -3,6 +3,7 @@ package com.example.tomatomall.service.serviceImpl;
 import com.example.tomatomall.exception.TomatoMallException;
 import com.example.tomatomall.po.*;
 import com.example.tomatomall.repository.*;
+import com.example.tomatomall.service.AccountService;
 import com.example.tomatomall.service.MessageService;
 import com.example.tomatomall.service.ProductService;
 import com.example.tomatomall.util.OssUtil;
@@ -23,6 +24,8 @@ import java.util.stream.Collectors;
 public class ProductServiceImpl implements ProductService {
     @Resource
     private ProductRepository productRepository;
+    @Resource
+    private AccountService accountService;
 
     @Autowired
     private OssUtil ossUtil;
@@ -167,6 +170,9 @@ public class ProductServiceImpl implements ProductService {
             MessageVO messageVO = new MessageVO();
             messageVO.setContent("LOW_INVENTORY");
             messageVO.setIsRead(false);
+            // 找到管理员Id
+            int adminId =  accountService.fetchAdminId();
+            messageVO.setFromUser(adminId);
             messageVO.setToUser(ownerId);
             messageVO.setCreatedTime(LocalDateTime.now());
 
