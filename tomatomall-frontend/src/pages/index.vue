@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { ElMessage } from "element-plus";
 import { Product } from "@/api/product.ts";
 import { getProductsList } from "@/api/product.ts";
@@ -25,9 +25,9 @@ const loadAdvertisements = async () => {
 const handleAdd = (productId: number) => {
     addCartProduct(productId, 1).then((res) => {
         if (res.data.code === '200') {
-            ElMessage.success('添加成功');
+            ElMessage.success({ message: '添加成功', duration: 1000 });
         }
-    }).catch((error) => {});
+    }).catch(() => {});
 };
 
 const pageInit = async () => {
@@ -44,33 +44,17 @@ const gotoDetails = (productId: number) => {
     router.push({ path: `/product/${productId}` });
 };
 
-pageInit();
+onMounted(pageInit);
 </script>
 
 <template>
-    <h1 class="page-title">番茄书城</h1>
+    <div class="container">
+        <h1 class="page-title">番茄书城</h1>
 
-    <el-carousel v-if="advertisementList.length > 0" class="ad-carousel" :interval="3000" height="300px" indicator-position="outside">
-        <el-carousel-item v-for="ad in advertisementList" :key="ad.id" @click="gotoDetails(ad.productId)">
-            <div class="ad-item">
-                <el-image :src="ad.imgUrl" :alt="ad.title" class="ad-image">
-                    <template #error>
-                        <div class="image-error">
-                            <el-icon><Picture /></el-icon>
-                            <span>图片加载失败</span>
-                        </div>
-                    </template>
-                </el-image>
-                <div class="ad-title">{{ ad.title }}</div>
-            </div>
-        </el-carousel-item>
-    </el-carousel>
-
-    <el-card class="product-list">
-        <div class="product-grid">
-            <div v-for="product in products" :key="product.id" class="product-item">
-                <div class="product-image-container" @click="gotoDetails(product.id)">
-                    <el-image :src="product.cover" alt="商品图片" class="product-image">
+        <el-carousel v-if="advertisementList.length > 0" class="ad-carousel" :interval="4000" height="320px" indicator-position="outside">
+            <el-carousel-item v-for="ad in advertisementList" :key="ad.id" @click="gotoDetails(ad.productId)">
+                <div class="ad-item">
+                    <el-image :src="ad.imgUrl" :alt="ad.title" class="ad-image">
                         <template #error>
                             <div class="image-error">
                                 <el-icon><Picture /></el-icon>
@@ -78,41 +62,64 @@ pageInit();
                             </div>
                         </template>
                     </el-image>
+                    <div class="ad-title">{{ ad.title }}</div>
                 </div>
-                <div class="product-info">
-                    <div class="product-name">{{ product.title }}</div>
-                    <div class="product-price">¥{{ product.price }}</div>
-                    <el-button @click="handleAdd(product.id)">加入购物车</el-button>
+            </el-carousel-item>
+        </el-carousel>
+
+        <div class="product-section">
+            <el-card class="product-list">
+                <div class="product-grid">
+                    <div v-for="product in products" :key="product.id" class="product-item">
+                        <div class="product-image-container" @click="gotoDetails(product.id)">
+                            <el-image :src="product.cover" alt="商品图片" class="product-image">
+                                <template #error>
+                                    <div class="image-error">
+                                        <el-icon><Picture /></el-icon>
+                                        <span>图片加载失败</span>
+                                    </div>
+                                </template>
+                            </el-image>
+                        </div>
+                        <div class="product-info">
+                            <div class="product-name">{{ product.title }}</div>
+                            <div class="product-price">¥{{ product.price }}</div>
+                            <el-button @click="handleAdd(product.id)" type="danger" plain size="small">加入购物车</el-button>
+                        </div>
+                    </div>
                 </div>
-            </div>
+            </el-card>
         </div>
-    </el-card>
+    </div>
 </template>
 
 <style scoped>
-/* 页面标题 */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
 .page-title {
     text-align: center;
-    font-size: 36px;
+    font-size: 40px;
     font-weight: bold;
-    color: #d62828;
-    margin: 30px 0 20px;
+    color: black;
+    margin-bottom: 30px;
     font-family: "华文中宋", serif;
 }
 
-/* 广告轮播 */
 .ad-carousel {
-    border-radius: 12px;
+    border-radius: 16px;
     overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    margin: 0 auto 30px;
-    max-width: 960px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    margin-bottom: 40px;
 }
 
 .ad-item {
     position: relative;
-    cursor: pointer;
     height: 100%;
+    cursor: pointer;
 }
 
 .ad-image {
@@ -125,46 +132,50 @@ pageInit();
     position: absolute;
     bottom: 0;
     width: 100%;
-    padding: 12px;
-    background: rgba(0, 0, 0, 0.5);
-    color: white;
+    padding: 14px;
+    background: rgba(0, 0, 0, 0.4);
+    color: #fff;
     font-weight: bold;
     text-align: center;
-    font-size: 18px;
+    font-size: 20px;
 }
 
-/* 商品区域 */
+.section-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #333;
+    text-align: left;
+}
+
 .product-list {
-    margin-top: 20px;
     background: #fff;
     border: none;
     box-shadow: none;
+    padding: 10px;
 }
 
 .product-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 20px;
 }
 
 .product-item {
     display: flex;
     flex-direction: column;
-    background: #fff;
-    border-radius: 12px;
+    border-radius: 16px;
     overflow: hidden;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border: none;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    background: #f9f9f9;
+    transition: transform 0.3s, box-shadow 0.3s;
 }
 
 .product-item:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-4px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
 }
 
 .product-image-container {
-    width: 100%;
     aspect-ratio: 1/1;
     overflow: hidden;
 }
@@ -173,7 +184,7 @@ pageInit();
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.3s;
+    transition: transform 0.3s ease;
 }
 
 .product-item:hover .product-image {
@@ -188,54 +199,42 @@ pageInit();
 .product-name {
     font-size: 16px;
     font-weight: 600;
+    margin-bottom: 6px;
     color: #333;
-    margin-bottom: 4px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 .product-price {
-    font-size: 16px;
-    font-weight: bold;
+    font-size: 18px;
     color: #d62828;
-    margin-bottom: 8px;
-}
-
-.el-button {
-    background-color: #d62828;
-    border: none;
-    color: white;
-    width: 100%;
-}
-
-.el-button:hover {
-    background-color: #b71c1c;
-}
-
-/* 图片加载失败 */
-.image-error {
-    text-align: center;
-    color: red;
-}
-
-.image-error .el-icon {
-    font-size: 40px;
+    font-weight: bold;
     margin-bottom: 10px;
 }
 
-/* 响应式优化 */
-@media (max-width: 600px) {
-    .page-title {
-        font-size: 24px;
-    }
+.image-error {
+    text-align: center;
+    color: red;
+    padding: 20px;
+}
 
-    .product-grid {
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+.image-error .el-icon {
+    font-size: 32px;
+    margin-bottom: 8px;
+}
+
+@media (max-width: 768px) {
+    .page-title {
+        font-size: 28px;
     }
 
     .ad-carousel {
         height: 200px;
+    }
+
+    .product-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     }
 }
 </style>

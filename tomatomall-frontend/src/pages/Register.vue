@@ -172,8 +172,7 @@ const handleRegister = async () => {
             </el-form-item>
 
             <el-form-item label="头像" prop="avatar">
-                <!-- 只接受图片
-             关闭自动上传-->
+                <!-- 只接受图片 关闭自动上传-->
                 <!-- on-change 图片上传触发 这里是转为url -->
                 <!-- on-remove 删除 -->
                 <!-- before-upload 上传前验证 -->

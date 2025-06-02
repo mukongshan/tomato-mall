@@ -5,10 +5,7 @@ import com.example.tomatomall.exception.TomatoMallException;
 import com.example.tomatomall.po.Account;
 import com.example.tomatomall.repository.AccountRepository;
 import com.example.tomatomall.service.AccountService;
-import com.example.tomatomall.util.OssUtil;
-import com.example.tomatomall.util.SecurityUtil;
-import com.example.tomatomall.util.TokenUtil;
-import com.example.tomatomall.util.ToolUtil;
+import com.example.tomatomall.util.*;
 import com.example.tomatomall.vo.AccountVO;
 import com.example.tomatomall.vo.Response;
 import org.apache.coyote.http11.filters.VoidOutputFilter;
@@ -34,6 +31,9 @@ public class AccountServiceImpl implements AccountService {
 
     @Autowired
     ToolUtil toolUtil;
+
+    @Autowired
+    ImageUtil imageUtil;
 
     @Autowired
     TokenUtil tokenUtil;
@@ -189,7 +189,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public String uploadImg(MultipartFile file){
-        return toolUtil.uploadImg(file);
+        return imageUtil.saveImg(file);
     }
 
     @Override
