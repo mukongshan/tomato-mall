@@ -24,3 +24,6 @@ export const MESSAGE_MODULE = `${API_MODULE}/message`
 
 // 评价模块
 export const REVIEW_MODULE = `${API_MODULE}/reviews`
+
+// 图片模块
+export const IMAGE_MODULE = `${API_MODULE}/image`

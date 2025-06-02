@@ -31,6 +31,10 @@ public class LoginInterceptor implements HandlerInterceptor {
         if ("POST".equalsIgnoreCase(request.getMethod()) && "/api/accounts".equals(request.getRequestURI())) {
             return true;
         }
+        // 允许上传图片
+        else if("POST".equalsIgnoreCase(request.getMethod()) && "/api/image".equals(request.getRequestURI())) {
+            return true;
+        }
 
         // 验证Token
         String token = request.getHeader("token");

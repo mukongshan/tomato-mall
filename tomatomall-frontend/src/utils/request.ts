@@ -4,8 +4,7 @@ import { ElMessage } from 'element-plus'
 //创建一个axios的实例service
 const service = axios.create({
     baseURL: "" // 在main.ts里设置不会生效 未知原因 可能是两个axios实例不同  但之前未出现此问题
-}
-)
+})
 
 //判断是否登录
 //因为用户登录后会将后端返回的 Token 存入 sessionStorage，退出登录时主动清除 Token。

@@ -3,12 +3,9 @@ import { ref, onMounted } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { Shop, getShopList, updateShop, deleteShop } from '@/api/shop';
 import router from '@/router';
-
 import { Picture } from '@element-plus/icons-vue';
 import { getUserRoleById, updateUserRole } from '@/api/account';
-import { checkRole } from '@/components/LoginEvent';
 import { Message, sendMessage } from '@/api/message';
-
 
 // 数据状态
 const pendingShops = ref<Shop[]>([]);  // 待审核店铺列表

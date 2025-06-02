@@ -5,7 +5,7 @@ import { getProductsByShopId, Product, Stockpile } from "@/api/product.ts"
 import { addProduct, deleteProduct, updateProduct } from "@/api/product.ts"
 import { updateStockpile, getStockpile } from "@/api/product.ts"
 import router from "@/router/index.ts"
-import { imageProcess } from "@/utils/UploadImage";
+import { uploadImg } from "@/utils/image.ts";
 import { Plus, Picture } from '@element-plus/icons-vue';
 import { useRoute } from "vue-router";
 
@@ -218,9 +218,14 @@ const beforeLogoUpload: UploadProps['beforeUpload'] = (rawFile) => {
 // 图片上传处理
 const handleAvatarChange: UploadProps['onChange'] = async (uploadFile: UploadFile) => {
     if (uploadFile.raw) {
-        // 生成预览URL
-        editProduct.value.cover = await imageProcess(uploadFile.raw)
-        console.log(editProduct.value.cover)
+        try {
+            const formData = new FormData()
+            formData.append('file', uploadFile.raw!)
+            const response = await uploadImg(formData)
+            editProduct.value.cover = response.data.data;
+        } catch (error) {
+            ElMessage.error("图片上传失败：" + (error || '未知错误'));
+        }
     }
 }
 

@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { ElMessage, ElSkeleton, ElDialog, ElForm, ElFormItem, ElInput, ElRate, ElButton } from 'element-plus';
-import { Picture, Star } from '@element-plus/icons-vue'; // Added Star for consistency
+import { Picture } from '@element-plus/icons-vue'; // Added Star for consistency
 import { Shop, getShopDetail } from '@/api/shop';
 import { Product, getProductsByShopId } from '@/api/product';
 import { Review, getShopReviews, addShopReview } from '@/api/review';
