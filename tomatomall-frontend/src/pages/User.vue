@@ -6,7 +6,7 @@ import type { UserDetail, AccountDetail } from '@/api/account.ts'
 import { getUserDetails, updateUser, updateUserInfo } from '@/api/account.ts'
 import { UserFilled, EditPen, CircleCheck, CircleClose } from "@element-plus/icons-vue"; // Added more icons
 import router from "@/router";
-import { imageProcess } from '@/utils/UploadImage'
+import { uploadImg } from '@/utils/image'
 
 
 // 用户信息

@@ -27,8 +27,7 @@ const handleAdd = (productId: number) => {
             ElMessage.success({ message: '添加成功', duration: 1000 });
         }
     }).catch((error) => { });
-}).catch (() => { });
-};
+}
 
 const pageInit = async () => {
     const res = await getProductsList();
