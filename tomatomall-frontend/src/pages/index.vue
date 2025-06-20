@@ -92,6 +92,7 @@ onMounted(pageInit);
                 </div>
             </div>
         </el-card>
+    </div>
 </template>
 
 <style scoped>

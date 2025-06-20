@@ -57,9 +57,7 @@ import static com.example.tomatomall.enums.RoleEnum.*;
 
             shopVO.setIsValid(0);
             Shop shop = shopVO.toPO();
-            System.out.println("=====1=====");
             shopRepository.save(shop);
-            System.out.println("=====2=====");
             return "创建成功";
         } catch (Exception e) {
             return "创建失败";
