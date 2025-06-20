@@ -26,7 +26,7 @@ const handleAdd = (productId: number) => {
         if (res.data.code === '200') {
             ElMessage.success({ message: '添加成功', duration: 1000 });
         }
-    }).catch((error) => { });
+    }).catch(() => { });
 }
 
 const pageInit = async () => {
@@ -92,6 +92,7 @@ onMounted(pageInit);
                 </div>
             </div>
         </el-card>
+    </div>
 </template>
 
 <style scoped>
