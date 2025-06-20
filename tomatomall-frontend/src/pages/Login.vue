@@ -64,7 +64,7 @@ const handleLogin = async () => {
                 ElMessage.error(response.data.message || "登录失败");
             }
         } catch (err: any) {
-            ElMessage.error(err || "登录失败");
+            ElMessage.error("登录失败");
         } finally {
             loading.close()
         }
@@ -77,7 +77,8 @@ const handleLogin = async () => {
 
 <template>
     <div class="form-container">
-        <el-form ref="ruleFormRef" :model="ruleForm" :rules="rules" :size="formSize" class="centered-form" label-width="auto" status-icon>
+        <el-form ref="ruleFormRef" :model="ruleForm" :rules="rules" :size="formSize" class="centered-form"
+            label-width="auto" status-icon>
             <h2 class="form-title">用户登录</h2>
 
             <el-form-item label="用户名" prop="username">

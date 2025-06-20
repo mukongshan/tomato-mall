@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { ElMessage, ElSkeleton, ElDialog, ElForm, ElFormItem, ElInput, ElRate, ElButton } from 'element-plus';
-import { Picture } from '@element-plus/icons-vue'; // Added Star for consistency
+import { Picture } from '@element-plus/icons-vue';
 import { Shop, getShopDetail } from '@/api/shop';
 import { Product, getProductsByShopId } from '@/api/product';
 import { Review, getShopReviews, addShopReview } from '@/api/review';
@@ -30,7 +30,7 @@ const submitLoading = ref(false);
 
 const checkEmployeeStatus = async () => {
     const response = await getMessageByFromUserAndContent(Number(sessionStorage.getItem('id')), "NEW_EMPLOYEE_APPLICATION");
-    return response.data.data; // Assuming this returns a boolean or truthy/falsy value
+    return response.data.data;
 };
 
 // 获取店铺详情
@@ -59,12 +59,16 @@ const fetchShopProducts = async () => {
 
 // 获取店铺评论
 const fetchShopReviews = async () => {
-    reviewsLoading.value = true;
-    const response = await getShopReviews(shopId.value);
-    reviews.value = response.data.data || [];
-
-    reviewsLoading.value = false;
-
+    try {
+        reviewsLoading.value = true;
+        const response = await getShopReviews(shopId.value);
+        reviews.value = response.data.data || [];
+    } catch (error) {
+        ElMessage.error('获取评论失败');
+        console.error(error);
+    } finally {
+        reviewsLoading.value = false;
+    }
 };
 
 // 提交评论
@@ -77,7 +81,7 @@ const submitReview = async () => {
             content: reviewForm.value.content,
             rate: reviewForm.value.rate,
             type: 'SHOP',
-            productId: 0,
+            productId: 0, // 店铺评论不需要商品ID
             shopId: shopId.value,
             createdAt: new Date().toISOString()
         };
@@ -85,8 +89,14 @@ const submitReview = async () => {
         await addShopReview(reviewData);
         ElMessage.success('评论添加成功');
 
-        reviewForm.value = { content: '', rate: 5 };
+        // 重置表单并关闭对话框
+        reviewForm.value = {
+            content: '',
+            rate: 5
+        };
         reviewDialogVisible.value = false;
+
+        // 重新获取评论列表
         await fetchShopReviews();
     } catch (error) {
         ElMessage.error('评论添加失败');
@@ -96,17 +106,21 @@ const submitReview = async () => {
     }
 };
 
+// 打开添加评论对话框
 const openReviewDialog = () => {
     if (!isCustomer) {
+        ElMessage.warning('请先登录');
         return;
     }
     reviewDialogVisible.value = true;
 };
 
+// 跳转到商品详情
 const gotoProductDetail = (productId: number) => {
-    router.push(`/product/${productId}`);
+    router.push(`/product/detail/${productId}`);
 };
 
+// 格式化时间
 const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('zh-CN', {
@@ -120,47 +134,35 @@ const formatDate = (dateString: string) => {
 
 onMounted(async () => {
     await Promise.all([fetchShopDetail(), fetchShopProducts(), fetchShopReviews()]);
-    if (sessionStorage.getItem('id')) { // Ensure user is logged in before checking status
-        applied.value = await checkEmployeeStatus();
-    }
+    applied.value = await checkEmployeeStatus();
 });
 
 const handleApplyForStaff = async () => {
-    const username = sessionStorage.getItem('username');
-    if (!username || !shopInfo.value) {
-        ElMessage.error('无法获取用户信息或店铺信息');
-        return;
-    }
+    const username = sessionStorage.getItem('username') as string;
+    const userDetail = await getUserDetails(username);
+    const updateUser = {
+        ...userDetail.data.data,
+        isValidStaff: 0, // 设置为待审核状态
+        shopId: (shopInfo.value as Shop).shopId
+    } as unknown as UserDetail;
+    // 发送申请成为店员的消息
+    const message: Message = {
+        id: 0,
+        isRead: false,
+        fromUser: userDetail.data.data.id,
+        toUser: (shopInfo.value as Shop).ownerId,
+        content: "NEW_EMPLOYEE_APPLICATION",
+        createdTime: new Date().toISOString()
+    };
+    await sendMessage(message);
+
+    console.log('申请成为店员的用户信息:', updateUser);
     try {
-        const userDetailResponse = await getUserDetails(username);
-        const userDetails = userDetailResponse.data.data;
-
-        if (!userDetails) {
-            ElMessage.error('无法获取用户详细信息');
-            return;
-        }
-
-        const updateUser: Partial<UserDetail> = { // Use Partial for update
-            id: userDetails.id,
-            isValidStaff: 0, // 设置为待审核状态
-            shopId: shopInfo.value.shopId
-        };
-
-        const message: Message = {
-            id: 0,
-            isRead: false,
-            fromUser: userDetails.id,
-            toUser: shopInfo.value.ownerId,
-            content: "NEW_EMPLOYEE_APPLICATION",
-            createdTime: new Date().toISOString()
-        };
-        await sendMessage(message);
-        await updateUserInfo(updateUser as UserDetail); // Cast to UserDetail if API expects full object
+        await updateUserInfo(updateUser);
         ElMessage.success('申请已提交，请等待审核');
-        applied.value = true; // Update applied status locally
     } catch (error) {
         ElMessage.error('申请提交失败，请稍后重试');
-        console.error('申请成为店员失败:', error);
+        console.error(error);
     }
 };
 </script>
@@ -168,19 +170,19 @@ const handleApplyForStaff = async () => {
 <template>
     <div class="shop-detail-container">
         <!-- 店铺信息 -->
-        <div v-if="shopInfo" class="shop-info-section fade-in">
+        <div v-if="shopInfo" class="shop-info-section">
             <div class="shop-header">
-                <div class="shop-avatar slide-left">
+                <div class="shop-avatar">
                     <el-image :src="shopInfo.iconUrl" fit="cover" class="avatar-image">
                         <template #error>
-                            <div class="image-error-global">
-                                <el-icon class="bounce">
+                            <div class="image-error">
+                                <el-icon>
                                     <Picture />
                                 </el-icon>
                                 <span>店铺图片加载失败</span>
                             </div>
                         </template>
-                        <div v-if="!shopInfo.iconUrl" class="image-placeholder-global">
+                        <div v-if="!shopInfo.iconUrl" class="image-placeholder">
                             <el-icon>
                                 <Picture />
                             </el-icon>
@@ -188,20 +190,19 @@ const handleApplyForStaff = async () => {
                         </div>
                     </el-image>
                 </div>
-                <div class="shop-meta slide-right">
-                    <h1 class="shop-name slide-up">{{ shopInfo.name }}</h1>
-                    <div class="shop-rating-display slide-up-delay">
-                        <el-rate v-model="shopInfo.rate" disabled show-score text-color="#ff9900"
-                            score-template="{value} 分" size="large" />
-                    </div>
-                    <p class="shop-description fade-in-text">{{ shopInfo.description }}</p>
+                <div class="shop-meta">
+                    <h1 class="shop-name">{{ shopInfo.name }}</h1>
+                    <el-rate v-model="shopInfo.rate" disabled show-score text-color="#ff9900"
+                        score-template="{value} 分" />
+                    <p class="shop-description">{{ shopInfo.description }}</p>
 
-                    <div class="apply-section fade-in-up" v-if="isCustomer">
-                        <el-button v-if="applied" disabled type="info" class="action-button">
+                    <!-- 新增：申请成为店员按钮 -->
+                    <div class="apply-section" v-if="isCustomer">
+                        <el-button v-if="applied" disabled type="info">
                             您已有店员申请
                         </el-button>
-                        <el-button v-else type="primary" @click="handleApplyForStaff"
-                            class="action-button apply-button">
+
+                        <el-button v-else type="primary" @click="handleApplyForStaff">
                             申请成为店员
                         </el-button>
                         <p class="apply-tip">审核通过后即可参与店铺管理</p>
@@ -209,37 +210,30 @@ const handleApplyForStaff = async () => {
                 </div>
             </div>
         </div>
-        <div v-else class="empty-state fade-in">
-            <el-skeleton :rows="5" animated />
-        </div>
-
 
         <!-- 店铺评论区域 -->
-        <div class="reviews-section fade-in-up">
-            <div class="section-header-global">
-                <h2 class="section-title-global">店铺评价</h2>
-                <el-button v-if="isCustomer" type="primary" @click="openReviewDialog"
-                    class="action-button write-review-button">
+        <div class="reviews-section">
+            <div class="section-header">
+                <h2 class="section-title">店铺评价</h2>
+                <el-button v-if="isCustomer" type="primary" @click="openReviewDialog">
                     写评价
                 </el-button>
             </div>
 
             <el-skeleton v-if="reviewsLoading" :rows="3" animated />
 
-            <div v-else-if="reviews.length === 0" class="empty-reviews fade-in">
-                <el-empty description="暂无评价，快来写下第一条吧！" />
+            <div v-else-if="reviews.length === 0" class="empty-reviews">
+                <el-empty description="暂无评价" />
             </div>
 
             <div v-else class="reviews-list">
-                <div v-for="(review, index) in reviews" :key="review.id" class="review-item scale-in"
-                    :style="{ animationDelay: `${index * 0.1}s` }">
+                <div v-for="review in reviews" :key="review.id" class="review-item">
                     <div class="review-header">
                         <div class="reviewer-info">
                             <span class="reviewer-name">用户{{ review.accountId }}</span>
-                            <el-rate v-model="review.rate" disabled text-color="#ff9900" class="review-rating-stars"
-                                size="small" />
+                            <el-rate v-model="review.rate" disabled text-color="#ff9900" class="review-rating" />
                         </div>
-                        <span class="review-date fade-in-text">{{ formatDate(review.createdAt) }}</span>
+                        <span class="review-date">{{ formatDate(review.createdAt) }}</span>
                     </div>
                     <div class="review-content">
                         {{ review.content }}
@@ -249,33 +243,33 @@ const handleApplyForStaff = async () => {
         </div>
 
         <!-- 商品列表 -->
-        <div class="product-list-section fade-in-up">
-            <h2 class="section-title-global">店铺商品</h2>
+        <div class="product-list-section">
+            <h2 class="section-title">店铺商品</h2>
 
             <el-skeleton v-if="loading" :rows="6" animated />
 
-            <div v-else-if="products.length === 0" class="empty-products fade-in">
+            <div v-else-if="products.length === 0" class="empty-products">
                 <el-empty description="该店铺暂无商品" />
             </div>
 
             <div v-else class="product-grid">
-                <div v-for="(product, index) in products" :key="product.id" class="product-card-item scale-in"
-                    @click="gotoProductDetail(product.id)" :style="{ animationDelay: `${index * 0.05}s` }">
+                <div v-for="product in products" :key="product.id" class="product-card"
+                    @click="gotoProductDetail(product.id)">
                     <div class="product-image-container">
                         <el-image :src="product.cover" fit="cover" class="product-image">
                             <template #error>
-                                <div class="image-error-global product-image-error">
-                                    <el-icon class="bounce">
+                                <div class="image-error">
+                                    <el-icon>
                                         <Picture />
                                     </el-icon>
                                     <span>图片加载失败</span>
                                 </div>
                             </template>
-                            <div v-if="!product.cover" class="image-placeholder-global product-image-error">
+                            <div v-if="!product.cover" class="image-placeholder">
                                 <el-icon>
                                     <Picture />
                                 </el-icon>
-                                <span>暂无图片</span>
+                                <span>暂无商品图片</span>
                             </div>
                         </el-image>
                     </div>
@@ -283,9 +277,8 @@ const handleApplyForStaff = async () => {
                     <div class="product-info">
                         <h3 class="product-title">{{ product.title }}</h3>
                         <p class="product-price">¥ {{ product.price.toFixed(2) }}</p>
-                        <div class="product-meta-info">
-                            <el-rate v-model="product.rate" disabled text-color="#ff9900" class="product-rate-stars"
-                                size="small" />
+                        <div class="product-meta">
+                            <el-rate v-model="product.rate" disabled text-color="#ff9900" class="product-rate" />
                         </div>
                     </div>
                 </div>
@@ -293,26 +286,24 @@ const handleApplyForStaff = async () => {
         </div>
 
         <!-- 添加评论对话框 -->
-        <el-dialog v-model="reviewDialogVisible" title="添加店铺评价" width="500px" class="review-dialog" :before-close="() => {
+        <el-dialog v-model="reviewDialogVisible" title="添加店铺评价" width="500px" :before-close="() => {
             reviewForm = { content: '', rate: 5 };
             reviewDialogVisible = false;
         }">
-            <el-form :model="reviewForm" label-width="80px" class="review-form">
+            <el-form :model="reviewForm" label-width="80px">
                 <el-form-item label="评分" prop="rate">
-                    <div class="dialog-rating">
-                        <el-rate v-model="reviewForm.rate" show-text text-color="#ff9900" size="large" />
-                    </div>
+                    <el-rate v-model="reviewForm.rate" show-text text-color="#ff9900" />
                 </el-form-item>
                 <el-form-item label="评价内容" prop="content">
                     <el-input v-model="reviewForm.content" type="textarea" :rows="4" placeholder="请输入您对这家店铺的评价..."
-                        maxlength="500" show-word-limit class="review-textarea" />
+                        maxlength="500" show-word-limit />
                 </el-form-item>
             </el-form>
 
             <template #footer>
                 <span class="dialog-footer">
-                    <el-button @click="reviewDialogVisible = false" class="cancel-btn">取消</el-button>
-                    <el-button type="primary" @click="submitReview" :loading="submitLoading" class="submit-btn">
+                    <el-button @click="reviewDialogVisible = false">取消</el-button>
+                    <el-button type="primary" @click="submitReview" :loading="submitLoading">
                         提交评价
                     </el-button>
                 </span>
@@ -322,328 +313,101 @@ const handleApplyForStaff = async () => {
 </template>
 
 <style scoped>
-/* Animation Keyframes (reused from previous example) */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(40px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes slideLeft {
-    from {
-        opacity: 0;
-        transform: translateX(-40px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-@keyframes slideRight {
-    from {
-        opacity: 0;
-        transform: translateX(40px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-@keyframes scaleIn {
-    from {
-        opacity: 0;
-        transform: scale(0.9);
-    }
-
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-@keyframes bounce {
-
-    0%,
-    20%,
-    50%,
-    80%,
-    100% {
-        transform: translateY(0);
-    }
-
-    40% {
-        transform: translateY(-10px);
-    }
-
-    60% {
-        transform: translateY(-5px);
-    }
-}
-
-@keyframes fadeInText {
-    from {
-        opacity: 0;
-        filter: blur(2px);
-    }
-
-    to {
-        opacity: 1;
-        filter: blur(0);
-    }
-}
-
-@keyframes gradientShift {
-    0% {
-        background-position: 0% 50%;
-    }
-
-    50% {
-        background-position: 100% 50%;
-    }
-
-    100% {
-        background-position: 0% 50%;
-    }
-}
-
-/* Animation Classes */
-.fade-in {
-    animation: fadeIn 0.8s ease-out both;
-}
-
-.fade-in-up {
-    animation: fadeInUp 0.9s ease-out both;
-}
-
-.slide-up {
-    animation: slideUp 0.7s ease-out both;
-}
-
-.slide-up-delay {
-    animation: slideUp 0.7s ease-out 0.2s both;
-}
-
-.slide-left {
-    animation: slideLeft 0.8s ease-out 0.3s both;
-}
-
-.slide-right {
-    animation: slideRight 0.8s ease-out 0.4s both;
-}
-
-.scale-in {
-    animation: scaleIn 0.6s ease-out both;
-}
-
-.bounce {
-    animation: bounce 1s ease-in-out infinite;
-}
-
-.fade-in-text {
-    animation: fadeInText 0.5s ease-out both;
-}
-
-/* Base Container */
 .shop-detail-container {
     max-width: 1200px;
-    margin: 30px auto;
+    margin: 0 auto;
     padding: 20px;
-    background-color: #f8f9fa;
-    /* Light gray background */
-    min-height: 100vh;
 }
 
-/* Card-like Sections (Shop Info, Reviews, Products) */
-.shop-info-section,
-.reviews-section,
-.product-list-section {
-    background: #ffffff;
-    border-radius: 16px;
-    padding: 24px 32px;
+/* 新增样式 */
+.apply-section {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.apply-tip {
+    font-size: 12px;
+    color: #909399;
+    margin-top: 8px;
+}
+
+/* 店铺信息样式 */
+.shop-info-section {
+    background: #fff;
+    border-radius: 8px;
+    padding: 24px;
     margin-bottom: 24px;
-    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.07);
-    border: 1px solid #e9ecef;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
 }
 
-.shop-info-section:hover,
-.reviews-section:hover,
-.product-list-section:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-}
-
-/* Global Section Header */
-.section-header-global {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid #dee2e6;
-}
-
-.section-title-global {
-    font-size: 22px;
-    font-weight: 600;
-    color: #343a40;
-    position: relative;
-}
-
-.section-title-global::after {
-    content: '';
-    position: absolute;
-    bottom: -17px;
-    /* Adjusted for border */
-    left: 0;
-    width: 0;
-    height: 3px;
-    background-color: #007bff;
-    /* Primary blue */
-    transition: width 0.5s ease;
-}
-
-.section-title-global:hover::after {
-    width: 70px;
-}
-
-/* Shop Info Section */
 .shop-header {
     display: flex;
-    gap: 32px;
-    /* Increased gap */
-    align-items: flex-start;
-    /* Align items to the top */
+    gap: 24px;
 }
 
 .shop-avatar {
-    width: 220px;
-    /* Slightly larger avatar */
-    height: 220px;
+    width: 200px;
+    height: 200px;
     flex-shrink: 0;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .avatar-image {
     width: 100%;
     height: 100%;
-    transition: transform 0.4s ease;
-}
-
-.avatar-image:hover {
-    transform: scale(1.05);
+    border-radius: 8px;
 }
 
 .shop-meta {
     flex: 1;
-    padding-top: 10px;
-    /* Add some padding to align text better if avatar is large */
 }
 
 .shop-name {
-    margin: 0 0 12px 0;
-    font-size: 28px;
-    font-weight: 700;
-    color: #0056b3;
-    /* Darker blue for shop name */
-    line-height: 1.3;
+    margin: 0 0 16px 0;
+    font-size: 24px;
+    color: #303133;
 }
-
-.shop-rating-display {
-    margin-bottom: 16px;
-}
-
-.shop-rating-display .el-rate__icon {
-    /* Target stars inside el-rate */
-    font-size: 24px !important;
-    /* Make shop rating stars larger */
-}
-
-.shop-rating-display .el-rate__text {
-    font-size: 18px !important;
-    margin-left: 8px;
-}
-
 
 .shop-description {
-    color: #495057;
-    /* Slightly darker text for description */
-    line-height: 1.7;
+    color: #606266;
+    line-height: 1.6;
     margin: 16px 0;
-    font-size: 15px;
-    background-color: #f8f9fa;
-    padding: 12px;
+}
+
+.shop-stats {
+    margin-top: 16px;
+    color: #909399;
+}
+
+.stat-item {
+    margin-right: 20px;
+}
+
+/* 评论区域样式 */
+.reviews-section {
+    background: #fff;
     border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
 }
 
-.apply-section {
-    margin-top: 24px;
-    padding-top: 24px;
-    border-top: 1px solid #e9ecef;
-}
-
-.apply-tip {
-    font-size: 13px;
-    color: #6c757d;
-    margin-top: 10px;
-}
-
-/* Reviews Section */
-.reviews-list {
+.section-header {
     display: flex;
-    flex-direction: column;
-    gap: 20px;
-    /* Increased gap between review items */
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.reviews-list {
+    space-y: 16px;
 }
 
 .review-item {
-    padding: 20px;
-    border: 1px solid #e0e0e0;
-    border-radius: 12px;
-    background-color: #fdfdfd;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.review-item:hover {
-    transform: translateY(-3px) scale(1.01);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-    border-color: #007bff;
+    padding: 16px;
+    border: 1px solid #ebeef5;
+    border-radius: 8px;
+    margin-bottom: 16px;
 }
 
 .review-header {
@@ -656,337 +420,160 @@ const handleApplyForStaff = async () => {
 .reviewer-info {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
 }
 
 .reviewer-name {
     font-weight: 600;
-    color: #0056b3;
-    /* Consistent blue for names */
+    color: #303133;
 }
 
-.review-item:hover .reviewer-name {
-    color: #007bff;
-}
-
-.review-rating-stars .el-rate__icon {
-    margin-right: 1px !important;
-    /* Adjust spacing for small stars */
+.review-rating {
+    font-size: 14px;
 }
 
 .review-date {
-    color: #6c757d;
+    color: #909399;
     font-size: 12px;
 }
 
 .review-content {
-    color: #495057;
+    color: #606266;
     line-height: 1.6;
-    font-size: 14px;
 }
 
-.review-item:hover .review-content {
-    color: #343a40;
+.empty-reviews {
+    text-align: center;
+    padding: 40px 0;
 }
 
-/* Product List Section */
+/* 商品列表样式 */
+.section-title {
+    font-size: 20px;
+    color: #303133;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #eee;
+}
+
 .product-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    /* Slightly larger minmax */
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 24px;
 }
 
-.product-card-item {
-    /* Renamed from product-card to avoid conflict */
+.product-card {
     background: #fff;
-    border-radius: 12px;
-    /* Softer radius */
+    border-radius: 8px;
     overflow: hidden;
     cursor: pointer;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border: 1px solid #e9ecef;
-    display: flex;
-    flex-direction: column;
+    transition: transform 0.3s, box-shadow 0.3s;
 }
 
-.product-card-item:hover {
-    transform: translateY(-8px);
-    /* More pronounced hover effect */
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .product-image-container {
     width: 100%;
-    height: 220px;
-    /* Adjusted height */
-    background: #f8f9fa;
-    overflow: hidden;
-    /* Ensure image hover effect is contained */
+    height: 240px;
+    background: #f5f7fa;
 }
 
 .product-image {
     width: 100%;
     height: 100%;
-    transition: transform 0.4s ease;
 }
 
-.product-card-item:hover .product-image {
-    transform: scale(1.08);
-    /* Zoom effect on image */
-}
-
-.product-info {
-    padding: 16px;
-    flex-grow: 1;
-    /* Allow info to take remaining space */
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    /* Distribute content within info */
-}
-
-.product-title {
-    margin: 0 0 8px 0;
-    font-size: 17px;
-    /* Slightly larger title */
-    font-weight: 600;
-    /* Bolder title */
-    color: #343a40;
-    line-height: 1.4;
-    height: 2.8em;
-    /* Limit to 2 lines */
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.product-price {
-    color: #e63946;
-    /* Vibrant red for price */
-    font-size: 19px;
-    font-weight: 700;
-    /* Bolder price */
-    margin: 8px 0;
-}
-
-.product-meta-info {
-    display: flex;
-    justify-content: flex-start;
-    /* Align stars to the left */
-    align-items: center;
-    margin-top: auto;
-    /* Push to bottom */
-}
-
-.product-rate-stars .el-rate__icon {
-    margin-right: 1px !important;
-}
-
-.product-rate-stars .el-rate__text {
-    display: none;
-    /* Hide score text for product cards if desired */
-}
-
-
-/* Global Image Error/Placeholder */
-.image-error-global,
-.image-placeholder-global {
+.image-error,
+.image-placeholder {
     width: 100%;
     height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: #e9ecef;
-    /* Lighter background */
-    color: #6c757d;
-    border-radius: inherit;
-    /* Inherit border-radius from parent */
+    background: #f5f7fa;
+    color: #909399;
 }
 
-.image-error-global .el-icon,
-.image-placeholder-global .el-icon {
-    font-size: 48px;
-    margin-bottom: 12px;
-}
-
-.product-image-error {
-    /* Specific for product card image placeholders */
-    font-size: 13px;
-}
-
-.product-image-error .el-icon {
-    font-size: 32px;
+.image-error .el-icon,
+.image-placeholder .el-icon {
+    font-size: 40px;
     margin-bottom: 8px;
 }
 
-
-/* Buttons */
-.action-button {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    padding: 10px 20px;
-    font-size: 15px;
+.product-info {
+    padding: 16px;
 }
 
-.action-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(0, 123, 255, 0.3);
+.product-title {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+    color: #303133;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
-.apply-button {
-    background-color: #28a745;
-    /* Green for apply */
-    border-color: #28a745;
+.product-price {
+    color: #f56c6c;
+    font-size: 18px;
+    font-weight: 600;
+    margin: 8px 0;
 }
 
-.apply-button:hover {
-    background-color: #218838;
-    border-color: #1e7e34;
-    box-shadow: 0 6px 15px rgba(40, 167, 69, 0.4);
+.product-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-.write-review-button {
-    background-color: #007bff;
-    border-color: #007bff;
+.product-rate {
+    flex: 1;
 }
 
-.write-review-button:hover {
-    background-color: #0069d9;
-    border-color: #0062cc;
-}
-
-
-/* Dialog Styles (reused) */
-.review-dialog {
-    animation: fadeIn 0.4s ease-out;
-}
-
-.dialog-rating {
-    padding: 12px;
-    background: linear-gradient(135deg, #f8f9fa, #ffffff);
-    border-radius: 8px;
-    display: inline-block;
-    border: 1px solid #dee2e6;
-}
-
-.review-textarea {
-    transition: all 0.3s ease;
-}
-
-.review-textarea:focus-within {
-    transform: scale(1.01);
-    border-color: #007bff !important;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, .25)
-}
-
+/* 对话框样式 */
 .dialog-footer {
     display: flex;
     justify-content: flex-end;
     gap: 12px;
 }
 
-.cancel-btn:hover {
-    transform: translateX(-2px);
-}
-
-.submit-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(0, 123, 255, 0.3);
-}
-
-
-/* Empty States */
-.empty-reviews,
-.empty-products,
-.empty-state {
-    text-align: center;
-    padding: 48px 0;
-    color: #6c757d;
-}
-
-.empty-state .el-skeleton {
-    padding: 20px;
-}
-
-
-/* Responsive Adjustments */
-@media (max-width: 992px) {
-    .product-grid {
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    }
-}
-
+/* 响应式调整 */
 @media (max-width: 768px) {
     .shop-header {
         flex-direction: column;
-        align-items: center;
-        /* Center avatar when stacked */
     }
 
     .shop-avatar {
-        width: 200px;
-        /* Maintain a good size */
-        height: 200px;
-        margin-bottom: 20px;
-    }
-
-    .shop-meta {
-        text-align: center;
-        /* Center text when stacked */
-    }
-
-    .section-header-global {
-        flex-direction: column;
-        gap: 16px;
-        align-items: stretch;
-        /* Stretch items */
-    }
-
-    .section-header-global .action-button {
         width: 100%;
-        /* Full width button */
+        height: auto;
+        aspect-ratio: 1/1;
     }
 
     .product-grid {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .section-header {
+        flex-direction: column;
+        gap: 16px;
+        align-items: flex-start;
+    }
+
+    .reviewer-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
     }
 }
 
 @media (max-width: 480px) {
-    .shop-detail-container {
-        padding: 15px;
-    }
-
-    .shop-info-section,
-    .reviews-section,
-    .product-list-section {
-        padding: 20px;
-    }
-
-    .shop-name {
-        font-size: 24px;
-    }
-
     .product-grid {
         grid-template-columns: 1fr;
-        /* Single column */
-    }
-
-    .product-title {
-        font-size: 16px;
-    }
-
-    .product-price {
-        font-size: 18px;
-    }
-
-    .dialog-rating .el-rate {
-        /* Ensure rate component is not too large on mobile */
-        transform: scale(0.9);
-        transform-origin: left;
     }
 }
 </style>
