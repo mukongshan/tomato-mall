@@ -17,7 +17,7 @@ const ruleForm = reactive({
         username: '',
         password: '',
         name: '',
-        role: '',
+        role: "CUSTOMER",
         avatar: '',
         telephone: '',
         email: '',
@@ -37,9 +37,6 @@ const rules = reactive<FormRules<typeof ruleForm>>({
     name: [
         { required: true, message: '请输入姓名', trigger: 'blur' },
         { min: 2, max: 10, message: '姓名长度需在2-10字符之间', trigger: 'blur' }
-    ],
-    role: [
-        { required: true, message: '请选择用户角色', trigger: 'change' }
     ],
     telephone: [
         { required: true, message: '请输入手机号', trigger: 'change' },
@@ -112,7 +109,8 @@ const handleRegister = async () => {
             const response = await createAccount(submitData);
             console.log(response)
             if (response.data.code === '200') {
-                ElMessage.success("注册成功")
+                // 设置停留时间500ms
+                ElMessage.success({ message: "注册成功", duration: 500 })
                 await router.push("/login")
             } else {
                 ElMessage.warning(response.data.message || "注册未完成");
@@ -148,15 +146,6 @@ const handleRegister = async () => {
 
             <el-form-item label="真实姓名" prop="name">
                 <el-input v-model="ruleForm.name" />
-            </el-form-item>
-
-            <el-form-item label="用户角色" prop="role">
-                <el-select v-model="ruleForm.role">
-                    <el-option label="顾客" value="CUSTOMER" />
-                    <el-option label="员工" value="STAFF" />
-                    <el-option label="店主" value="SHOPKEEPER" />
-                    <el-option label="管理员" value="admin" />
-                </el-select>
             </el-form-item>
 
             <el-form-item label="手机号" prop="telephone">

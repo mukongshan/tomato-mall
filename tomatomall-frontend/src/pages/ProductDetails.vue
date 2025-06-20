@@ -129,7 +129,6 @@ const submitReview = async () => {
         };
 
         await addProductReview(reviewData);
-        ElMessage.success('评论添加成功');
 
         // 重置表单并关闭对话框
         reviewForm.value = { content: '', rate: 5 };

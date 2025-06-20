@@ -92,8 +92,6 @@ const handleSubmit = async () => {
         await addProduct(productWithoutId).then((res) => {
             if (res.data.code === '200') {
                 ElMessage.success('添加成功');
-            } else {
-                ElMessage.error(res.data.msg);
             }
         });
     } else { // 编辑数据
@@ -158,8 +156,6 @@ const handleStockpile = async (productId: number) => {
     } catch (error: any) {
         if (error === 'cancel') {
             ElMessage.info('已取消调整');
-        } else {
-            ElMessage.error(error.message || '操作失败');
         }
     }
 };

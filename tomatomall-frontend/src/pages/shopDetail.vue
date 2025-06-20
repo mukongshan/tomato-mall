@@ -59,16 +59,12 @@ const fetchShopProducts = async () => {
 
 // 获取店铺评论
 const fetchShopReviews = async () => {
-    try {
-        reviewsLoading.value = true;
-        const response = await getShopReviews(shopId.value);
-        reviews.value = response.data.data || [];
-    } catch (error) {
-        ElMessage.error('获取评论失败');
-        console.error(error);
-    } finally {
-        reviewsLoading.value = false;
-    }
+    reviewsLoading.value = true;
+    const response = await getShopReviews(shopId.value);
+    reviews.value = response.data.data || [];
+
+    reviewsLoading.value = false;
+
 };
 
 // 提交评论
@@ -102,7 +98,6 @@ const submitReview = async () => {
 
 const openReviewDialog = () => {
     if (!isCustomer) {
-        ElMessage.warning('请先登录');
         return;
     }
     reviewDialogVisible.value = true;

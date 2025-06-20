@@ -3,11 +3,11 @@ import { ref, reactive } from 'vue'
 import { Plus, UploadFilled } from '@element-plus/icons-vue' // Added UploadFilled
 import { UploadProps, UploadFile, FormRules, ElMessage } from 'element-plus'
 import type { UserDetail, AccountDetail } from '@/api/account.ts'
-import { getUserDetails, updateUser } from '@/api/account.ts'
+import { getUserDetails, updateUser, updateUserInfo } from '@/api/account.ts'
 import { UserFilled, EditPen, CircleCheck, CircleClose } from "@element-plus/icons-vue"; // Added more icons
 import router from "@/router";
 import { imageProcess } from '@/utils/UploadImage'
-import { Picture } from '@element-plus/icons-vue'
+
 
 // 用户信息
 const userInfo = ref<UserDetail>({
@@ -107,14 +107,11 @@ const handleAvatarChange: UploadProps['onChange'] = async (uploadFile: UploadFil
 
 // 获取用户信息
 const fetchUserDetails = async () => {
-    try {
-        const response = await getUserDetails(username)
-        Object.assign(userInfo.value, response.data.data)
-        resetEditForm()
-    } catch (error) {
-        console.error('获取用户信息失败:', error)
-        ElMessage.error('获取用户信息失败')
-    }
+
+    const response = await getUserDetails(username)
+    Object.assign(userInfo.value, response.data.data)
+    resetEditForm()
+
 }
 fetchUserDetails()
 
@@ -135,10 +132,11 @@ const handleUpdate = () => {
             const payload: Partial<AccountDetail> = { ...editForm };
             if (!editForm.password) {
                 delete payload.password;
+                await updateUserInfo(payload as AccountDetail);
+            } else {
+                delete (payload as any).confirmPassword;
+                await updateUser(payload as AccountDetail)
             }
-            delete (payload as any).confirmPassword;
-
-            await updateUser(payload as AccountDetail)
             await fetchUserDetails();
             editMode.value = false
             ElMessage({
@@ -272,7 +270,7 @@ const cancelEdit = () => {
                 </el-row>
 
                 <el-form-item label="用户角色" prop="role">
-                    <el-select v-model="editForm.role" placeholder="选择您的账户角色" style="width: 100%;">
+                    <el-select v-model="editForm.role" placeholder="选择您的账户角色" style="width: 100%;" disabled>
                         <el-option label="顾客 (Customer)" value="CUSTOMER" />
                         <el-option label="员工 (Staff)" value="STAFF" />
                         <el-option label="店主 (Shopkeeper)" value="SHOPKEEPER" />

@@ -37,7 +37,6 @@ const fetchUserDetails = async () => {
         ElMessage.error('获取用户信息失败')
     }
 }
-fetchUserDetails()
 // 获取购物车数据
 const fetchCart = async () => {
     loading.value = true
@@ -91,7 +90,7 @@ const getCartStockpile = (productId: number): Stockpile => {
 }
 
 // 初始化加载
-onMounted(() => { fetchCart() })
+onMounted(async () => { await Promise.all([fetchUserDetails(), fetchCart()]); })
 
 // 数量变化处理
 const handleQuantityChange = (item: CartItem, newQuantity: number) => {

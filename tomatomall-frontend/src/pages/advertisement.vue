@@ -50,10 +50,6 @@ const loadAdvertisements = async () => {
         const response = await getAdvertisements();
         advertisementList.value = response.data.data;
         console.log(advertisementList.value)
-        ElMessage.success({
-            message: '广告列表加载成功',
-            duration: 1000
-        });
     } catch (error) {
         console.error('加载广告失败:', error);
         ElMessage.error({

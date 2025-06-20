@@ -15,7 +15,6 @@ const loadAdvertisements = async () => {
     try {
         const response = await getAdvertisements();
         advertisementList.value = response.data.data;
-        ElMessage.success({ message: '广告列表加载成功', duration: 1000 });
     } catch (error) {
         console.error('加载广告失败:', error);
         ElMessage.error({ message: '加载广告失败，请稍后重试', duration: 1000 });
@@ -27,15 +26,15 @@ const handleAdd = (productId: number) => {
         if (res.data.code === '200') {
             ElMessage.success('添加成功');
         }
-    }).catch((error) => {});
+    }).catch((error) => { });
 };
 
 const pageInit = async () => {
     const res = await getProductsList();
     if (res.data.code === '200') {
         products.value = res.data.data;
-    } else {
-        ElMessage({ message: res.data.msg, type: 'error', center: true });
+    } else if (res.data.code === '401') {
+        return;
     }
     await loadAdvertisements();
 };
@@ -50,13 +49,16 @@ pageInit();
 <template>
     <h1 class="page-title">番茄书城</h1>
 
-    <el-carousel v-if="advertisementList.length > 0" class="ad-carousel" :interval="3000" height="300px" indicator-position="outside">
+    <el-carousel v-if="advertisementList.length > 0" class="ad-carousel" :interval="3000" height="300px"
+        indicator-position="outside">
         <el-carousel-item v-for="ad in advertisementList" :key="ad.id" @click="gotoDetails(ad.productId)">
             <div class="ad-item">
                 <el-image :src="ad.imgUrl" :alt="ad.title" class="ad-image">
                     <template #error>
                         <div class="image-error">
-                            <el-icon><Picture /></el-icon>
+                            <el-icon>
+                                <Picture />
+                            </el-icon>
                             <span>图片加载失败</span>
                         </div>
                     </template>
@@ -73,7 +75,9 @@ pageInit();
                     <el-image :src="product.cover" alt="商品图片" class="product-image">
                         <template #error>
                             <div class="image-error">
-                                <el-icon><Picture /></el-icon>
+                                <el-icon>
+                                    <Picture />
+                                </el-icon>
                                 <span>图片加载失败</span>
                             </div>
                         </template>

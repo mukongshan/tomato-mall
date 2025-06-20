@@ -76,7 +76,7 @@ const handleCreate = async () => {
         await sendMessage(message);
         console.log(response)
         if (response.data.code === '200') {
-            ElMessage.success("创建成功 请等待审核")
+            ElMessage.success({ message: "创建成功 请等待审核", duration: 500 })
             await router.push("/")
         } else {
             ElMessage.warning(response.data.data);

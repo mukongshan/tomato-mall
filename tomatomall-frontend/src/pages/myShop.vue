@@ -26,30 +26,23 @@ const loading = ref(true);
 
 // 获取店铺详情
 const fetchShopDetail = async () => {
-    try {
-        const response = await getShopDetail(shopId.value);
-        shopInfo.value = response.data.data;
-    } catch (error) {
-        ElMessage.error('获取店铺信息失败');
-        console.error(error);
-    }
+
+    const response = await getShopDetail(shopId.value);
+    shopInfo.value = response.data.data;
+
 };
 
 // 获取员工列表
 const fetchStaffList = async () => {
-    try {
-        const response = await getUserListByShopId(shopId.value);
-        const allStaff = response.data.data || [];
+    const response = await getUserListByShopId(shopId.value);
+    const allStaff = response.data.data || [];
 
-        // 分离已通过和待审核员工
-        staffList.value = allStaff.filter((user: UserDetail) => user.isValidStaff === 1);
-        pendingStaffList.value = allStaff.filter((user: UserDetail) => user.isValidStaff === 0);
-    } catch (error) {
-        ElMessage.error('获取员工列表失败');
-        console.error(error);
-    } finally {
-        loading.value = false;
-    }
+    // 分离已通过和待审核员工
+    staffList.value = allStaff.filter((user: UserDetail) => user.isValidStaff === 1);
+    pendingStaffList.value = allStaff.filter((user: UserDetail) => user.isValidStaff === 0);
+
+    loading.value = false;
+
 };
 // 处理员工通过审核
 const handleStaffApprove = async (userId: number) => {

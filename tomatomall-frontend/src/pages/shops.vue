@@ -13,19 +13,15 @@ const loading = ref(false);            // 加载状态
  * 获取已通过店铺列表
  */
 const fetchApprovedShops = async () => {
-    try {
-        loading.value = true;
-        const response = await getShopList();
-        const shops = (response.data.data || []) as Shop[];
 
-        // 筛选已通过审核的店铺 (isValid === 1)
-        approvedShops.value = shops.filter(shop => shop.isValid === 1);
-    } catch (error) {
-        ElMessage.error('获取店铺列表失败');
-        console.error(error);
-    } finally {
-        loading.value = false;
-    }
+    loading.value = true;
+    const response = await getShopList();
+    const shops = (response.data.data || []) as Shop[];
+
+    // 筛选已通过审核的店铺 (isValid === 1)
+    approvedShops.value = shops.filter(shop => shop.isValid === 1);
+    loading.value = false;
+
 };
 
 /**
