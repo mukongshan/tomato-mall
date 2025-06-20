@@ -16,11 +16,15 @@ public class ReviewController {
 
     @PostMapping("/product")
     public Response<String> addProductReview(@RequestBody ReviewVO reviewVO) {
+        // 把商店id设置为null
+        reviewVO.setShopId(null);
         return Response.buildSuccess(reviewService.addProductReview(reviewVO));
     }
 
     @PostMapping("/shop")
     public Response<String> addShopReview(@RequestBody ReviewVO reviewVO) {
+        // 把商品id设置为null
+        reviewVO.setProductId(null);
         return Response.buildSuccess(reviewService.addShopReview(reviewVO));
     }
 
