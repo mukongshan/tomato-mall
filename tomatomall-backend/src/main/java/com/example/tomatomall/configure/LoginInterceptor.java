@@ -25,11 +25,18 @@ public class LoginInterceptor implements HandlerInterceptor {
     TokenUtil tokenUtil;
 
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-        // 允许注册请求（POST /api/accounts）不检查 token
-        System.out.println("访问："+request.getMethod()+" "+request.getRequestURI());
+        System.out.println("访问：" + request.getMethod() + " " + request.getRequestURI());
+
+        // 允许注册请求POST /api/accounts
         if ("POST".equalsIgnoreCase(request.getMethod()) && "/api/accounts".equals(request.getRequestURI())) {
             return true;
         }
+        // 允许上传图片
+        else if("POST".equalsIgnoreCase(request.getMethod()) && "/api/image".equals(request.getRequestURI())) {
+            return true;
+        }
+
+        // 验证Token
         String token = request.getHeader("token");
         if (token != null && tokenUtil.verifyToken(token)) {
             Account account = tokenUtil.getAccount(token);

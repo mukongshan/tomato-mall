@@ -5,7 +5,7 @@ import { ComponentSize, ElLoading, ElMessage, FormInstance, FormRules, UploadFil
 import router from "../router/index.ts";
 import { createAccount } from "@/api/account";  //不能用@ 为什么不生效
 import { Plus } from '@element-plus/icons-vue'
-import { imageProcess } from "@/utils/UploadImage.ts";
+import { uploadImg } from "@/utils/image.ts";
 
 // 表单尺寸
 const formSize = ref<ComponentSize>('default')
@@ -81,9 +81,14 @@ const beforeLogoUpload: UploadProps['beforeUpload'] = (rawFile) => {
 // 图片上传处理
 const handleAvatarChange: UploadProps['onChange'] = async (uploadFile: UploadFile) => {
     if (uploadFile.raw) {
-        // 生成预览URL
-        ruleForm.avatar = await imageProcess(uploadFile.raw)
-        console.log(ruleForm.avatar)
+        try {
+            const formData = new FormData()
+            formData.append('file', uploadFile.raw!)
+            const response = await uploadImg(formData)
+            ruleForm.avatar = response.data.data;
+        } catch (error) {
+            ElMessage.error("图片上传失败：" + (error || '未知错误'));
+        }
     }
 }
 
@@ -161,8 +166,7 @@ const handleRegister = async () => {
             </el-form-item>
 
             <el-form-item label="头像" prop="avatar">
-                <!-- 只接受图片
-             关闭自动上传-->
+                <!-- 只接受图片 关闭自动上传-->
                 <!-- on-change 图片上传触发 这里是转为url -->
                 <!-- on-remove 删除 -->
                 <!-- before-upload 上传前验证 -->

@@ -3,7 +3,7 @@ import { onMounted, ref } from 'vue';
 import { componentSizes, ElMessage } from 'element-plus';
 import { Shop, createShop } from '@/api/shop';
 import { UploadFile, UploadProps, ElLoading } from 'element-plus';
-import { imageProcess } from "@/utils/UploadImage.ts";
+import { uploadImg } from "@/utils/image.ts";
 import router from "../router/index.ts";
 import { Plus } from "@element-plus/icons-vue";
 import { getAdmin } from '@/api/account.ts';
@@ -44,9 +44,14 @@ const beforeLogoUpload: UploadProps['beforeUpload'] = (rawFile) => {
 // 图片上传处理
 const handleAvatarChange: UploadProps['onChange'] = async (uploadFile: UploadFile) => {
     if (uploadFile.raw) {
-        // 生成预览URL
-        form.value.iconUrl = await imageProcess(uploadFile.raw)
-        console.log(form.value.iconUrl)
+        try {
+            const formData = new FormData()
+            formData.append('file', uploadFile.raw!)
+            const response = await uploadImg(formData)
+            form.value.iconUrl = response.data.data;
+        } catch (error) {
+            ElMessage.error("图片上传失败：" + (error || '未知错误'));
+        }
     }
 }
 

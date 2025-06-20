@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
-import { Plus, UploadFilled } from '@element-plus/icons-vue' // Added UploadFilled
+import { UploadFilled } from '@element-plus/icons-vue' // Added UploadFilled
 import { UploadProps, UploadFile, FormRules, ElMessage } from 'element-plus'
 import type { UserDetail, AccountDetail } from '@/api/account.ts'
 import { getUserDetails, updateUser, updateUserInfo } from '@/api/account.ts'
@@ -82,7 +82,6 @@ const rules = reactive<FormRules<typeof editForm>>({
     ]
 })
 
-
 // 头像上传处理
 const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
     const isImage = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'].includes(rawFile.type) // Added GIF
@@ -101,7 +100,14 @@ const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
 
 const handleAvatarChange: UploadProps['onChange'] = async (uploadFile: UploadFile) => {
     if (uploadFile.raw && editMode.value) {
-        editForm.avatar = await imageProcess(uploadFile.raw)
+        try {
+            const formData = new FormData()
+            formData.append('file', uploadFile.raw!)
+            const response = await uploadImg(formData)
+            editForm.avatar = response.data.data;
+        } catch (error) {
+            ElMessage.error("图片上传失败：" + (error || '未知错误'));
+        }
     }
 }
 

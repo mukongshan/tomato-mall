@@ -18,14 +18,14 @@ import {
 import router from '@/router/index';
 
 import { Edit, Delete, Plus, Picture } from '@element-plus/icons-vue';
-import { imageProcess } from "@/utils/UploadImage.ts";
+import { uploadImg } from "@/utils/image.ts";
 import { getProductsList } from '@/api/product';
 
 // 当前广告列表
 const advertisementList = ref<AdvertisementUpdate[]>([]);
 
 // 统一表单数据  新建无id 编辑有id
-const formData = ref<AdvertisementUpdate>({
+const editForm = ref<AdvertisementUpdate>({
     id: 0,
     title: '',
     content: '',
@@ -75,14 +75,14 @@ const openCreateModal = () => {
 
 // 打开编辑广告模态框
 const openEditModal = (ad: AdvertisementUpdate) => {
-    formData.value = { ...ad };
+    editForm.value = { ...ad };
     formMode.value = 'edit';
     showFormModal.value = true;
 };
 
 // 重置表单数据
 const resetFormData = () => {
-    formData.value = {
+    editForm.value = {
         id: 0,
         title: '',
         content: '',
@@ -112,9 +112,9 @@ const validateAdvertisement = (ad: Advertisement): boolean => {
 
 // 提交表单 (根据模式创建或更新)
 const submitForm = async () => {
-    if (!validateAdvertisement(formData.value)) return;
+    if (!validateAdvertisement(editForm.value)) return;
     const productList = (await getProductsList()).data.data;
-    const productId = formData.value.productId;
+    const productId = editForm.value.productId;
     const product = productList.find((item: { id: number; }) => item.id === productId)
     if (!product) {
         ElMessage.error('商品ID不存在,请检查');
@@ -129,7 +129,7 @@ const submitForm = async () => {
 
     try {
         if (formMode.value === 'create') {
-            const { id, ...dataWithoutId } = formData.value;
+            const { id, ...dataWithoutId } = editForm.value;
             const response = await addAdvertisement(dataWithoutId);
             advertisementList.value.push(response.data);
             ElMessage.success({
@@ -137,10 +137,10 @@ const submitForm = async () => {
                 duration: 1000
             });
         } else {
-            await updateAdAPI(formData.value);
-            const index = advertisementList.value.findIndex(a => a.id === formData.value.id);
+            await updateAdAPI(editForm.value);
+            const index = advertisementList.value.findIndex(a => a.id === editForm.value.id);
             if (index !== -1) {
-                advertisementList.value[index] = { ...formData.value };
+                advertisementList.value[index] = { ...editForm.value };
             }
             ElMessage.success({
                 message: '广告更新成功',
@@ -223,9 +223,14 @@ const beforeLogoUpload: UploadProps['beforeUpload'] = (rawFile) => {
 // 图片上传处理
 const handleAvatarChange: UploadProps['onChange'] = async (uploadFile: UploadFile) => {
     if (uploadFile.raw) {
-        // 生成预览URL
-        formData.value.imgUrl = await imageProcess(uploadFile.raw)
-        console.log(formData.value.imgUrl)
+        try {
+            const formData = new FormData()
+            formData.append('file', uploadFile.raw!)
+            const response = await uploadImg(formData)
+            editForm.value.imgUrl = response.data.data;
+        } catch (error) {
+            ElMessage.error("图片上传失败：" + (error || '未知错误'));
+        }
     }
 }
 </script>
@@ -303,21 +308,21 @@ const handleAvatarChange: UploadProps['onChange'] = async (uploadFile: UploadFil
             </el-row>
         </el-card>
 
-        <el-dialog v-model="showFormModal" :title="formMode === 'create' ? '创建新广告' : `编辑广告 (ID: ${formData.id})`"
+        <el-dialog v-model="showFormModal" :title="formMode === 'create' ? '创建新广告' : `编辑广告 (ID: ${editForm.id})`"
             width="50%" @close="closeAllModals">
-            <el-form :model="formData" label-width="100px" label-position="top">
+            <el-form :model="editForm" label-width="100px" label-position="top">
                 <el-form-item label="标题" prop="title" required>
-                    <el-input v-model="formData.title" placeholder="请输入广告标题" />
+                    <el-input v-model="editForm.title" placeholder="请输入广告标题" />
                 </el-form-item>
                 <el-form-item label="内容" prop="content">
-                    <el-input v-model="formData.content" type="textarea" :rows="4" placeholder="请输入广告内容" />
+                    <el-input v-model="editForm.content" type="textarea" :rows="4" placeholder="请输入广告内容" />
                 </el-form-item>
                 <el-form-item label="图片URL" prop="imgUrl">
                     <el-upload class="avatar-uploader" :show-file-list="false" :on-change="handleAvatarChange"
                         :before-upload="beforeLogoUpload" accept="image/*" :auto-upload="false">
                         <!--图片上传模式-->
                         <!-- 有头像是显示预览图-->
-                        <el-image v-if="formData.imgUrl" :src="formData.imgUrl" class="avatar" fit="cover" />
+                        <el-image v-if="editForm.imgUrl" :src="editForm.imgUrl" class="avatar" fit="cover" />
                         <!-- 无图像时候显示上传图标-->
                         <el-icon v-else class="avatar-uploader-icon">
                             <Plus />
@@ -328,7 +333,7 @@ const handleAvatarChange: UploadProps['onChange'] = async (uploadFile: UploadFil
                     </div>
                 </el-form-item>
                 <el-form-item label="商品ID" prop="productId" required>
-                    <el-input-number v-model="formData.productId" :min="1" controls-position="right" />
+                    <el-input-number v-model="editForm.productId" :min="1" controls-position="right" />
                 </el-form-item>
             </el-form>
             <template #footer>

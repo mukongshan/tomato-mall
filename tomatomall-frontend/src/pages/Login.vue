@@ -6,7 +6,6 @@ import { getUserDetails, LoginCredentials, UserDetail } from "@/api/account";
 import { login } from "@/api/account";
 import { isLogin, checkRole, messageLoad } from '@/components/LoginEvent.ts';
 
-
 // 表单尺寸
 const formSize = ref<ComponentSize>('default')
 // 表单引用(调用表单方法)
@@ -41,28 +40,31 @@ const handleLogin = async () => {
         try {
             const response = await login(ruleForm);
             if (response.data.code === '200') {
-                ElMessage.success("登录成功");
+                ElMessage.success({
+                    message: "登录成功",
+                    duration: 500  // 0.5 秒后自动关闭
+                });
                 sessionStorage.setItem('token', response.data.data);
-                sessionStorage.setItem('username', ruleForm.username);
                 try {
                     const response = await getUserDetails(ruleForm.username); // 等待 Promise 解析
                     const userDetail: UserDetail = response.data.data; // 提取 Axios 返回的实际数据
-                    sessionStorage.setItem('role', userDetail.role);
+                    sessionStorage.setItem('username', String(userDetail.username));
+                    sessionStorage.setItem('role', String(userDetail.role));
                     sessionStorage.setItem('id', String(userDetail.id));
                     sessionStorage.setItem('shopId', String(userDetail.shopId));
                     sessionStorage.setItem('isValidStaff', String(userDetail.isValidStaff));
+                    isLogin.value = true; // 更新登录状态
+                    await checkRole(); // 检查用户角色
+                    await messageLoad(); // 重新加载消息
+                    await router.push("/") // 跳转到首页
                 } catch (error) {
                     console.error("获取用户详情失败:", error);
                 }
-                isLogin.value = true; // 更新登录状态
-                checkRole(); // 检查用户角色
-                messageLoad(); // 重新加载消息
-                await router.push("/user") // 跳转到首页或其他页面
             } else {
-                ElMessage.warning(response.data.message || "登录失败");
+                ElMessage.error(response.data.message || "登录失败");
             }
         } catch (err: any) {
-            ElMessage.warning(err || "登录失败");
+            ElMessage.error(err || "登录失败");
         } finally {
             loading.close()
         }
@@ -75,8 +77,7 @@ const handleLogin = async () => {
 
 <template>
     <div class="form-container">
-        <el-form ref="ruleFormRef" :model="ruleForm" :rules="rules" :size="formSize" class="centered-form"
-            label-width="auto" status-icon>
+        <el-form ref="ruleFormRef" :model="ruleForm" :rules="rules" :size="formSize" class="centered-form" label-width="auto" status-icon>
             <h2 class="form-title">用户登录</h2>
 
             <el-form-item label="用户名" prop="username">

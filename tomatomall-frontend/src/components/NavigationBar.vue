@@ -8,10 +8,7 @@ import { getUserDetails, getUserRoleById } from "@/api/account";
 import { getShopIdByOwnerId } from "@/api/shop";
 import { markMessageAsRead, Message } from "@/api/message";
 
-
 const messagePopoverVisible = ref(false);
-
-
 
 const NavigateToMessage = (message: Message) => {
     if (message.content === "NEW_EMPLOYEE_APPLICATION") {
@@ -37,19 +34,17 @@ const NavigateToMessage = (message: Message) => {
 
 const checkLogin = () => {
     const token = sessionStorage.getItem('token');
-    if (token) {
-        isLogin.value = true;
-    } else {
-        isLogin.value = false;
-    }
+    isLogin.value = !!token;
 };
 
 const Logout = () => {
-    sessionStorage.removeItem('token');
-    sessionStorage.removeItem('username');
-    sessionStorage.removeItem('role');
+    sessionStorage.clear();
+    ElMessage.success({
+        message: '已退出登录',
+        duration: 500
+    })
     isLogin.value = false;
-    router.push("/login");
+    router.push("/");
 };
 
 const navigateToMyShop = async () => {
@@ -101,28 +96,20 @@ onMounted(messageLoad);
             <!-- 中间 -->
             <div class="center-menu">
                 <el-menu-item index="/" class="left-item">
-                    <el-icon>
-                        <HomeFilled />
-                    </el-icon>
+                    <el-icon> <HomeFilled /> </el-icon>
                     <span>番茄书城</span>
                 </el-menu-item>
                 <el-menu-item index="/cart">
-                    <el-icon>
-                        <ShoppingCart />
-                    </el-icon>
+                    <el-icon> <ShoppingCart /> </el-icon>
                     <span>购物车</span>
                 </el-menu-item>
                 <el-menu-item index="/shops">
-                    <el-icon>
-                        <Shop />
-                    </el-icon>
+                    <el-icon> <Shop /> </el-icon>
                     <span>全部店铺</span>
                 </el-menu-item>
                 <el-sub-menu index="management" v-if="isAdmin || isShopOwner || isStaff">
                     <template #title>
-                        <el-icon>
-                            <Setting />
-                        </el-icon>
+                        <el-icon> <Setting /> </el-icon>
                         <span>管理</span>
                     </template>
                     <el-menu-item v-if="isShopOwner || isStaff" @click="navigateToWarehouse">商品管理</el-menu-item>
@@ -135,17 +122,13 @@ onMounted(messageLoad);
             <div class="right-menu">
                 <template v-if="isLogin">
                     <el-menu-item index="/shopCreate" v-if="isCustomer">
-                        <el-icon>
-                            <CirclePlus />
-                        </el-icon>
+                        <el-icon> <CirclePlus /> </el-icon>
                         <span>我要开店</span>
                     </el-menu-item>
 
-                    <el-sub-menu index="mine" v-if="isAdmin || isShopOwner || isStaff">
+                    <el-sub-menu index="mine">
                         <template #title>
-                            <el-icon>
-                                <Setting />
-                            </el-icon>
+                            <el-icon> <Setting /> </el-icon>
                             <span>我的</span>
                         </template>
                         <el-menu-item index="/user">个人中心</el-menu-item>
@@ -197,23 +180,17 @@ onMounted(messageLoad);
                     </el-popover>
 
                     <el-menu-item @click="Logout">
-                        <el-icon>
-                            <SwitchButton />
-                        </el-icon>
+                        <el-icon> <SwitchButton /> </el-icon>
                         <span>退出登录</span>
                     </el-menu-item>
                 </template>
                 <template v-else>
                     <el-menu-item index="/login">
-                        <el-icon>
-                            <User />
-                        </el-icon>
+                        <el-icon> <User /> </el-icon>
                         <span>登录</span>
                     </el-menu-item>
                     <el-menu-item index="/register">
-                        <el-icon>
-                            <Edit />
-                        </el-icon>
+                        <el-icon> <Edit /> </el-icon>
                         <span>注册</span>
                     </el-menu-item>
                 </template>
