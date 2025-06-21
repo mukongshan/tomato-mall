@@ -134,6 +134,23 @@ create index cartitem_id
 create index order_id
     on carts_orders_relation (order_id);
 
+-- 订单详情表
+DROP TABLE IF EXISTS order_items;
+
+CREATE TABLE order_items (
+    order_item_id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id      INT NOT NULL COMMENT '订单ID',
+    product_id    INT NOT NULL COMMENT '商品ID',
+    quantity      INT NOT NULL COMMENT '购买数量',
+    price         DECIMAL(10,2) NOT NULL COMMENT '购买时的单价'
+) COMMENT='订单详情表';
+
+-- 订单详情表约束
+ALTER TABLE order_items ADD FOREIGN KEY (order_id) REFERENCES orders(order_id)
+    ON DELETE CASCADE;
+ALTER TABLE order_items ADD FOREIGN KEY (product_id) REFERENCES products(id)
+    ON DELETE CASCADE;
+
 DROP TABLE IF EXISTS specifications;
 
 create table specifications

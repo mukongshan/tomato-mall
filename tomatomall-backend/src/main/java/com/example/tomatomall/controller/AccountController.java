@@ -1,6 +1,5 @@
 package com.example.tomatomall.controller;
 
-import com.example.tomatomall.po.Account;
 import com.example.tomatomall.service.AccountService;
 import com.example.tomatomall.util.TokenUtil;
 import com.example.tomatomall.vo.AccountVO;
@@ -11,7 +10,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.util.List;
-
 
 @RestController
 @RequestMapping("/api/accounts")
@@ -79,7 +77,6 @@ public class AccountController {
     public Response<List<AccountVO>> getShopStaff(@PathVariable Integer shopId) {
         return Response.buildSuccess(accountService.getShopStaff(shopId));
     }
-
 
     @PostMapping("/image")
     public Response<String> upload(@RequestParam MultipartFile file){

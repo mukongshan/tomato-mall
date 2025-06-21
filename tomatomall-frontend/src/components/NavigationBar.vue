@@ -65,14 +65,7 @@ const checkChange = async () => {
 
 const navigateToWarehouse = async () => {
     if (!isLogin.value) return;
-    const id = sessionStorage.getItem('id') as string;
-    let shopId = 0;
-    if (isStaff.value) {
-        shopId = await getUserDetails(id).then(res => res.data.data.shopId);
-    }
-    if (isShopOwner.value) {
-        shopId = await getShopIdByOwnerId(Number(id)).then(res => res.data.data);
-    }
+    const shopId = Number(sessionStorage.getItem('shopId'));
     router.push(`/warehouse/${shopId}`);
 };
 
@@ -141,7 +134,12 @@ onMounted(messageLoad);
                         trigger="hover">
                         <template #reference>
                             <div class="message-trigger">
-                                <el-badge :value="unreadCount" :max="99" class="badge-item">
+                                <el-badge
+                                    :value="unreadCount"
+                                    :max="99"
+                                    :hidden="unreadCount === 0"
+                                    class="badge-item"
+                                >
                                     <el-icon :size="20">
                                         <Bell />
                                     </el-icon>

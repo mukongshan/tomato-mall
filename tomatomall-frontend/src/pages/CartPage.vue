@@ -27,7 +27,7 @@ const orderInfo = ref<OrderInfo>({
 const fetchUserDetails = async () => {
     try {
         const response = await getUserDetails(sessionStorage.getItem('username')!)
-        console.log(response.data.data)
+        // console.log(response.data.data)
         orderInfo.value.name = response.data.data.name;
         orderInfo.value.location = response.data.data.location;
         orderInfo.value.telephone = response.data.data.telephone;
