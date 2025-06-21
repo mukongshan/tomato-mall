@@ -117,7 +117,7 @@ const openReviewDialog = () => {
 
 // 跳转到商品详情
 const gotoProductDetail = (productId: number) => {
-    router.push(`/product/detail/${productId}`);
+    router.push(`/product/${productId}`);
 };
 
 // 格式化时间
