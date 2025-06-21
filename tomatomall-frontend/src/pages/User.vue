@@ -1,13 +1,12 @@
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
-import { UploadFilled } from '@element-plus/icons-vue' // Added UploadFilled
+import { ref, reactive, onMounted, nextTick } from 'vue'
+import { UploadFilled } from '@element-plus/icons-vue'
 import { UploadProps, UploadFile, FormRules, ElMessage } from 'element-plus'
 import type { UserDetail, AccountDetail } from '@/api/account.ts'
 import { getUserDetails, updateUser, updateUserInfo } from '@/api/account.ts'
-import { UserFilled, EditPen, CircleCheck, CircleClose } from "@element-plus/icons-vue"; // Added more icons
-import router from "@/router";
+import { UserFilled, EditPen, CircleCheck, CircleClose, Camera, Lock, User, Phone, Message, Location } from "@element-plus/icons-vue"
+import router from "@/router"
 import { uploadImg } from '@/utils/image'
-
 
 // 用户信息
 const userInfo = ref<UserDetail>({
@@ -42,6 +41,8 @@ const editForm = reactive({
 
 const editMode = ref(false)
 const formRef = ref()
+const isLoading = ref(true)
+const isSaving = ref(false)
 
 // 表单验证规则
 const rules = reactive<FormRules<typeof editForm>>({
@@ -63,9 +64,7 @@ const rules = reactive<FormRules<typeof editForm>>({
     location: [
         { required: true, message: '请输入地址', trigger: 'blur' }
     ],
-    password: [
-        // { min: 6, message: '密码长度至少为6位', trigger: 'blur' } // Example if min length is needed
-    ],
+    password: [],
     confirmPassword: [
         {
             validator: (_, value, callback) => {
@@ -84,8 +83,8 @@ const rules = reactive<FormRules<typeof editForm>>({
 
 // 头像上传处理
 const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
-    const isImage = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'].includes(rawFile.type) // Added GIF
-    const isSizeValid = rawFile.size <= 5 * 1024 * 1024 // 5MB
+    const isImage = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'].includes(rawFile.type)
+    const isSizeValid = rawFile.size <= 5 * 1024 * 1024
 
     if (!isImage) {
         ElMessage.error('头像必须为 JPG/PNG/GIF 格式')
@@ -105,6 +104,7 @@ const handleAvatarChange: UploadProps['onChange'] = async (uploadFile: UploadFil
             formData.append('file', uploadFile.raw!)
             const response = await uploadImg(formData)
             editForm.avatar = response.data.data;
+            ElMessage.success('头像上传成功！')
         } catch (error) {
             ElMessage.error("图片上传失败：" + (error || '未知错误'));
         }
@@ -113,13 +113,19 @@ const handleAvatarChange: UploadProps['onChange'] = async (uploadFile: UploadFil
 
 // 获取用户信息
 const fetchUserDetails = async () => {
-
-    const response = await getUserDetails(username)
-    Object.assign(userInfo.value, response.data.data)
-    resetEditForm()
-
+    try {
+        isLoading.value = true
+        const response = await getUserDetails(username)
+        Object.assign(userInfo.value, response.data.data)
+        resetEditForm()
+    } catch (error) {
+        ElMessage.error('获取用户信息失败')
+    } finally {
+        setTimeout(() => {
+            isLoading.value = false
+        }, 800)
+    }
 }
-fetchUserDetails()
 
 const resetEditForm = () => {
     const { ...restOfUserInfo } = userInfo.value;
@@ -135,6 +141,7 @@ const handleUpdate = () => {
     formRef.value?.validate(async (valid: boolean) => {
         if (!valid) return
         try {
+            isSaving.value = true
             const payload: Partial<AccountDetail> = { ...editForm };
             if (!editForm.password) {
                 delete payload.password;
@@ -143,8 +150,10 @@ const handleUpdate = () => {
                 delete (payload as any).confirmPassword;
                 await updateUser(payload as AccountDetail)
             }
+
             await fetchUserDetails();
             editMode.value = false
+
             ElMessage({
                 message: '更新成功！',
                 type: 'success',
@@ -162,6 +171,8 @@ const handleUpdate = () => {
                 type: 'error',
                 icon: CircleClose,
             });
+        } finally {
+            isSaving.value = false
         }
     })
 }
@@ -176,177 +187,341 @@ const cancelEdit = () => {
     editMode.value = false
 }
 
+const enterEditMode = () => {
+    editMode.value = true
+    nextTick(() => {
+        // 编辑模式进入后的动画处理
+    })
+}
+
+onMounted(() => {
+    fetchUserDetails()
+})
 </script>
 
 <template>
-    <el-main class="profile-main-container fade-in">
-        <!-- 左侧信息展示卡 -->
-        <el-card class="profile-aside-card slide-left" shadow="hover">
-            <div class="avatar-section">
-                <el-avatar :size="120" :src="userInfo.avatar || ''" class="profile-avatar">
-                    <UserFilled />
-                </el-avatar>
-                <h2 class="user-name-display">{{ userInfo.name || userInfo.username }}</h2>
-                <p class="user-role-display">{{ userInfo.role }}</p>
+    <div class="profile-container">
+        <!-- 加载状态 -->
+        <div v-if="isLoading" class="loading-container">
+            <div class="loading-content">
+                <div class="loading-avatar"></div>
+                <div class="loading-text">
+                    <div class="loading-bar loading-bar-1"></div>
+                    <div class="loading-bar loading-bar-2"></div>
+                    <div class="loading-bar loading-bar-3"></div>
+                </div>
             </div>
+        </div>
 
-            <el-divider class="stylish-divider"></el-divider>
-
-            <el-descriptions :column="1" border class="profile-descriptions" title="详细信息">
-                <template #extra>
-                    <el-button type="primary" @click="editMode = true" v-if="!editMode" class="edit-info-button"
-                        :icon="EditPen" round>
-                        编辑资料
-                    </el-button>
-                </template>
-                <el-descriptions-item label-class-name="desc-label" class-name="desc-content">
-                    <template #label><i class="el-icon-user" /> 用户名</template>
-                    {{ userInfo.username }}
-                </el-descriptions-item>
-                <el-descriptions-item label-class-name="desc-label" class-name="desc-content">
-                    <template #label><i class="el-icon-phone-outline" /> 电话</template>
-                    {{ userInfo.telephone || '未设置' }}
-                </el-descriptions-item>
-                <el-descriptions-item label-class-name="desc-label" class-name="desc-content">
-                    <template #label><i class="el-icon-message" /> 邮箱</template>
-                    {{ userInfo.email || '未设置' }}
-                </el-descriptions-item>
-                <el-descriptions-item label-class-name="desc-label" class-name="desc-content">
-                    <template #label><i class="el-icon-location-outline" /> 地址</template>
-                    {{ userInfo.location || '未设置' }}
-                </el-descriptions-item>
-            </el-descriptions>
-        </el-card>
-
-        <!-- 右侧编辑面板 -->
-        <el-card class="profile-change-card slide-right" shadow="hover">
-            <template #header>
-                <div class="card-header">
-                    <span class="header-title">编辑个人信息</span>
-                    <div v-if="editMode" class="action-buttons">
-                        <el-button @click="cancelEdit" class="cancel-btn" round>取消</el-button>
-                        <el-button type="primary" @click="handleUpdate" class="save-btn" round
-                            :icon="CircleCheck">保存</el-button>
+        <!-- 主要内容 -->
+        <el-main v-else class="profile-main-container animate-fade-in">
+            <!-- 左侧信息展示卡 -->
+            <el-card class="profile-aside-card animate-slide-left" shadow="hover">
+                <div class="avatar-section">
+                    <div class="avatar-wrapper animate-bounce-in">
+                        <el-avatar :size="120" :src="userInfo.avatar || ''" class="profile-avatar">
+                            <UserFilled />
+                        </el-avatar>
+                        <div class="avatar-status-dot"></div>
+                    </div>
+                    <h2 class="user-name-display animate-slide-up">{{ userInfo.name || userInfo.username }}</h2>
+                    <div class="user-role-badge animate-slide-up">
+                        <span class="role-text">{{ userInfo.role }}</span>
                     </div>
                 </div>
-            </template>
 
-            <div v-if="!editMode" class="edit-placeholder fade-in-up">
-                <el-icon :size="60" color="#a0cfff">
-                    <EditPen />
-                </el-icon>
-                <p>点击“编辑资料”按钮以修改您的个人信息。</p>
-                <span>更改将在此处显示。</span>
-            </div>
+                <el-divider class="stylish-divider animate-draw-line"></el-divider>
 
-            <el-form v-else ref="formRef" :model="editForm" :rules="rules" label-position="top"
-                class="edit-form styled-scrollbar fade-in-up">
-                <el-form-item label="更换头像" prop="avatar" class="avatar-form-item">
-                    <el-upload class="avatar-uploader-enhanced" action="#" :show-file-list="false"
-                        :before-upload="beforeAvatarUpload" :on-change="handleAvatarChange" accept="image/*"
-                        :auto-upload="false">
-                        <el-image v-if="editForm.avatar" :src="editForm.avatar" class="uploaded-avatar-preview"
-                            fit="cover" />
-                        <div v-else class="avatar-uploader-placeholder">
-                            <el-icon :size="32">
-                                <UploadFilled />
+                <div class="profile-info-section animate-fade-in-up">
+                    <div class="info-header">
+                        <h3 class="info-title">
+                            <el-icon>
+                                <User />
                             </el-icon>
-                            <span>点击或拖拽上传</span>
+                            个人信息
+                        </h3>
+                        <el-button type="primary" @click="enterEditMode" v-if="!editMode"
+                            class="edit-info-button animate-pulse-button" :icon="EditPen" round size="small">
+                            编辑资料
+                        </el-button>
+                    </div>
+
+                    <div class="info-grid">
+                        <div class="info-item animate-fade-in-item" style="--delay: 0.1s">
+                            <div class="info-icon">
+                                <el-icon>
+                                    <User />
+                                </el-icon>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-label">用户名</div>
+                                <div class="info-value">{{ userInfo.username }}</div>
+                            </div>
                         </div>
-                        <div class="avatar-overlay">
-                            <el-icon :size="24">
+
+                        <div class="info-item animate-fade-in-item" style="--delay: 0.2s">
+                            <div class="info-icon">
+                                <el-icon>
+                                    <Phone />
+                                </el-icon>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-label">电话</div>
+                                <div class="info-value">{{ userInfo.telephone || '未设置' }}</div>
+                            </div>
+                        </div>
+
+                        <div class="info-item animate-fade-in-item" style="--delay: 0.3s">
+                            <div class="info-icon">
+                                <el-icon>
+                                    <Message />
+                                </el-icon>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-label">邮箱</div>
+                                <div class="info-value">{{ userInfo.email || '未设置' }}</div>
+                            </div>
+                        </div>
+
+                        <div class="info-item animate-fade-in-item" style="--delay: 0.4s">
+                            <div class="info-icon">
+                                <el-icon>
+                                    <Location />
+                                </el-icon>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-label">地址</div>
+                                <div class="info-value">{{ userInfo.location || '未设置' }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </el-card>
+
+            <!-- 右侧编辑面板 -->
+            <el-card class="profile-change-card animate-slide-right" shadow="hover">
+                <template #header>
+                    <div class="card-header">
+                        <div class="header-content">
+                            <div class="header-icon animate-rotate">
+                                <el-icon>
+                                    <EditPen />
+                                </el-icon>
+                            </div>
+                            <span class="header-title">编辑个人信息</span>
+                        </div>
+                        <div v-if="editMode" class="action-buttons animate-slide-in">
+                            <el-button @click="cancelEdit" class="cancel-btn animate-hover-lift" round
+                                :disabled="isSaving">
+                                取消
+                            </el-button>
+                            <el-button type="primary" @click="handleUpdate" class="save-btn animate-hover-lift" round
+                                :icon="CircleCheck" :loading="isSaving">
+                                保存更改
+                            </el-button>
+                        </div>
+                    </div>
+                </template>
+
+                <div v-if="!editMode" class="edit-placeholder animate-float">
+                    <div class="placeholder-content">
+                        <div class="placeholder-icon animate-bounce">
+                            <el-icon :size="60">
                                 <EditPen />
                             </el-icon>
                         </div>
-                    </el-upload>
-                    <div class="upload-tip-enhanced">推荐方形图片，JPG/PNG/GIF，小于 5MB。</div>
-                </el-form-item>
+                        <h3 class="placeholder-title animate-fade-in">开始编辑您的资料</h3>
+                        <p class="placeholder-desc animate-fade-in">点击"编辑资料"按钮来修改您的个人信息</p>
+                        <div class="placeholder-features animate-slide-up">
+                            <div class="feature-item">
+                                <el-icon>
+                                    <Camera />
+                                </el-icon>
+                                <span>更换头像</span>
+                            </div>
+                            <div class="feature-item">
+                                <el-icon>
+                                    <User />
+                                </el-icon>
+                                <span>修改资料</span>
+                            </div>
+                            <div class="feature-item">
+                                <el-icon>
+                                    <Lock />
+                                </el-icon>
+                                <span>安全设置</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                <el-row :gutter="24">
-                    <el-col :xs="24" :sm="12">
-                        <el-form-item label="用户名" prop="username">
-                            <el-input v-model="editForm.username" disabled />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :xs="24" :sm="12">
-                        <el-form-item label="姓名" prop="name">
-                            <el-input v-model="editForm.name" placeholder="您的真实姓名或昵称" />
-                        </el-form-item>
-                    </el-col>
-                </el-row>
+                <el-form v-else ref="formRef" :model="editForm" :rules="rules" label-position="top"
+                    class="edit-form styled-scrollbar animate-form-appear">
 
-                <el-form-item label="用户角色" prop="role">
-                    <el-select v-model="editForm.role" placeholder="选择您的账户角色" style="width: 100%;" disabled>
-                        <el-option label="顾客 (Customer)" value="CUSTOMER" />
-                        <el-option label="员工 (Staff)" value="STAFF" />
-                        <el-option label="店主 (Shopkeeper)" value="SHOPKEEPER" />
-                        <el-option label="管理员 (Admin)" value="admin" />
-                    </el-select>
-                </el-form-item>
+                    <!-- 头像上传区域 -->
+                    <div class="form-section animate-section-appear" style="--delay: 0.1s">
+                        <div class="section-header">
+                            <el-icon>
+                                <Camera />
+                            </el-icon>
+                            <span>头像设置</span>
+                        </div>
+                        <el-form-item prop="avatar" class="avatar-form-item">
+                            <el-upload class="avatar-uploader-enhanced animate-hover-scale" action="#"
+                                :show-file-list="false" :before-upload="beforeAvatarUpload"
+                                :on-change="handleAvatarChange" accept="image/*" :auto-upload="false">
 
-                <el-row :gutter="24">
-                    <el-col :xs="24" :sm="12">
-                        <el-form-item label="电话号码" prop="telephone">
-                            <el-input v-model="editForm.telephone" placeholder="您的联系电话" />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :xs="24" :sm="12">
-                        <el-form-item label="电子邮箱" prop="email">
-                            <el-input v-model="editForm.email" placeholder="您的电子邮箱地址" />
-                        </el-form-item>
-                    </el-col>
-                </el-row>
+                                <el-image v-if="editForm.avatar" :src="editForm.avatar" class="uploaded-avatar-preview"
+                                    fit="cover" />
 
-                <el-form-item label="通讯地址" prop="location">
-                    <el-input v-model="editForm.location" type="textarea" :rows="3" placeholder="您的详细通讯地址" />
-                </el-form-item>
+                                <div v-else class="avatar-uploader-placeholder">
+                                    <el-icon :size="32" class="upload-icon animate-bounce">
+                                        <UploadFilled />
+                                    </el-icon>
+                                    <span>点击或拖拽上传</span>
+                                </div>
 
-                <el-divider content-position="center" class="stylish-divider section-divider">
-                    <el-icon><svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" data-v-029747aa="">
-                            <path fill="currentColor"
-                                d="M800 416a288 288 0 1 0-576 0c0 118.144 95.872 214.784 216 237.248V800h144V653.248A288 288 0 0 0 800 416zM512 960a32 32 0 0 1-32-32V800a32 32 0 0 1 64 0v128a32 32 0 0 1-32 32zm0-704a224 224 0 1 1 0 448 224 224 0 0 1 0-448z">
-                            </path>
-                        </svg></el-icon>
-                    安全设置 (选填)
-                </el-divider>
+                                <div class="avatar-overlay">
+                                    <el-icon :size="24">
+                                        <Camera />
+                                    </el-icon>
+                                    <span>更换头像</span>
+                                </div>
+                            </el-upload>
+                            <div class="upload-tip-enhanced">
+                                推荐方形图片，JPG/PNG/GIF，小于 5MB
+                            </div>
+                        </el-form-item>
+                    </div>
 
-                <el-row :gutter="24">
-                    <el-col :xs="24" :sm="12">
-                        <el-form-item label="设置新密码" prop="password">
-                            <el-input v-model="editForm.password" type="password" placeholder="留空则不修改密码" show-password
-                                autocomplete="new-password" />
+                    <!-- 基本信息 -->
+                    <div class="form-section animate-section-appear" style="--delay: 0.2s">
+                        <div class="section-header">
+                            <el-icon>
+                                <User />
+                            </el-icon>
+                            <span>基本信息</span>
+                        </div>
+                        <el-row :gutter="24">
+                            <el-col :xs="24" :sm="12">
+                                <el-form-item label="用户名" prop="username">
+                                    <el-input v-model="editForm.username" disabled class="animate-input-focus">
+                                        <template #prefix>
+                                            <el-icon>
+                                                <User />
+                                            </el-icon>
+                                        </template>
+                                    </el-input>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :xs="24" :sm="12">
+                                <el-form-item label="姓名" prop="name">
+                                    <el-input v-model="editForm.name" placeholder="您的真实姓名或昵称"
+                                        class="animate-input-focus" />
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+
+                        <el-form-item label="用户角色" prop="role">
+                            <el-select v-model="editForm.role" placeholder="选择您的账户角色" style="width: 100%;" disabled
+                                class="animate-input-focus">
+                                <el-option label="顾客 (Customer)" value="CUSTOMER" />
+                                <el-option label="员工 (Staff)" value="STAFF" />
+                                <el-option label="店主 (Shopkeeper)" value="SHOPKEEPER" />
+                                <el-option label="管理员 (Admin)" value="admin" />
+                            </el-select>
                         </el-form-item>
-                    </el-col>
-                    <el-col :xs="24" :sm="12">
-                        <el-form-item label="确认新密码" prop="confirmPassword">
-                            <el-input v-model="editForm.confirmPassword" type="password" placeholder="再次输入以确认"
-                                show-password autocomplete="new-password" />
+                    </div>
+
+                    <!-- 联系信息 -->
+                    <div class="form-section animate-section-appear" style="--delay: 0.3s">
+                        <div class="section-header">
+                            <el-icon>
+                                <Phone />
+                            </el-icon>
+                            <span>联系信息</span>
+                        </div>
+                        <el-row :gutter="24">
+                            <el-col :xs="24" :sm="12">
+                                <el-form-item label="电话号码" prop="telephone">
+                                    <el-input v-model="editForm.telephone" placeholder="您的联系电话"
+                                        class="animate-input-focus">
+                                        <template #prefix>
+                                            <el-icon>
+                                                <Phone />
+                                            </el-icon>
+                                        </template>
+                                    </el-input>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :xs="24" :sm="12">
+                                <el-form-item label="电子邮箱" prop="email">
+                                    <el-input v-model="editForm.email" placeholder="您的电子邮箱地址"
+                                        class="animate-input-focus">
+                                        <template #prefix>
+                                            <el-icon>
+                                                <Message />
+                                            </el-icon>
+                                        </template>
+                                    </el-input>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+
+                        <el-form-item label="通讯地址" prop="location">
+                            <el-input v-model="editForm.location" type="textarea" :rows="3" placeholder="您的详细通讯地址"
+                                class="animate-input-focus" />
                         </el-form-item>
-                    </el-col>
-                </el-row>
-            </el-form>
-        </el-card>
-    </el-main>
+                    </div>
+
+                    <!-- 安全设置 -->
+                    <div class="form-section animate-section-appear" style="--delay: 0.4s">
+                        <div class="section-header security-header">
+                            <el-icon>
+                                <Lock />
+                            </el-icon>
+                            <span>安全设置</span>
+                            <div class="security-badge">可选</div>
+                        </div>
+                        <el-row :gutter="24">
+                            <el-col :xs="24" :sm="12">
+                                <el-form-item label="设置新密码" prop="password">
+                                    <el-input v-model="editForm.password" type="password" placeholder="留空则不修改密码"
+                                        show-password autocomplete="new-password" class="animate-input-focus">
+                                        <template #prefix>
+                                            <el-icon>
+                                                <Lock />
+                                            </el-icon>
+                                        </template>
+                                    </el-input>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :xs="24" :sm="12">
+                                <el-form-item label="确认新密码" prop="confirmPassword">
+                                    <el-input v-model="editForm.confirmPassword" type="password" placeholder="再次输入以确认"
+                                        show-password autocomplete="new-password" class="animate-input-focus">
+                                        <template #prefix>
+                                            <el-icon>
+                                                <Lock />
+                                            </el-icon>
+                                        </template>
+                                    </el-input>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                    </div>
+                </el-form>
+            </el-card>
+        </el-main>
+    </div>
 </template>
 
 <style scoped>
-/* Animation Keyframes */
+/* 基础动画关键帧 */
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(15px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(25px);
+        transform: translateY(20px);
     }
 
     to {
@@ -358,7 +533,7 @@ const cancelEdit = () => {
 @keyframes slideLeft {
     from {
         opacity: 0;
-        transform: translateX(-40px);
+        transform: translateX(-50px);
     }
 
     to {
@@ -370,7 +545,7 @@ const cancelEdit = () => {
 @keyframes slideRight {
     from {
         opacity: 0;
-        transform: translateX(40px);
+        transform: translateX(50px);
     }
 
     to {
@@ -379,274 +554,744 @@ const cancelEdit = () => {
     }
 }
 
-@keyframes subtleShine {
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes bounceIn {
     0% {
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
+        opacity: 0;
+        transform: scale(0.3);
     }
 
     50% {
-        box-shadow: 0 10px 30px rgba(64, 158, 255, 0.1);
+        opacity: 1;
+        transform: scale(1.05);
+    }
+
+    70% {
+        transform: scale(0.9);
     }
 
     100% {
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
+        opacity: 1;
+        transform: scale(1);
     }
 }
 
-/* Animation Classes */
-.fade-in {
-    animation: fadeIn 0.8s ease-out both;
+@keyframes bounce {
+
+    0%,
+    20%,
+    50%,
+    80%,
+    100% {
+        transform: translateY(0);
+    }
+
+    40% {
+        transform: translateY(-10px);
+    }
+
+    60% {
+        transform: translateY(-5px);
+    }
 }
 
-.fade-in-up {
-    animation: fadeInUp 0.8s ease-out 0.2s both;
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
 }
 
-.slide-left {
-    animation: slideLeft 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
 }
 
-.slide-right {
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes drawLine {
+    from {
+        width: 0;
+    }
+
+    to {
+        width: 100%;
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -1000px 0;
+    }
+
+    100% {
+        background-position: 1000px 0;
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* 动画类 */
+.animate-fade-in {
+    animation: fadeIn 0.8s ease-out;
+}
+
+.animate-slide-left {
+    animation: slideLeft 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.animate-slide-right {
     animation: slideRight 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.1s both;
 }
 
-/* Main Container */
-.profile-main-container {
-    display: flex;
-    gap: 28px;
-    padding: 28px;
-    background: linear-gradient(135deg, #f5f7fa 0%, #e9edf2 100%);
-    /* Subtle gradient background */
-    min-height: calc(100vh - 80px);
-    /* Adjust based on your header/footer */
-    overflow-x: hidden;
-    /* Prevent horizontal scroll from animations */
+.animate-slide-up {
+    animation: slideUp 0.6s ease-out 0.3s both;
 }
 
-/* Cards Styling */
+.animate-bounce-in {
+    animation: bounceIn 1s ease-out 0.2s both;
+}
+
+.animate-bounce {
+    animation: bounce 2s infinite ease-in-out;
+}
+
+.animate-pulse-button {
+    animation: pulse 2s infinite ease-in-out;
+}
+
+.animate-rotate {
+    animation: rotate 2s linear infinite;
+}
+
+.animate-float {
+    animation: float 3s ease-in-out infinite;
+}
+
+.animate-draw-line::after {
+    animation: drawLine 1s ease-out 0.5s both;
+}
+
+.animate-slide-in {
+    animation: slideIn 0.5s ease-out;
+}
+
+.animate-fade-in-up {
+    animation: slideUp 0.8s ease-out 0.4s both;
+}
+
+.animate-fade-in-item {
+    animation: fadeIn 0.6s ease-out calc(0.6s + var(--delay)) both;
+}
+
+.animate-section-appear {
+    animation: slideUp 0.6s ease-out calc(0.8s + var(--delay)) both;
+}
+
+.animate-form-appear {
+    animation: fadeIn 0.8s ease-out 0.3s both;
+}
+
+.animate-hover-lift:hover {
+    transform: translateY(-3px);
+    transition: transform 0.3s ease;
+}
+
+.animate-hover-scale:hover {
+    transform: scale(1.05);
+    transition: transform 0.3s ease;
+}
+
+.animate-input-focus:focus-within {
+    transform: translateY(-2px);
+    transition: transform 0.3s ease;
+}
+
+/* 加载状态 */
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 140px);
+}
+
+.loading-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.loading-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+.loading-text {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+}
+
+.loading-bar {
+    height: 12px;
+    border-radius: 6px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+.loading-bar-1 {
+    width: 120px;
+    animation-delay: 0s;
+}
+
+.loading-bar-2 {
+    width: 80px;
+    animation-delay: 0.2s;
+}
+
+.loading-bar-3 {
+    width: 100px;
+    animation-delay: 0.4s;
+}
+
+/* 主容器 */
+.profile-container {
+    min-height: 100vh;
+    background: #f8f9fa;
+    padding: 20px;
+}
+
+.profile-main-container {
+    display: flex;
+    gap: 30px;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0;
+}
+
+/* 卡片样式 */
 .profile-aside-card,
 .profile-change-card {
     border-radius: 16px;
-    /* Softer radius */
-    border: none;
-    /* Remove default border if using prominent shadow */
-    background-color: #ffffff;
-    display: flex;
-    flex-direction: column;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    animation: subtleShine 5s infinite ease-in-out;
-    /* Subtle shadow animation */
+    border: 1px solid #e8e9ea;
+    background: #ffffff;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
 }
 
 .profile-aside-card:hover,
 .profile-change-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08) !important;
-    /* Enhanced hover shadow */
+    transform: translateY(-3px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
 }
 
 .profile-aside-card {
-    flex: 0 0 380px;
-    /* Slightly wider aside */
+    flex: 0 0 400px;
+    height: fit-content;
 }
 
 .profile-change-card {
     flex: 1;
-    min-width: 0;
-    /* Prevent overflow issues in flex child */
+    min-height: 600px;
 }
 
-/* Card Header (Edit Panel) */
+/* 头像区域 */
+.avatar-section {
+    padding: 40px 30px;
+    text-align: center;
+    background: #ffffff;
+    border-radius: 16px 16px 0 0;
+}
+
+.avatar-wrapper {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 20px;
+}
+
+.profile-avatar {
+    width: 120px;
+    height: 120px;
+    border: 4px solid #f8f9fa;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.profile-avatar:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.avatar-status-dot {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    width: 24px;
+    height: 24px;
+    background: #67c23a;
+    border: 3px solid white;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.user-name-display {
+    font-size: 28px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin: 0 0 12px 0;
+}
+
+.user-role-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 16px;
+    background: #4ecdc4;
+    color: white;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(78, 205, 196, 0.3);
+}
+
+/* 分割线 */
+.stylish-divider {
+    position: relative;
+    margin: 0 30px 30px;
+    border: none;
+    height: 1px;
+    background: #e8e9ea;
+}
+
+.stylish-divider::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 2px;
+    background: #4ecdc4;
+    width: 0;
+}
+
+/* 信息区域 */
+.profile-info-section {
+    padding: 0 30px 30px;
+}
+
+.info-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.info-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+}
+
+.edit-info-button {
+    font-size: 14px;
+    padding: 8px 16px;
+    box-shadow: 0 2px 8px rgba(64, 158, 255, 0.3);
+}
+
+.edit-info-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(64, 158, 255, 0.4);
+}
+
+.info-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border: 1px solid #e8e9ea;
+    transition: all 0.3s ease;
+}
+
+.info-item:hover {
+    background: #f0fffe;
+    border-color: #4ecdc4;
+    transform: translateX(4px);
+}
+
+.info-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: #4ecdc4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    flex-shrink: 0;
+}
+
+.info-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.info-label {
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 2px;
+    font-weight: 500;
+}
+
+.info-value {
+    font-size: 14px;
+    color: #2c3e50;
+    font-weight: 500;
+    word-break: break-all;
+}
+
+/* 卡片头部 */
 .card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 28px;
-    border-bottom: 1px solid #e9eef3;
-    background-color: #fdfdfe;
-    /* Slightly off-white header */
-    border-top-left-radius: 16px;
-    border-top-right-radius: 16px;
+    padding: 24px 32px;
+    border-bottom: 1px solid #e8e9ea;
+    background: #f8f9fa;
+    border-radius: 16px 16px 0 0;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: #4ecdc4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
 }
 
 .header-title {
     font-size: 20px;
     font-weight: 600;
     color: #2c3e50;
-    /* Darker, sophisticated blue-gray */
 }
 
-.action-buttons .el-button {
-    margin-left: 14px;
-    font-weight: 500;
-}
-
-.save-btn {
-    background-color: #409EFF;
-    /* Element Plus primary */
-    border-color: #409EFF;
-    color: #fff;
-}
-
-.save-btn:hover {
-    background-color: #66b1ff;
-    border-color: #66b1ff;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
-}
-
-.cancel-btn:hover {
-    color: #409EFF;
-    border-color: #a0cfff;
-    background-color: #ecf5ff;
-    transform: translateY(-2px);
-}
-
-/* Aside Card Content */
-.avatar-section {
+.action-buttons {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 35px 20px;
-    text-align: center;
-    background: linear-gradient(to bottom, #f0f5ff, #ffffff);
-    /* Gradient for avatar section */
-    border-top-left-radius: 16px;
-    border-top-right-radius: 16px;
+    gap: 12px;
 }
 
-.profile-avatar {
-    width: 120px;
-    height: 120px;
-    margin-bottom: 18px;
-    border: 4px solid #fff;
-    /* White border for avatar */
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
-    /* More prominent avatar shadow */
-    transition: transform 0.3s ease;
-}
-
-.profile-avatar:hover {
-    transform: scale(1.05);
-}
-
-.user-name-display {
-    font-size: 24px;
-    font-weight: 600;
-    color: #1c2b3a;
-    margin: 0 0 6px 0;
-}
-
-.user-role-display {
-    font-size: 15px;
-    color: #5a6876;
-    font-style: italic;
-}
-
-.stylish-divider {
-    margin: 0px 28px 24px;
-    /* Adjusted margin */
-    border-top: 1px dashed #ced4da;
-    /* Dashed divider */
-}
-
-.section-divider .el-divider__text {
-    background-color: #ffffff;
-    padding: 0 20px;
-    font-weight: 500;
-    color: #5a6876;
-    font-size: 15px;
-}
-
-.section-divider .el-icon {
-    margin-right: 8px;
-    color: #409EFF;
-}
-
-.profile-descriptions {
-    padding: 0 28px 28px;
-}
-
-.profile-descriptions .el-descriptions__title {
-    /* Target title slot */
-    font-size: 18px;
-    font-weight: 600;
-    color: #303133;
-    margin-bottom: 18px;
-    padding-bottom: 8px;
-    border-bottom: 2px solid #409EFF;
-    display: inline-block;
-}
-
-.edit-info-button {
+.save-btn,
+.cancel-btn {
+    padding: 10px 20px;
     font-weight: 500;
     transition: all 0.3s ease;
 }
 
-.edit-info-button:hover {
-    transform: translateY(-2px) scale(1.03);
-    box-shadow: 0 5px 15px rgba(64, 158, 255, 0.25);
+.save-btn {
+    box-shadow: 0 2px 8px rgba(64, 158, 255, 0.3);
 }
 
-:deep(.desc-label) {
-    font-weight: 500 !important;
-    color: #495057 !important;
-    background-color: #f8f9fa !important;
-    width: 110px !important;
-    padding: 12px 15px !important;
-    border-right: 1px solid #e9ecef;
+.save-btn:hover {
+    box-shadow: 0 4px 12px rgba(64, 158, 255, 0.4);
 }
 
-:deep(.desc-label) i {
-    margin-right: 8px;
-    color: #007bff;
-    vertical-align: middle;
-}
-
-:deep(.desc-content) {
-    color: #212529 !important;
-    padding: 12px 15px !important;
-    font-size: 14px;
-    background-color: #fff !important;
-}
-
-:deep(.el-descriptions__body) {
-    border-radius: 8px;
-    overflow: hidden;
-    /* Ensure border radius clips content */
-}
-
-/* Edit Panel Content */
+/* 占位符内容 */
 .edit-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 500px;
+    padding: 40px;
+}
+
+.placeholder-content {
+    text-align: center;
+    max-width: 400px;
+}
+
+.placeholder-icon {
+    margin-bottom: 24px;
+    color: #4ecdc4;
+}
+
+.placeholder-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0 0 12px 0;
+}
+
+.placeholder-desc {
+    font-size: 16px;
+    color: #6b7280;
+    margin: 0 0 32px 0;
+    line-height: 1.6;
+}
+
+.placeholder-features {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.feature-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border: 1px solid #e8e9ea;
+    min-width: 80px;
+    transition: all 0.3s ease;
+}
+
+.feature-item:hover {
+    background: #f0fffe;
+    border-color: #4ecdc4;
+    transform: translateY(-4px);
+}
+
+.feature-item .el-icon {
+    font-size: 24px;
+    color: #4ecdc4;
+}
+
+.feature-item span {
+    font-size: 12px;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+/* 表单样式 */
+.edit-form {
+    padding: 32px;
+    height: calc(100vh - 200px);
+    overflow-y: auto;
+}
+
+.form-section {
+    margin-bottom: 32px;
+    padding: 24px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border: 1px solid #e8e9ea;
+    transition: all 0.3s ease;
+}
+
+.form-section:hover {
+    background: #f0fffe;
+    border-color: #4ecdc4;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.section-header .el-icon {
+    color: #4ecdc4;
+}
+
+.security-header {
+    position: relative;
+}
+
+.security-badge {
+    margin-left: auto;
+    padding: 4px 12px;
+    background: #e6f7ff;
+    color: #1890ff;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid #b3d8ff;
+}
+
+/* 头像上传 */
+.avatar-form-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.avatar-uploader-enhanced {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    border: 3px dashed #d1d5db;
+    cursor: pointer;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #ffffff;
+    transition: all 0.3s ease;
+}
+
+.avatar-uploader-enhanced:hover {
+    border-color: #4ecdc4;
+    background: #f0fffe;
+    transform: scale(1.05);
+}
+
+.avatar-uploader-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: #6b7280;
+}
+
+.upload-icon {
+    color: #4ecdc4;
+}
+
+.uploaded-avatar-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(78, 205, 196, 0.8);
+    color: white;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: calc(100% - 77px);
-    /* Adjust based on header height */
-    padding: 30px;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    border-radius: 50%;
+}
+
+.avatar-uploader-enhanced:hover .avatar-overlay {
+    opacity: 1;
+}
+
+.upload-tip-enhanced {
+    font-size: 13px;
+    color: #6b7280;
     text-align: center;
-    color: #777d84;
+    padding: 8px 16px;
+    background: #f8f9fa;
+    border-radius: 16px;
+    border: 1px solid #e8e9ea;
 }
 
-.edit-placeholder p {
-    font-size: 16px;
-    margin-top: 15px;
-    margin-bottom: 8px;
+/* 表单项美化 */
+.edit-form :deep(.el-form-item__label) {
     font-weight: 500;
+    color: #4b5563;
+    margin-bottom: 8px;
 }
 
-.edit-placeholder span {
-    font-size: 14px;
+.edit-form :deep(.el-input__wrapper),
+.edit-form :deep(.el-select__wrapper),
+.edit-form :deep(.el-textarea__inner) {
+    border-radius: 8px;
+    border: 1px solid #e8e9ea;
+    box-shadow: none;
+    transition: all 0.3s ease;
 }
 
-.edit-form {
-    padding: 28px;
-    overflow-y: auto;
-    max-height: calc(100vh - 80px - 77px - 56px);
-    /* Viewport - container padding - header - margins */
+.edit-form :deep(.el-input__wrapper:hover),
+.edit-form :deep(.el-select__wrapper:hover),
+.edit-form :deep(.el-textarea__inner:hover) {
+    border-color: #4ecdc4;
+    transform: translateY(-1px);
 }
 
+.edit-form :deep(.el-input__wrapper.is-focus),
+.edit-form :deep(.el-select__wrapper.is-focus),
+.edit-form :deep(.el-textarea__inner:focus) {
+    border-color: #4ecdc4;
+    box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.1);
+}
+
+/* 滚动条 */
 .styled-scrollbar::-webkit-scrollbar {
     width: 6px;
 }
@@ -665,159 +1310,25 @@ const cancelEdit = () => {
     background: #a1a1a1;
 }
 
-
-/* Enhanced Avatar Uploader */
-.avatar-form-item {
-    margin-bottom: 28px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-}
-
-.avatar-uploader-enhanced {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    /* Circular uploader */
-    border: 2px dashed #b8c2cc;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #f0f4f8;
-    transition: all 0.3s ease;
-}
-
-.avatar-uploader-enhanced:hover {
-    border-color: #409EFF;
-    background-color: #eaf4ff;
-}
-
-.avatar-uploader-placeholder {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: #8c939d;
-}
-
-.avatar-uploader-placeholder span {
-    font-size: 13px;
-    margin-top: 8px;
-}
-
-.uploaded-avatar-preview {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    /* Ensures the image covers the circle */
-}
-
-.avatar-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.3);
-    color: white;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    border-radius: 50%;
-}
-
-.avatar-uploader-enhanced:hover .avatar-overlay {
-    opacity: 1;
-}
-
-.upload-tip-enhanced {
-    font-size: 13px;
-    color: #777d84;
-    margin-top: 12px;
-}
-
-
-/* Form Inputs and Select */
-.edit-form .el-form-item {
-    margin-bottom: 22px;
-    /* Consistent spacing */
-}
-
-.edit-form .el-form-item__label {
-    font-weight: 500;
-    color: #4a5568;
-    /* Softer label color */
-    padding-bottom: 6px;
-    /* Space between label and input */
-}
-
-.edit-form .el-input__wrapper,
-/* Target new Element Plus structure for inputs */
-.edit-form .el-select__wrapper {
-    border-radius: 8px !important;
-    /* Rounded inputs */
-    box-shadow: none !important;
-    /* Remove default focus shadow if adding custom */
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.edit-form .el-input__wrapper:hover,
-.edit-form .el-select__wrapper:hover {
-    border-color: #a0cfff !important;
-}
-
-.edit-form .el-input__wrapper.is-focus,
-.edit-form .el-select__wrapper.is-focus {
-    border-color: #409EFF !important;
-    box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2) !important;
-    /* Custom focus ring */
-}
-
-.edit-form .el-textarea__inner {
-    border-radius: 8px;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.edit-form .el-textarea__inner:hover {
-    border-color: #a0cfff;
-}
-
-.edit-form .el-textarea__inner:focus {
-    border-color: #409EFF;
-    box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
-}
-
-
-/* Responsive Adjustments */
+/* 响应式设计 */
 @media (max-width: 1024px) {
-
-    /* Tablet and below */
     .profile-main-container {
         flex-direction: column;
-        padding: 20px;
+        gap: 20px;
     }
 
     .profile-aside-card {
-        flex: 0 0 auto;
-        margin-bottom: 24px;
-    }
-
-    .edit-form {
-        max-height: none;
-        /* Allow form to scroll with page on mobile */
+        flex: none;
     }
 }
 
 @media (max-width: 768px) {
+    .profile-container {
+        padding: 16px;
+    }
 
-    /* Mobile */
     .avatar-section {
-        padding: 25px 15px;
+        padding: 30px 20px;
     }
 
     .profile-avatar {
@@ -826,37 +1337,34 @@ const cancelEdit = () => {
     }
 
     .user-name-display {
-        font-size: 22px;
+        font-size: 24px;
     }
 
     .card-header {
-        padding: 18px 20px;
+        padding: 20px 24px;
+        flex-direction: column;
+        gap: 16px;
+        align-items: stretch;
     }
 
-    .header-title {
-        font-size: 18px;
+    .action-buttons {
+        justify-content: center;
     }
 
     .edit-form {
-        padding: 20px;
+        padding: 24px 20px;
     }
 
-    .el-row {
-        margin-left: 0 !important;
-        margin-right: 0 !important;
+    .form-section {
+        padding: 20px 16px;
     }
 
-    /* Reset gutter for stacked */
-    .el-col {
-        padding-left: 0 !important;
-        padding-right: 0 !important;
+    .placeholder-features {
+        gap: 16px;
     }
 
-    /* Reset gutter for stacked */
-    .el-col:not(:last-child) .el-form-item {
-        margin-bottom: 20px;
+    .info-item {
+        padding: 12px;
     }
-
-    /* Spacing for stacked items */
 }
 </style>

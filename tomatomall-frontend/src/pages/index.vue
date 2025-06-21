@@ -118,7 +118,9 @@ const handleAdd = (productId: number) => {
         if (res.data.code === '200') {
             ElMessage.success({ message: '成功加入购物车！', duration: 1000 });
         }
-    }).catch(() => { });
+    }).catch((error) => {
+        ElMessage.error({ message: '库存不足', duration: 1000 });
+    });
 }
 
 const pageInit = async () => {
@@ -143,20 +145,30 @@ onMounted(pageInit);
 <template>
     <div class="container">
         <!-- 页面标题 -->
-        <div class="page-header">
-            <h1 class="page-title">番茄书城</h1>
-            <p class="page-subtitle">好书推荐，阅读无限</p>
+        <div class="page-header animate-fade-in">
+            <h1 class="page-title">
+                <span class="title-char" v-for="(char, index) in '番茄书城'" :key="index"
+                    :style="{ animationDelay: `${index * 0.1}s` }">
+                    {{ char }}
+                </span>
+            </h1>
+            <p class="page-subtitle animate-slide-up">好书推荐，阅读无限</p>
+            <div class="title-decoration">
+                <div class="decoration-line"></div>
+                <div class="decoration-dot"></div>
+                <div class="decoration-line"></div>
+            </div>
         </div>
 
         <!-- 广告轮播 -->
-        <el-carousel v-if="advertisementList.length > 0" class="ad-carousel" :interval="3000" height="320px"
-            indicator-position="outside" arrow="hover">
+        <el-carousel v-if="advertisementList.length > 0" class="ad-carousel animate-scale-in" :interval="3000"
+            height="320px" indicator-position="outside" arrow="hover">
             <el-carousel-item v-for="ad in advertisementList" :key="ad.id" @click="gotoDetails(ad.productId)">
                 <div class="ad-item">
                     <el-image :src="ad.imgUrl" :alt="ad.title" class="ad-image" fit="cover">
                         <template #error>
                             <div class="image-error">
-                                <el-icon size="48">
+                                <el-icon size="48" class="pulse-icon">
                                     <Picture />
                                 </el-icon>
                                 <span>图片走丢了</span>
@@ -169,24 +181,30 @@ onMounted(pageInit);
                             <p class="ad-description">{{ ad.content }}</p>
                             <div class="ad-action">
                                 <span>点击探索更多</span>
-                                <el-icon>
+                                <el-icon class="bounce-icon">
                                     <ShoppingBag />
                                 </el-icon>
                             </div>
                         </div>
                     </div>
+                    <div class="shimmer-effect"></div>
                 </div>
             </el-carousel-item>
         </el-carousel>
 
         <!-- 优惠券领取区域 -->
-        <div v-if="validCoupons.length > 0" class="coupon-section">
+        <div v-if="validCoupons.length > 0" class="coupon-section animate-slide-in">
             <div class="section-header">
                 <div class="section-title">
-                    <el-icon class="title-icon">
+                    <el-icon class="title-icon rotating-icon">
                         <Present />
                     </el-icon>
                     <h2>今日福利</h2>
+                    <div class="sparkle-effect">
+                        <div class="sparkle"></div>
+                        <div class="sparkle"></div>
+                        <div class="sparkle"></div>
+                    </div>
                 </div>
                 <div class="section-subtitle">
                     限时优惠券，手慢无～
@@ -195,27 +213,30 @@ onMounted(pageInit);
 
             <div class="coupon-container">
                 <div class="coupon-scroll">
-                    <div v-for="coupon in validCoupons" :key="coupon.id" class="coupon-card">
+                    <div v-for="(coupon, index) in validCoupons" :key="coupon.id" class="coupon-card animate-card-in"
+                        :style="{ animationDelay: `${index * 0.1}s` }">
                         <div class="coupon-left">
                             <div class="discount-circle">
-                                <div class="discount-value">
+                                <div class="discount-value pulse-text">
                                     {{ formatDiscountValue(coupon.discountType, coupon.discountValue) }}
                                 </div>
                                 <div class="discount-label">
                                     {{ coupon.discountType === 1 ? 'OFF' : '减' }}
                                 </div>
                             </div>
+                            <div class="coupon-glow"></div>
                         </div>
 
                         <div class="coupon-middle">
                             <div class="coupon-name">{{ coupon.name }}</div>
                             <div class="coupon-desc">{{ coupon.description }}</div>
                             <div class="coupon-time">
-                                <el-icon>
+                                <el-icon class="tick-icon">
                                     <Clock />
                                 </el-icon>
                                 <span>{{ new Date(coupon.endTime).toLocaleDateString() }} 截止</span>
-                                <el-tag v-if="isExpiringSoon(coupon.endTime)" type="warning" size="small">
+                                <el-tag v-if="isExpiringSoon(coupon.endTime)" type="warning" size="small"
+                                    class="blink-tag">
                                     即将过期
                                 </el-tag>
                             </div>
@@ -226,26 +247,28 @@ onMounted(pageInit);
                                 还剩 {{ getRemainingQuantity(coupon) }} 张
                             </div>
                             <el-button type="primary" size="small" :loading="receivingCoupons.has(coupon.id!)"
-                                @click="receiveCoupon(coupon.id!)" class="receive-btn">
+                                @click="receiveCoupon(coupon.id!)" class="receive-btn shake-on-hover">
                                 <el-icon>
                                     <Ticket />
                                 </el-icon>
                                 {{ receivingCoupons.has(coupon.id!) ? '领取中...' : '秒杀' }}
                             </el-button>
                         </div>
+                        <div class="coupon-shine"></div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- 商品列表 -->
-        <div class="product-section">
+        <div class="product-section animate-fade-in-up">
             <div class="section-header">
                 <div class="section-title">
-                    <el-icon class="title-icon">
+                    <el-icon class="title-icon zoom-icon">
                         <ShoppingBag />
                     </el-icon>
                     <h2>热门推荐</h2>
+                    <div class="fire-effect">🔥</div>
                 </div>
                 <div class="section-subtitle">
                     每一本都值得拥有
@@ -254,12 +277,13 @@ onMounted(pageInit);
 
             <el-card class="product-list">
                 <div class="product-grid">
-                    <div v-for="product in productList" :key="product.id" class="product-item">
+                    <div v-for="(product, index) in productList" :key="product.id"
+                        class="product-item animate-product-in" :style="{ animationDelay: `${index * 0.05}s` }">
                         <div class="product-image-container" @click="gotoDetails(product.id)">
                             <el-image :src="product.cover" alt="商品图片" class="product-image" fit="cover">
                                 <template #error>
                                     <div class="image-error">
-                                        <el-icon size="32">
+                                        <el-icon size="32" class="pulse-icon">
                                             <Picture />
                                         </el-icon>
                                         <span>图片加载中</span>
@@ -269,12 +293,13 @@ onMounted(pageInit);
                             <div class="product-overlay">
                                 <span>点击查看</span>
                             </div>
+                            <div class="product-shine"></div>
                         </div>
                         <div class="product-info">
                             <div class="product-name" :title="product.title">{{ product.title }}</div>
-                            <div class="product-price">¥{{ product.price }}</div>
-                            <el-button type="primary" @click="handleAdd(product.id)" class="add-cart-btn"
-                                size="default">
+                            <div class="product-price animate-price">¥{{ product.price }}</div>
+                            <el-button type="primary" @click="handleAdd(product.id)"
+                                class="add-cart-btn wobble-on-hover" size="default">
                                 <el-icon>
                                     <ShoppingBag />
                                 </el-icon>
@@ -289,6 +314,314 @@ onMounted(pageInit);
 </template>
 
 <style scoped>
+/* 基础动画关键帧 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes cardIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes productIn {
+    from {
+        opacity: 0;
+        transform: translateY(40px) rotateX(45deg);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) rotateX(0deg);
+    }
+}
+
+@keyframes bounce {
+
+    0%,
+    20%,
+    50%,
+    80%,
+    100% {
+        transform: translateY(0);
+    }
+
+    40% {
+        transform: translateY(-10px);
+    }
+
+    60% {
+        transform: translateY(-5px);
+    }
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+@keyframes sparkle {
+
+    0%,
+    100% {
+        opacity: 0;
+        transform: scale(0);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes blink {
+
+    0%,
+    50% {
+        opacity: 1;
+    }
+
+    51%,
+    100% {
+        opacity: 0.3;
+    }
+}
+
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-2px);
+    }
+
+    75% {
+        transform: translateX(2px);
+    }
+}
+
+@keyframes zoom {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+@keyframes wobble {
+
+    0%,
+    100% {
+        transform: rotate(0deg);
+    }
+
+    25% {
+        transform: rotate(-5deg);
+    }
+
+    75% {
+        transform: rotate(5deg);
+    }
+}
+
+@keyframes glow {
+
+    0%,
+    100% {
+        box-shadow: 0 0 5px rgba(255, 107, 107, 0.5);
+    }
+
+    50% {
+        box-shadow: 0 0 20px rgba(255, 107, 107, 0.8);
+    }
+}
+
+@keyframes priceAnimation {
+    0% {
+        transform: scale(1);
+        color: #e53e3e;
+    }
+
+    50% {
+        transform: scale(1.1);
+        color: #ff6b6b;
+    }
+
+    100% {
+        transform: scale(1);
+        color: #e53e3e;
+    }
+}
+
+/* 动画类 */
+.animate-fade-in {
+    animation: fadeIn 0.8s ease-out;
+}
+
+.animate-slide-up {
+    animation: slideUp 0.8s ease-out 0.2s both;
+}
+
+.animate-slide-in {
+    animation: slideIn 0.8s ease-out 0.4s both;
+}
+
+.animate-scale-in {
+    animation: scaleIn 0.8s ease-out 0.6s both;
+}
+
+.animate-fade-in-up {
+    animation: fadeInUp 0.8s ease-out 0.8s both;
+}
+
+.animate-card-in {
+    animation: cardIn 0.6s ease-out both;
+}
+
+.animate-product-in {
+    animation: productIn 0.6s ease-out both;
+}
+
+.title-char {
+    display: inline-block;
+    animation: bounce 0.6s ease-out both;
+}
+
+.bounce-icon {
+    animation: bounce 2s infinite;
+}
+
+.pulse-icon {
+    animation: pulse 2s infinite;
+}
+
+.pulse-text {
+    animation: pulse 2s infinite;
+}
+
+.rotating-icon {
+    animation: rotate 3s linear infinite;
+}
+
+.tick-icon {
+    animation: pulse 1.5s infinite;
+}
+
+.blink-tag {
+    animation: blink 1s infinite;
+}
+
+.shake-on-hover:hover {
+    animation: shake 0.5s ease-in-out;
+}
+
+.zoom-icon {
+    animation: zoom 2s infinite;
+}
+
+.wobble-on-hover:hover {
+    animation: wobble 0.5s ease-in-out;
+}
+
+.animate-price {
+    animation: priceAnimation 2s infinite;
+}
+
 .container {
     max-width: 1400px;
     margin: 0 auto;
@@ -316,8 +649,30 @@ onMounted(pageInit);
 .page-subtitle {
     font-size: 18px;
     color: #6c757d;
-    margin: 0;
+    margin: 0 0 20px 0;
     font-weight: 300;
+}
+
+.title-decoration {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.decoration-line {
+    width: 50px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #ff6b6b, transparent);
+}
+
+.decoration-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ff6b6b;
+    animation: pulse 2s infinite;
 }
 
 /* 广告轮播美化 */
@@ -384,6 +739,16 @@ onMounted(pageInit);
     font-weight: 500;
 }
 
+.shimmer-effect {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    animation: shimmer 3s infinite;
+}
+
 /* 区域标题样式 */
 .section-header {
     margin-bottom: 30px;
@@ -396,6 +761,7 @@ onMounted(pageInit);
     justify-content: center;
     gap: 12px;
     margin-bottom: 8px;
+    position: relative;
 }
 
 .title-icon {
@@ -414,6 +780,45 @@ onMounted(pageInit);
     font-size: 16px;
     color: #6c757d;
     font-weight: 300;
+}
+
+.sparkle-effect {
+    position: absolute;
+    top: -10px;
+    right: -30px;
+}
+
+.sparkle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: #ff6b6b;
+    border-radius: 50%;
+    animation: sparkle 1.5s infinite;
+}
+
+.sparkle:nth-child(1) {
+    top: 0;
+    left: 0;
+    animation-delay: 0s;
+}
+
+.sparkle:nth-child(2) {
+    top: -5px;
+    left: 10px;
+    animation-delay: 0.5s;
+}
+
+.sparkle:nth-child(3) {
+    top: 5px;
+    left: 15px;
+    animation-delay: 1s;
+}
+
+.fire-effect {
+    font-size: 24px;
+    margin-left: 10px;
+    animation: bounce 1s infinite;
 }
 
 /* 优惠券区域 */
@@ -451,12 +856,14 @@ onMounted(pageInit);
     overflow: hidden;
     transition: all 0.3s ease;
     border: 2px solid #f0f0f0;
+    position: relative;
 }
 
 .coupon-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 12px 32px rgba(255, 107, 107, 0.2);
     border-color: #ff6b6b;
+    animation: glow 2s infinite;
 }
 
 .coupon-left {
@@ -480,9 +887,21 @@ onMounted(pageInit);
     border-radius: 50%;
 }
 
+.coupon-glow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: shimmer 2s infinite;
+}
+
 .discount-circle {
     text-align: center;
     color: white;
+    z-index: 2;
+    position: relative;
 }
 
 .discount-value {
@@ -560,6 +979,17 @@ onMounted(pageInit);
     box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
 }
 
+.coupon-shine {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transform: rotate(45deg);
+    animation: shimmer 3s infinite;
+}
+
 /* 商品区域 */
 .product-section {
     margin-bottom: 40px;
@@ -587,11 +1017,12 @@ onMounted(pageInit);
     background: white;
     transition: all 0.3s ease;
     border: 2px solid #f0f0f0;
+    position: relative;
 }
 
 .product-item:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
     border-color: #4ecdc4;
 }
 
@@ -632,6 +1063,23 @@ onMounted(pageInit);
 
 .product-item:hover .product-overlay {
     opacity: 1;
+}
+
+.product-shine {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transform: rotate(45deg);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.product-item:hover .product-shine {
+    opacity: 1;
+    animation: shimmer 1s ease-out;
 }
 
 .product-info {
@@ -735,5 +1183,29 @@ onMounted(pageInit);
     .product-grid {
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     }
+}
+
+/* 全局优化 */
+* {
+    transition: all 0.3s ease;
+}
+
+/* 滚动条美化 */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
 }
 </style>
