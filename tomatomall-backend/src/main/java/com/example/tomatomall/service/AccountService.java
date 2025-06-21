@@ -12,7 +12,6 @@ public interface AccountService {
     String updateAccount(AccountVO accountVO);
     String updateAccountWithoutPassword(AccountVO accountVO);
     String login(AccountVO accountVO);
-    String uploadImg(MultipartFile file);
     String updateRole(Integer id, String role);
     String getRole(Integer id);
     List<AccountVO> getShopStaff(Integer shopId);

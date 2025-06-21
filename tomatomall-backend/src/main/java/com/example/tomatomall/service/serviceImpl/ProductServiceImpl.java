@@ -6,7 +6,7 @@ import com.example.tomatomall.repository.*;
 import com.example.tomatomall.service.AccountService;
 import com.example.tomatomall.service.MessageService;
 import com.example.tomatomall.service.ProductService;
-import com.example.tomatomall.util.OssUtil;
+import com.example.tomatomall.util.ImageStorageFactory;
 import com.example.tomatomall.vo.MessageVO;
 import com.example.tomatomall.vo.ProductVO;
 import com.example.tomatomall.vo.SpecificationVO;
@@ -36,9 +36,6 @@ public class ProductServiceImpl implements ProductService {
     @Resource
     private AccountService accountService;
 
-    @Autowired
-    private OssUtil ossUtil;
-
     @Resource
     private SpecificationRepository specificationRepository;
 
@@ -59,6 +56,9 @@ public class ProductServiceImpl implements ProductService {
 
     @Resource
     private MessageService messageService;
+
+    @Autowired
+    private ImageStorageFactory storageFactory;
 
     private int stockpileAlert = 20;
 
@@ -136,7 +136,7 @@ public class ProductServiceImpl implements ProductService {
             product.setCover(productVO.getCover());
             // 删除旧封面
             if (oldCover != null && !oldCover.isEmpty()) {
-                ossUtil.deleteFileByUrl(oldCover);
+                storageFactory.getStorage().delete(oldCover);
             }
         }
 
@@ -161,9 +161,8 @@ public class ProductServiceImpl implements ProductService {
     public String deleteProduct(int id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(TomatoMallException::productNotExists);        // 删除商品封面
-        if (product.getCover()!=null&&!product.getCover().isEmpty()) {
-            String res = ossUtil.deleteFileByUrl(product.getCover());
-            System.out.println(res);
+        if (product.getCover()!=null && !product.getCover().isEmpty()) {
+            storageFactory.getStorage().delete(product.getCover());
         }
         stockpileRepository.deleteByProductId(id);
         specificationRepository.deleteByProductId(id);

@@ -15,4 +15,7 @@ public interface OrderService {
     public void handleAlipayNotify(HttpServletRequest request, HttpServletResponse response)throws IOException, AlipayApiException;
     public List<OrderItemVO> getOrderItems(Integer orderId);
     public List<OrderVO> getOrders(Integer accountId);
+
+    public Void cancelOrder(Integer orderId);
+
 }

@@ -154,10 +154,22 @@ public class CartServiceImpl implements CartService {
      * @return 订单VO
      */
     @Override
-    public OrderVO check(CheckRequestVO checkRequestVO) {
+    public OrderVO check(CheckRequestVO checkRequestVO, int couponType, int couponValue) {
         OrderVO orderVO = new OrderVO();
         orderVO.setAccountId(securityUtil.getCurrentAccount().getId());
-        orderVO.setTotalAmount(getCart().getTotalAmount());
+        double totalAmount = getCart().getTotalAmount();
+
+        if (couponType == 2) {
+            // 满减
+            if (totalAmount >= couponValue) {
+                totalAmount -= couponValue;
+            }
+        } else if (couponType == 1) {
+            // 折扣
+            totalAmount *= couponValue;
+        }
+        orderVO.setTotalAmount(totalAmount);
+
         orderVO.setPaymentMethod("ALIPAY");
         orderVO.setStatus(PaymentStatusEnum.PENDING);
         orderVO.setCreateTime(new Date());

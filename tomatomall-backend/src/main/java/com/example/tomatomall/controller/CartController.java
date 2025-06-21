@@ -80,7 +80,7 @@ public class CartController {
      * @return 订单信息
      */
     @PostMapping("/checkout")
-    public Response<OrderVO> checkout(@RequestBody CheckRequestVO checkRequestVO) {
-        return Response.buildSuccess(cartService.check(checkRequestVO));
+    public Response<OrderVO> checkout(@RequestBody CheckRequestVO checkRequestVO,@RequestParam int couponType , @RequestParam int couponValue) {
+        return Response.buildSuccess(cartService.check(checkRequestVO,couponType, couponValue));
     }
 }

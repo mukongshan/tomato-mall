@@ -13,6 +13,6 @@ public interface CartService {
     public String deleteCartItem(Integer cartItemId);
     public String updateCartItem(Integer productId, Integer quantity);
     public CartListVO getCart();
-    public OrderVO check(CheckRequestVO checkRequestVO);
+    public OrderVO check(CheckRequestVO checkRequestVO, int couponType, int couponValue);
     public String deleteCartItemByOrder(String orderIdStr);
 }
