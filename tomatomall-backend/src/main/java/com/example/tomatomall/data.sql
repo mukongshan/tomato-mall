@@ -340,15 +340,16 @@ END //
 
 DELIMITER ;
 
+DELIMITER //
 
-DROP TABLE accounts, advertisements, carts, carts_orders_relation, messages,
-    orders, products, reviews, shops, specifications, stockpiles CASCADE;
+CREATE TRIGGER trg_delete_coupon
+    BEFORE DELETE
+    ON coupon
+    FOR EACH ROW
+BEGIN
+    -- 删除所有 count_id 等于当前 coupon id 的关联记录
+    DELETE FROM account_coupons_relation
+    WHERE coupon_id = OLD.id;
+END //
 
-UPDATE accounts
-SET role='admin'
-WHERE id = 1;
-
-SELECT *
-FROM coupon;
-
-SHOW TABLES;
+DELIMITER ;
