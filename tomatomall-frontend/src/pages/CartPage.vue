@@ -455,25 +455,30 @@ const onConfirm = async () => {
 <template>
     <div class="cart-container">
         <!-- 页面头部 -->
-        <div class="page-header">
+        <div class="page-header animate-fade-in">
             <div class="header-left">
-                <div class="header-icon">
+                <div class="header-icon pulse-icon">
                     <el-icon size="32">
                         <ShoppingBag />
                     </el-icon>
                 </div>
                 <div class="header-text">
-                    <h1>我的购物车</h1>
-                    <p>管理您选购的商品</p>
+                    <h1 class="title-text">
+                        <span class="title-char" v-for="(char, index) in '我的购物车'" :key="index"
+                            :style="{ animationDelay: `${index * 0.1}s` }">
+                            {{ char }}
+                        </span>
+                    </h1>
+                    <p class="animate-slide-up">管理您选购的商品</p>
                 </div>
             </div>
-            <div class="header-stats" v-if="cartItems.length > 0">
+            <div class="header-stats animate-scale-in" v-if="cartItems.length > 0">
                 <div class="stat-item">
-                    <div class="stat-number">{{ cartItems.length }}</div>
+                    <div class="stat-number counter-animation">{{ cartItems.length }}</div>
                     <div class="stat-label">商品种类</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-number">{{ selectedItems.length }}</div>
+                    <div class="stat-number counter-animation">{{ selectedItems.length }}</div>
                     <div class="stat-label">已选商品</div>
                 </div>
             </div>
@@ -481,11 +486,11 @@ const onConfirm = async () => {
 
         <div class="cart-content">
             <!-- 购物车列表 -->
-            <el-card class="cart-list-card" shadow="hover">
+            <el-card class="cart-list-card animate-slide-in" shadow="hover">
                 <div class="cart-header">
                     <div class="header-select">
                         <el-checkbox :model-value="selectedItems.length === cartItems.length && cartItems.length > 0"
-                            @change="toggleSelectAll" class="select-all-checkbox">
+                            @change="toggleSelectAll" class="select-all-checkbox bounce-on-change">
                             全选
                         </el-checkbox>
                     </div>
@@ -496,13 +501,26 @@ const onConfirm = async () => {
                     <div class="header-item header-actions">操作</div>
                 </div>
 
-                <div v-if="loading" class="loading-container">
+                <div v-if="loading" class="loading-container animate-pulse">
                     <el-skeleton :rows="5" animated />
+                    <div class="loading-dots">
+                        <span class="dot"></span>
+                        <span class="dot"></span>
+                        <span class="dot"></span>
+                    </div>
                 </div>
 
-                <div v-else-if="cartItems.length === 0" class="empty-cart">
+                <div v-else-if="cartItems.length === 0" class="empty-cart animate-bounce-in">
                     <el-empty description="购物车空空如也，快去添加心仪的商品吧！" class="empty-state">
-                        <el-button type="primary" @click="$router.push('/')" size="large" class="go-shopping-btn">
+                        <template #image>
+                            <div class="empty-icon float-animation">
+                                <el-icon size="80">
+                                    <ShoppingBag />
+                                </el-icon>
+                            </div>
+                        </template>
+                        <el-button type="primary" @click="$router.push('/')" size="large"
+                            class="go-shopping-btn wobble-on-hover">
                             <el-icon>
                                 <ShoppingBag />
                             </el-icon>
@@ -512,15 +530,17 @@ const onConfirm = async () => {
                 </div>
 
                 <div v-else class="cart-items">
-                    <div v-for="item in cartItems" :key="item.cartItemId" class="cart-item">
+                    <div v-for="(item, index) in cartItems" :key="item.cartItemId" class="cart-item animate-item-in"
+                        :style="{ animationDelay: `${index * 0.1}s` }">
                         <div class="item-select">
-                            <el-checkbox v-model="item.selected" @change="toggleSelectItem()" />
+                            <el-checkbox v-model="item.selected" @change="toggleSelectItem()" class="checkbox-scale" />
                         </div>
                         <div class="item-info">
                             <div class="product-image-wrapper">
-                                <el-image :src="getCartProduct(item.productId).cover" fit="cover" class="product-image">
+                                <el-image :src="getCartProduct(item.productId).cover" fit="cover"
+                                    class="product-image hover-scale">
                                     <template #error>
-                                        <div class="image-error">
+                                        <div class="image-error pulse-icon">
                                             <el-icon size="24">
                                                 <Picture />
                                             </el-icon>
@@ -532,29 +552,29 @@ const onConfirm = async () => {
                             <div class="product-details">
                                 <div class="product-name">{{ getCartProduct(item.productId).title }}</div>
                                 <div class="product-spec">规格: 默认</div>
-                                <div class="stock-info">
+                                <div class="stock-info pulse-text">
                                     库存: {{ getCartStockpile(item.productId).amount }} 件
                                 </div>
                             </div>
                         </div>
                         <div class="item-price">
                             <span class="price-symbol">¥</span>
-                            <span class="price-value">{{ getCartProduct(item.productId).price }}</span>
+                            <span class="price-value price-glow">{{ getCartProduct(item.productId).price }}</span>
                         </div>
                         <div class="item-quantity">
                             <el-input-number v-model="item.quantity" :min="1"
                                 :max="getCartStockpile(item.productId).amount"
-                                @change="handleQuantityChange(item, $event!)" size="default"
-                                controls-position="right" />
+                                @change="handleQuantityChange(item, $event!)" size="default" controls-position="right"
+                                class="quantity-input" />
                         </div>
                         <div class="item-total">
                             <span class="total-symbol">¥</span>
                             <span
-                                class="total-value">{{ (getCartProduct(item.productId).price * item.quantity).toFixed(2) }}</span>
+                                class="total-value price-animation">{{ (getCartProduct(item.productId).price * item.quantity).toFixed(2) }}</span>
                         </div>
                         <div class="item-actions">
                             <el-button type="danger" size="small" @click="handleDeleteItem(item.cartItemId)"
-                                class="delete-btn">
+                                class="delete-btn shake-on-hover">
                                 <el-icon>
                                     <Delete />
                                 </el-icon>
@@ -566,52 +586,55 @@ const onConfirm = async () => {
             </el-card>
 
             <!-- 优惠券选择区域 -->
-            <el-card v-if="selectedItems.length > 0" class="coupon-card" shadow="hover">
+            <el-card v-if="selectedItems.length > 0" class="coupon-card animate-slide-in-right" shadow="hover">
                 <template #header>
                     <div class="coupon-header">
-                        <el-icon class="coupon-icon">
+                        <el-icon class="coupon-icon rotating-icon">
                             <Present />
                         </el-icon>
                         <span>优惠券</span>
                         <div class="coupon-stats">
-                            <el-tag size="small" type="success">可用 {{ usableCoupons.length }}</el-tag>
-                            <el-tag size="small" type="info">不可用 {{ unusableCoupons.length }}</el-tag>
+                            <el-tag size="small" type="success" class="tag-bounce">可用
+                                {{ usableCoupons.length }}</el-tag>
+                            <el-tag size="small" type="info" class="tag-bounce">不可用
+                                {{ unusableCoupons.length }}</el-tag>
                         </div>
                     </div>
                 </template>
 
                 <div class="coupon-content">
-                    <div v-if="selectedCoupon" class="selected-coupon">
+                    <div v-if="selectedCoupon" class="selected-coupon shine-effect">
                         <div class="coupon-info">
                             <div class="coupon-name">{{ selectedCoupon.name }}</div>
-                            <div class="coupon-discount">{{ formatCouponDiscount(selectedCoupon) }}</div>
+                            <div class="coupon-discount pulse-text">{{ formatCouponDiscount(selectedCoupon) }}</div>
                         </div>
                         <div class="coupon-savings">
-                            <span class="savings-text">已省 ¥{{ couponSavings.toFixed(2) }}</span>
+                            <span class="savings-text glow-text">已省 ¥{{ couponSavings.toFixed(2) }}</span>
                         </div>
-                        <el-button type="text" @click="showCouponDialog = true" class="change-coupon-btn">
+                        <el-button type="text" @click="showCouponDialog = true" class="change-coupon-btn hover-scale">
                             更换
                         </el-button>
                     </div>
                     <div v-else-if="usableCoupons.length > 0" class="no-coupon">
                         <div class="no-coupon-text">
-                            <el-icon>
+                            <el-icon class="bounce-icon">
                                 <Ticket />
                             </el-icon>
                             <span>暂未使用优惠券</span>
                         </div>
-                        <el-button type="primary" @click="showCouponDialog = true" size="small">
+                        <el-button type="primary" @click="showCouponDialog = true" size="small"
+                            class="select-coupon-btn wobble-on-hover">
                             选择优惠券
                         </el-button>
                     </div>
                     <div v-else class="no-coupon">
                         <div class="no-coupon-text">
-                            <el-icon>
+                            <el-icon class="warning-icon">
                                 <Warning />
                             </el-icon>
                             <span>暂无可用优惠券</span>
                         </div>
-                        <el-button type="text" @click="showCouponDialog = true" size="small">
+                        <el-button type="text" @click="showCouponDialog = true" size="small" class="view-all-btn">
                             查看所有优惠券
                         </el-button>
                     </div>
@@ -619,15 +642,15 @@ const onConfirm = async () => {
             </el-card>
 
             <!-- 结算栏 -->
-            <el-card class="cart-footer-card" shadow="always">
+            <el-card class="cart-footer-card animate-slide-up" shadow="always">
                 <div class="cart-footer">
                     <div class="footer-left">
                         <el-checkbox :model-value="selectedItems.length === cartItems.length && cartItems.length > 0"
-                            @change="toggleSelectAll" class="footer-select-all">
+                            @change="toggleSelectAll" class="footer-select-all bounce-on-change">
                             全选
                         </el-checkbox>
                         <el-button type="text" @click="cartItems.forEach(item => handleDeleteItem(item.cartItemId))"
-                            class="delete-selected-btn">
+                            class="delete-selected-btn shake-on-hover">
                             <el-icon>
                                 <Delete />
                             </el-icon>
@@ -645,15 +668,15 @@ const onConfirm = async () => {
                             </div>
                             <div v-if="selectedCoupon" class="summary-line savings-line">
                                 <span class="summary-label">优惠减免:</span>
-                                <span class="savings-amount">-¥{{ couponSavings.toFixed(2) }}</span>
+                                <span class="savings-amount glow-text">-¥{{ couponSavings.toFixed(2) }}</span>
                             </div>
                             <div class="summary-line final-price-line">
                                 <span class="summary-label">{{ selectedCoupon ? '实付金额:' : '合计:' }}</span>
-                                <span class="final-price">¥{{ finalPrice.toFixed(2) }}</span>
+                                <span class="final-price price-animation">¥{{ finalPrice.toFixed(2) }}</span>
                             </div>
                         </div>
                         <el-button type="primary" size="large" :disabled="selectedItems.length === 0"
-                            @click="handleCheckout" class="checkout-btn">
+                            @click="handleCheckout" class="checkout-btn pulse-on-hover">
                             <el-icon>
                                 <Check />
                             </el-icon>
@@ -665,23 +688,23 @@ const onConfirm = async () => {
         </div>
 
         <!-- 优惠券选择对话框 -->
-        <el-dialog v-model="showCouponDialog" title="🎫 选择优惠券" width="75%" class="coupon-dialog">
+        <el-dialog v-model="showCouponDialog" title="🎫 选择优惠券" width="75%" class="coupon-dialog animate-dialog">
             <div class="coupon-dialog-content">
                 <!-- 可用优惠券 -->
-                <div v-if="usableCoupons.length > 0" class="coupon-section">
+                <div v-if="usableCoupons.length > 0" class="coupon-section animate-section">
                     <div class="section-header">
                         <h3>
-                            <el-icon>
+                            <el-icon class="check-icon">
                                 <Check />
                             </el-icon>
                             可用优惠券 ({{ usableCoupons.length }})
                         </h3>
                     </div>
                     <div class="coupon-list">
-                        <div class="coupon-option" @click="selectCoupon(null)">
-                            <div class="coupon-card no-coupon-card" :class="{ selected: !selectedCoupon }">
+                        <div class="coupon-option animate-coupon-item" @click="selectCoupon(null)">
+                            <div class="coupon-card no-coupon-card hover-lift" :class="{ selected: !selectedCoupon }">
                                 <div class="no-coupon-content">
-                                    <div class="no-coupon-icon">
+                                    <div class="no-coupon-icon bounce-icon">
                                         <el-icon size="32">
                                             <Ticket />
                                         </el-icon>
@@ -691,7 +714,7 @@ const onConfirm = async () => {
                                         <div class="no-coupon-price">原价: ¥{{ totalPrice.toFixed(2) }}</div>
                                     </div>
                                 </div>
-                                <div v-if="!selectedCoupon" class="selected-mark">
+                                <div v-if="!selectedCoupon" class="selected-mark selected-pulse">
                                     <el-icon>
                                         <Check />
                                     </el-icon>
@@ -699,23 +722,25 @@ const onConfirm = async () => {
                             </div>
                         </div>
 
-                        <div v-for="coupon in usableCoupons" :key="`usable-${coupon.id}`" class="coupon-option"
+                        <div v-for="(coupon, index) in usableCoupons" :key="`usable-${coupon.id}`"
+                            class="coupon-option animate-coupon-item" :style="{ animationDelay: `${index * 0.1}s` }"
                             @click="selectCoupon(coupon)">
-                            <div class="coupon-card usable-coupon"
+                            <div class="coupon-card usable-coupon hover-lift"
                                 :class="{ selected: selectedCoupon?.id === coupon.id }">
-                                <div class="coupon-left">
+                                <div class="coupon-left gradient-bg">
                                     <div class="discount-badge">
-                                        <div class="discount-value">{{ formatCouponDiscount(coupon) }}</div>
+                                        <div class="discount-value pulse-text">{{ formatCouponDiscount(coupon) }}</div>
                                     </div>
                                 </div>
                                 <div class="coupon-body">
                                     <div class="coupon-name">{{ coupon.name }}</div>
                                     <div class="coupon-desc">{{ coupon.description }}</div>
                                     <div class="coupon-quantity" v-if="coupon.availableQuantity">
-                                        <el-tag size="small" type="success">拥有 {{ coupon.availableQuantity }} 张</el-tag>
+                                        <el-tag size="small" type="success" class="quantity-tag">拥有
+                                            {{ coupon.availableQuantity }} 张</el-tag>
                                     </div>
                                     <div class="coupon-time">
-                                        <el-icon>
+                                        <el-icon class="clock-icon">
                                             <Clock />
                                         </el-icon>
                                         <span>{{ formatDate(coupon.startTime) }} -
@@ -724,33 +749,35 @@ const onConfirm = async () => {
                                     <div class="coupon-result">
                                         <span class="result-price">使用后: ¥{{ calculateDiscountPrice(totalPrice,
                                             coupon).toFixed(2) }}</span>
-                                        <span class="result-savings">(省 ¥{{ (totalPrice -
+                                        <span class="result-savings glow-text">(省 ¥{{ (totalPrice -
                                             calculateDiscountPrice(totalPrice,
                                                 coupon)).toFixed(2) }})</span>
                                     </div>
                                 </div>
-                                <div v-if="selectedCoupon?.id === coupon.id" class="selected-mark">
+                                <div v-if="selectedCoupon?.id === coupon.id" class="selected-mark selected-pulse">
                                     <el-icon>
                                         <Check />
                                     </el-icon>
                                 </div>
+                                <div class="card-shine"></div>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- 不可用优惠券 -->
-                <div v-if="unusableCoupons.length > 0" class="coupon-section">
+                <div v-if="unusableCoupons.length > 0" class="coupon-section animate-section">
                     <div class="section-header">
                         <h3>
-                            <el-icon>
+                            <el-icon class="warning-icon">
                                 <Warning />
                             </el-icon>
                             不可用优惠券 ({{ unusableCoupons.length }})
                         </h3>
                     </div>
                     <div class="coupon-list">
-                        <div v-for="coupon in unusableCoupons" :key="`unusable-${coupon.id}`" class="coupon-option">
+                        <div v-for="(coupon, index) in unusableCoupons" :key="`unusable-${coupon.id}`"
+                            class="coupon-option animate-coupon-item" :style="{ animationDelay: `${index * 0.1}s` }">
                             <div class="coupon-card unusable-coupon" @click="selectCoupon(coupon)">
                                 <div class="coupon-left disabled">
                                     <div class="discount-badge">
@@ -779,7 +806,7 @@ const onConfirm = async () => {
                                     </div>
                                 </div>
                                 <div class="disabled-mask">
-                                    <el-icon>
+                                    <el-icon class="warning-icon">
                                         <Warning />
                                     </el-icon>
                                 </div>
@@ -789,67 +816,78 @@ const onConfirm = async () => {
                 </div>
 
                 <!-- 无优惠券提示 -->
-                <div v-if="allUserCoupons.length === 0" class="no-coupons">
+                <div v-if="allUserCoupons.length === 0" class="no-coupons animate-bounce-in">
                     <el-empty description="您还没有任何优惠券">
-                        <el-button type="primary" @click="$router.push('/')">去首页领取</el-button>
+                        <template #image>
+                            <div class="empty-coupon-icon float-animation">
+                                <el-icon size="60">
+                                    <Present />
+                                </el-icon>
+                            </div>
+                        </template>
+                        <el-button type="primary" @click="$router.push('/')"
+                            class="get-coupon-btn wobble-on-hover">去首页领取</el-button>
                     </el-empty>
                 </div>
             </div>
 
             <template #footer>
                 <div class="dialog-footer">
-                    <el-button @click="showCouponDialog = false" size="large">取消</el-button>
-                    <el-button type="primary" @click="showCouponDialog = false" size="large">确定</el-button>
+                    <el-button @click="showCouponDialog = false" size="large" class="cancel-btn">取消</el-button>
+                    <el-button type="primary" @click="showCouponDialog = false" size="large"
+                        class="confirm-btn hover-scale">确定</el-button>
                 </div>
             </template>
         </el-dialog>
 
         <!-- 订单确认对话框 -->
-        <el-dialog v-model="showConfirmDialog" title="📋 确认订单信息" width="60%" class="order-dialog">
+        <el-dialog v-model="showConfirmDialog" title="📋 确认订单信息" width="60%" class="order-dialog animate-dialog">
             <div class="order-form-container">
                 <el-form :model="orderInfo" label-width="0" class="order-form">
-                    <div class="form-row">
+                    <div class="form-row animate-form-row">
                         <div class="form-group">
                             <label class="form-label">
-                                <el-icon>
+                                <el-icon class="form-icon">
                                     <Edit />
                                 </el-icon>
                                 <span>收货人姓名</span>
                             </label>
-                            <el-input v-model="orderInfo.name" placeholder="请输入收货人姓名" size="large" />
+                            <el-input v-model="orderInfo.name" placeholder="请输入收货人姓名" size="large" class="form-input" />
                         </div>
                         <div class="form-group">
                             <label class="form-label">
-                                <el-icon>
+                                <el-icon class="form-icon">
                                     <Edit />
                                 </el-icon>
                                 <span>手机号码</span>
                             </label>
-                            <el-input v-model="orderInfo.telephone" placeholder="请输入手机号码" size="large" />
+                            <el-input v-model="orderInfo.telephone" placeholder="请输入手机号码" size="large"
+                                class="form-input" />
                         </div>
                     </div>
 
-                    <div class="form-row full-width">
+                    <div class="form-row full-width animate-form-row">
                         <div class="form-group">
                             <label class="form-label">
-                                <el-icon>
+                                <el-icon class="form-icon">
                                     <Edit />
                                 </el-icon>
                                 <span>收货地址</span>
                             </label>
-                            <el-input v-model="orderInfo.location" placeholder="请输入详细收货地址" size="large" />
+                            <el-input v-model="orderInfo.location" placeholder="请输入详细收货地址" size="large"
+                                class="form-input" />
                         </div>
                     </div>
 
-                    <div class="form-row full-width">
+                    <div class="form-row full-width animate-form-row">
                         <div class="form-group">
                             <label class="form-label">
-                                <el-icon>
+                                <el-icon class="form-icon">
                                     <Edit />
                                 </el-icon>
                                 <span>电子邮箱</span>
                             </label>
-                            <el-input v-model="orderInfo.email" placeholder="请输入电子邮箱" size="large" />
+                            <el-input v-model="orderInfo.email" placeholder="请输入电子邮箱" size="large" class="form-input" />
                         </div>
                     </div>
                 </el-form>
@@ -857,8 +895,8 @@ const onConfirm = async () => {
 
             <template #footer>
                 <div class="dialog-footer">
-                    <el-button @click="showConfirmDialog = false" size="large">取消</el-button>
-                    <el-button type="primary" @click="onConfirm" size="large" class="confirm-order-btn">
+                    <el-button @click="showConfirmDialog = false" size="large" class="cancel-btn">取消</el-button>
+                    <el-button type="primary" @click="onConfirm" size="large" class="confirm-order-btn pulse-on-hover">
                         <el-icon>
                             <Check />
                         </el-icon>
@@ -871,6 +909,477 @@ const onConfirm = async () => {
 </template>
 
 <style scoped>
+/* 基础动画关键帧 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(50px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes bounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+
+    70% {
+        transform: scale(0.9);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes itemIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes bounce {
+
+    0%,
+    20%,
+    50%,
+    80%,
+    100% {
+        transform: translateY(0);
+    }
+
+    40% {
+        transform: translateY(-10px);
+    }
+
+    60% {
+        transform: translateY(-5px);
+    }
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+@keyframes glow {
+
+    0%,
+    100% {
+        box-shadow: 0 0 5px rgba(78, 205, 196, 0.5);
+        text-shadow: 0 0 10px rgba(78, 205, 196, 0.5);
+    }
+
+    50% {
+        box-shadow: 0 0 20px rgba(78, 205, 196, 0.8);
+        text-shadow: 0 0 20px rgba(78, 205, 196, 0.8);
+    }
+}
+
+@keyframes priceGlow {
+
+    0%,
+    100% {
+        color: #e53e3e;
+        text-shadow: none;
+    }
+
+    50% {
+        color: #ff6b6b;
+        text-shadow: 0 0 10px rgba(229, 62, 62, 0.5);
+    }
+}
+
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-3px);
+    }
+
+    75% {
+        transform: translateX(3px);
+    }
+}
+
+@keyframes wobble {
+
+    0%,
+    100% {
+        transform: rotate(0deg);
+    }
+
+    25% {
+        transform: rotate(-5deg);
+    }
+
+    75% {
+        transform: rotate(5deg);
+    }
+}
+
+@keyframes loadingDots {
+
+    0%,
+    80%,
+    100% {
+        transform: scale(0);
+    }
+
+    40% {
+        transform: scale(1);
+    }
+}
+
+@keyframes counterUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes selectedPulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.7);
+    }
+
+    50% {
+        transform: scale(1.1);
+        box-shadow: 0 0 0 10px rgba(255, 107, 107, 0);
+    }
+}
+
+/* 动画类 */
+.animate-fade-in {
+    animation: fadeIn 0.8s ease-out;
+}
+
+.animate-slide-up {
+    animation: slideUp 0.8s ease-out 0.2s both;
+}
+
+.animate-slide-in {
+    animation: slideIn 0.8s ease-out 0.4s both;
+}
+
+.animate-slide-in-right {
+    animation: slideInRight 0.8s ease-out 0.6s both;
+}
+
+.animate-scale-in {
+    animation: scaleIn 0.8s ease-out 0.8s both;
+}
+
+.animate-bounce-in {
+    animation: bounceIn 0.8s ease-out;
+}
+
+.animate-item-in {
+    animation: itemIn 0.6s ease-out both;
+}
+
+.animate-pulse {
+    animation: pulse 1.5s infinite;
+}
+
+.animate-dialog {
+    animation: scaleIn 0.3s ease-out;
+}
+
+.animate-section {
+    animation: slideIn 0.6s ease-out;
+}
+
+.animate-coupon-item {
+    animation: itemIn 0.5s ease-out both;
+}
+
+.animate-form-row {
+    animation: slideUp 0.5s ease-out both;
+}
+
+.title-char {
+    display: inline-block;
+    animation: bounce 0.6s ease-out both;
+}
+
+.pulse-icon {
+    animation: pulse 2s infinite;
+}
+
+.bounce-icon {
+    animation: bounce 2s infinite;
+}
+
+.rotating-icon {
+    animation: rotate 3s linear infinite;
+}
+
+.float-animation {
+    animation: float 3s ease-in-out infinite;
+}
+
+.counter-animation {
+    animation: counterUp 0.8s ease-out;
+}
+
+.price-animation {
+    animation: priceGlow 2s infinite;
+}
+
+.price-glow {
+    animation: priceGlow 2s infinite;
+}
+
+.glow-text {
+    animation: glow 2s infinite;
+}
+
+.pulse-text {
+    animation: pulse 2s infinite;
+}
+
+.shine-effect {
+    position: relative;
+    overflow: hidden;
+}
+
+.shine-effect::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: shimmer 3s infinite;
+}
+
+.selected-pulse {
+    animation: selectedPulse 1.5s infinite;
+}
+
+.hover-scale:hover {
+    transform: scale(1.05);
+    transition: transform 0.3s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-5px);
+    transition: transform 0.3s ease;
+}
+
+.wobble-on-hover:hover {
+    animation: wobble 0.5s ease-in-out;
+}
+
+.shake-on-hover:hover {
+    animation: shake 0.5s ease-in-out;
+}
+
+.pulse-on-hover:hover {
+    animation: pulse 0.8s ease-in-out;
+}
+
+.bounce-on-change {
+    transition: transform 0.3s ease;
+}
+
+.bounce-on-change:active {
+    transform: scale(1.1);
+}
+
+.checkbox-scale {
+    transition: transform 0.3s ease;
+}
+
+.checkbox-scale:hover {
+    transform: scale(1.1);
+}
+
+.tag-bounce {
+    animation: bounce 1s ease-in-out infinite;
+    animation-delay: 1s;
+}
+
+.warning-icon {
+    animation: shake 2s infinite;
+}
+
+.check-icon {
+    color: #67c23a;
+    animation: pulse 2s infinite;
+}
+
+.clock-icon {
+    animation: rotate 4s linear infinite;
+}
+
+.form-icon {
+    color: #4ecdc4;
+    animation: pulse 2s infinite;
+}
+
+/* 加载点动画 */
+.loading-dots {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #4ecdc4;
+    animation: loadingDots 1.4s infinite ease-in-out both;
+}
+
+.dot:nth-child(1) {
+    animation-delay: -0.32s;
+}
+
+.dot:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+/* 卡片光泽效果 */
+.card-shine {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.coupon-card:hover .card-shine {
+    opacity: 1;
+    animation: shimmer 1.5s ease-out;
+}
+
+/* 梯度背景 */
+.gradient-bg {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%);
+}
+
 .cart-container {
     max-width: 1400px;
     margin: 0 auto;
@@ -906,7 +1415,7 @@ const onConfirm = async () => {
     box-shadow: 0 4px 16px rgba(78, 205, 196, 0.3);
 }
 
-.header-text h1 {
+.header-text .title-text {
     margin: 0 0 4px 0;
     font-size: 28px;
     color: #2c3e50;
@@ -930,6 +1439,11 @@ const onConfirm = async () => {
     background: white;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease;
+}
+
+.stat-item:hover {
+    transform: translateY(-3px);
 }
 
 .stat-number {
@@ -958,6 +1472,11 @@ const onConfirm = async () => {
     overflow: hidden;
     border: none;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: box-shadow 0.3s ease;
+}
+
+.cart-list-card:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
 }
 
 .cart-header {
@@ -1018,6 +1537,11 @@ const onConfirm = async () => {
 
 .empty-state {
     padding: 40px 0;
+}
+
+.empty-icon {
+    color: #a0aec0;
+    margin-bottom: 20px;
 }
 
 .go-shopping-btn {
@@ -1115,8 +1639,8 @@ const onConfirm = async () => {
     transition: transform 0.3s ease;
 }
 
-.cart-item:hover .product-image {
-    transform: scale(1.05);
+.product-image:hover {
+    transform: scale(1.1);
 }
 
 .image-error {
@@ -1134,7 +1658,6 @@ const onConfirm = async () => {
 .product-details {
     flex: 1;
     min-width: 0;
-    /* 防止内容溢出 */
 }
 
 .product-name {
@@ -1179,8 +1702,13 @@ const onConfirm = async () => {
 }
 
 /* 数量输入框样式 */
-.item-quantity .el-input-number {
+.quantity-input {
     width: 120px;
+    transition: all 0.3s ease;
+}
+
+.quantity-input:hover {
+    transform: scale(1.05);
 }
 
 /* 操作按钮样式 */
@@ -1198,6 +1726,11 @@ const onConfirm = async () => {
     border-radius: 16px;
     border: none;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+}
+
+.coupon-card:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
 }
 
 .coupon-header {
@@ -1237,6 +1770,8 @@ const onConfirm = async () => {
     background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%);
     border-radius: 12px;
     color: white;
+    position: relative;
+    overflow: hidden;
 }
 
 .coupon-info {
