@@ -27,3 +27,6 @@ export const REVIEW_MODULE = `${API_MODULE}/reviews`
 
 // 图片模块
 export const IMAGE_MODULE = `${API_MODULE}/image`
+
+// 优惠券模块
+export const COUPON_MODULE = `${API_MODULE}/coupons`

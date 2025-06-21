@@ -14,6 +14,7 @@ import shopManage from '@/pages/shopManage.vue';
 import shopDetail from '@/pages/shopDetail.vue';
 import myShop from '@/pages/myShop.vue';
 import order from '@/pages/order.vue';
+import couponManage from '@/pages/couponManage.vue';
 
 const routes = [
     {
@@ -110,6 +111,12 @@ const routes = [
         component: order,
         meta: { title: '全部订单' },
     },
+    {
+        path: '/couponManage',
+        name: 'couponManage',
+        component: couponManage,
+        meta: { title: '优惠券管理' },
+    }
     //其他路由配置
 ];
 
