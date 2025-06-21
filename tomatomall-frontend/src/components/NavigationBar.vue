@@ -94,6 +94,10 @@ onMounted(messageLoad);
     <div class="nav-bar-container">
         <el-menu mode="horizontal" :router="true" class="nav-bar" background-color="#fff" text-color="#333"
             active-text-color="#409EFF">
+            <el-menu-item index="/" class="logo-item">
+                <img src="/src/assets/logo.jpeg" alt="Logo" class="logo-image" />
+            </el-menu-item>
+
             <!-- 中间 -->
             <div class="center-menu">
                 <el-menu-item index="/" class="left-item">
@@ -329,5 +333,18 @@ onMounted(messageLoad);
     padding: 16px;
     text-align: center;
     color: var(--el-text-color-secondary);
+}
+
+.logo-item {
+    padding: 0 10px !important;
+    height: 60px !important;
+    display: flex;
+    align-items: center;
+}
+
+.logo-image {
+    height: 36px; /* 根据实际图标调整 */
+    width: auto;
+    object-fit: contain;
 }
 </style>
