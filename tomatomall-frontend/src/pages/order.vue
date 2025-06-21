@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { getOrder, getOrderItems, Order, OrderItem, payOrder } from "@/api/order.ts";
+import { getOrder, getOrderItems, Order, OrderItem, payOrder, cancelOrder } from "@/api/order.ts";
 import { ref } from "vue";
-import { ElCard, ElTag, ElTable, ElTableColumn, ElDivider, ElButton, ElMessage } from "element-plus";
-import { ArrowRight, Timer, Money, ShoppingCart } from '@element-plus/icons-vue';
+import { ElCard, ElTag, ElTable, ElTableColumn, ElDivider, ElButton, ElMessage, ElMessageBox } from "element-plus";
+import { ArrowRight, Timer, Money, ShoppingCart, Close } from '@element-plus/icons-vue';
 import { Product, getProduct } from "@/api/product.ts";
 
 const orders = ref<Order[]>([]);
@@ -117,6 +117,39 @@ const handlePay = async (orderId: number) => {
     }
 }
 
+// 取消订单
+const handleCancelOrder = async (orderId: number) => {
+    try {
+        await ElMessageBox.confirm('确定要取消该订单吗？取消后将无法恢复。', '取消订单', {
+            confirmButtonText: '确定取消',
+            cancelButtonText: '我再想想',
+            type: 'warning',
+            center: true,
+        });
+
+        console.log('正在取消订单:', orderId);
+        const res = await cancelOrder(orderId);
+
+        if (res.data.code === '200') {
+            // 更新本地订单状态
+            const orderIndex = orderItems.value.findIndex(item => item.order.orderId === orderId);
+            if (orderIndex !== -1) {
+                orderItems.value[orderIndex].order.status = 'FAILED';
+            }
+            ElMessage.success('订单已成功取消');
+        } else {
+            ElMessage.error(res.data.msg || '取消订单失败，请稍后重试');
+        }
+
+    } catch (error) {
+        if (error !== 'cancel') {
+            ElMessage.error('取消订单失败，请检查网络连接');
+            console.error('取消订单失败:', error);
+        }
+        // 如果是用户点击了"我再想想"，error 为 'cancel'，不显示错误信息
+    }
+}
+
 const submitAlipayForm = (formHtml: string) => {
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = formHtml;
@@ -151,23 +184,14 @@ pageInit();
         <h1 class="page-title">我的订单</h1>
 
         <div class="order-list">
-            <el-card
-                class="order-card"
-                v-for="orderData in orderItems"
-                :key="orderData.order.orderId"
-                shadow="hover"
-            >
+            <el-card class="order-card" v-for="orderData in orderItems" :key="orderData.order.orderId" shadow="hover">
                 <template #header>
                     <div class="order-header">
                         <div class="order-number">
                             <span class="label">订单编号:</span>
                             <span class="value">{{ orderData.order.orderId }}</span>
                         </div>
-                        <el-tag
-                            :type="getStatusTagType(orderData.order.status)"
-                            size="default"
-                            effect="dark"
-                        >
+                        <el-tag :type="getStatusTagType(orderData.order.status)" size="default" effect="dark">
                             {{ formatStatus(orderData.order.status) }}
                         </el-tag>
                     </div>
@@ -176,17 +200,23 @@ pageInit();
                 <div class="order-content">
                     <div class="order-meta">
                         <div class="meta-item">
-                            <el-icon><Timer /></el-icon>
+                            <el-icon>
+                                <Timer />
+                            </el-icon>
                             <span class="meta-label">创建时间:</span>
                             <span>{{ formatDate(orderData.order.createTime) }}</span>
                         </div>
                         <div class="meta-item">
-                            <el-icon><Money /></el-icon>
+                            <el-icon>
+                                <Money />
+                            </el-icon>
                             <span class="meta-label">支付方式:</span>
                             <span>{{ formatPaymentMethod(orderData.order.paymentMethod) }}</span>
                         </div>
                         <div class="meta-item">
-                            <el-icon><ShoppingCart /></el-icon>
+                            <el-icon>
+                                <ShoppingCart />
+                            </el-icon>
                             <span class="meta-label">总金额:</span>
                             <span class="total-amount">¥{{ orderData.order.totalAmount.toFixed(2) }}</span>
                         </div>
@@ -207,12 +237,9 @@ pageInit();
                                     <div class="product-info-wrapper">
                                         <el-image
                                             :src="productDetails[row.productId]?.cover || 'https://via.placeholder.com/80'"
-                                            fit="cover"
-                                            class="product-image"
-                                            lazy
-                                        />
+                                            fit="cover" class="product-image" lazy />
                                         <div class="product-info">
-                                            <div class="product-name">{{ productDetails[row.productId]?.title}}</div>
+                                            <div class="product-name">{{ productDetails[row.productId]?.title }}</div>
                                         </div>
                                     </div>
                                 </template>
@@ -235,14 +262,16 @@ pageInit();
                     </div>
 
                     <div class="order-footer" v-if="orderData.order.status === 'PENDING'">
-                        <el-button
-                            type="primary"
-                            @click="handlePay(orderData.order.orderId)"
-                            size="large"
-                            :icon="ArrowRight"
-                        >
-                            立即支付
-                        </el-button>
+                        <div class="footer-buttons">
+                            <el-button type="info" @click="handleCancelOrder(orderData.order.orderId)" size="large"
+                                :icon="Close" plain>
+                                取消订单
+                            </el-button>
+                            <el-button type="primary" @click="handlePay(orderData.order.orderId)" size="large"
+                                :icon="ArrowRight">
+                                立即支付
+                            </el-button>
+                        </div>
                     </div>
                 </div>
             </el-card>
@@ -254,7 +283,7 @@ pageInit();
     </div>
 </template>
 
-<style scoped lang="scss">
+<style scoped lang="css">
 .order-container {
     padding: 20px;
     max-width: 1200px;
@@ -364,6 +393,19 @@ pageInit();
                     font-size: 12px;
                 }
 
+                .product-info-wrapper {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+
+                    .product-image {
+                        width: 60px;
+                        height: 60px;
+                        border-radius: 4px;
+                        flex-shrink: 0;
+                    }
+                }
+
                 .product-info {
                     display: flex;
                     flex-direction: column;
@@ -371,21 +413,32 @@ pageInit();
                     .product-name {
                         font-size: 14px;
                         color: #303133;
+                        line-height: 1.4;
                     }
                 }
 
                 .product-quantity {
                     color: #606266;
+                    font-weight: 500;
                 }
 
                 .product-price {
                     font-weight: 500;
                     color: #f56c6c;
+                    font-size: 16px;
                 }
 
                 .product-unit-price {
                     font-size: 12px;
                     color: #909399;
+                    margin-top: 2px;
+                }
+
+                .product-original-price {
+                    font-size: 12px;
+                    color: #c0c4cc;
+                    text-decoration: line-through;
+                    margin-top: 2px;
                 }
             }
 
@@ -395,12 +448,44 @@ pageInit();
                 margin-top: 20px;
                 padding-top: 16px;
                 border-top: 1px dashed #ebeef5;
+
+                .footer-buttons {
+                    display: flex;
+                    gap: 12px;
+                }
             }
         }
     }
 
     .empty-orders {
         margin-top: 40px;
+    }
+}
+
+
+@media (max-width: 768px) {
+    .order-container {
+        padding: 16px;
+
+        .order-card {
+            .order-content {
+                .order-meta {
+                    flex-direction: column;
+                    gap: 12px;
+                }
+
+                .order-footer {
+                    .footer-buttons {
+                        flex-direction: column;
+                        width: 100%;
+
+                        .el-button {
+                            width: 100%;
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 </style>

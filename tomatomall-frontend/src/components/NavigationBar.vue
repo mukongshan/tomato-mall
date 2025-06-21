@@ -4,7 +4,7 @@ import { ElMenu, ElMenuItem, ElPopover, ElTabPane, ElTabs, ElBadge, ElMessage } 
 import { HomeFilled, ShoppingCart, Shop, Setting, User, Bell, SwitchButton, Edit, CirclePlus } from '@element-plus/icons-vue'
 import router from "@/router";
 import { isLogin, checkRole, isAdmin, isShopOwner, isStaff, isCustomer, messageLoad, unreadCount, receivedMessages, sentMessages } from "./LoginEvent";
-import { getUserDetails, getUserRoleById } from "@/api/account";
+import { getUserRoleById } from "@/api/account";
 import { getShopIdByOwnerId } from "@/api/shop";
 import { markMessageAsRead, Message } from "@/api/message";
 
@@ -65,7 +65,15 @@ const checkChange = async () => {
 
 const navigateToWarehouse = async () => {
     if (!isLogin.value) return;
-    const shopId = Number(sessionStorage.getItem('shopId'));
+    let shopId = 0;
+    if (isStaff.value) {
+        shopId = Number(sessionStorage.getItem('shopId'));
+    } else {
+        const id = sessionStorage.getItem('id');
+        console.log('店主ID:', id);
+        const response = await getShopIdByOwnerId(Number(id));
+        shopId = response.data.data;
+    }
     router.push(`/warehouse/${shopId}`);
 };
 
@@ -89,20 +97,28 @@ onMounted(messageLoad);
             <!-- 中间 -->
             <div class="center-menu">
                 <el-menu-item index="/" class="left-item">
-                    <el-icon> <HomeFilled /> </el-icon>
+                    <el-icon>
+                        <HomeFilled />
+                    </el-icon>
                     <span>番茄书城</span>
                 </el-menu-item>
                 <el-menu-item index="/cart">
-                    <el-icon> <ShoppingCart /> </el-icon>
+                    <el-icon>
+                        <ShoppingCart />
+                    </el-icon>
                     <span>购物车</span>
                 </el-menu-item>
                 <el-menu-item index="/shops">
-                    <el-icon> <Shop /> </el-icon>
+                    <el-icon>
+                        <Shop />
+                    </el-icon>
                     <span>全部店铺</span>
                 </el-menu-item>
                 <el-sub-menu index="management" v-if="isAdmin || isShopOwner || isStaff">
                     <template #title>
-                        <el-icon> <Setting /> </el-icon>
+                        <el-icon>
+                            <Setting />
+                        </el-icon>
                         <span>管理</span>
                     </template>
                     <el-menu-item v-if="isShopOwner || isStaff" @click="navigateToWarehouse">商品管理</el-menu-item>
@@ -115,13 +131,17 @@ onMounted(messageLoad);
             <div class="right-menu">
                 <template v-if="isLogin">
                     <el-menu-item index="/shopCreate" v-if="isCustomer">
-                        <el-icon> <CirclePlus /> </el-icon>
+                        <el-icon>
+                            <CirclePlus />
+                        </el-icon>
                         <span>我要开店</span>
                     </el-menu-item>
 
                     <el-sub-menu index="mine">
                         <template #title>
-                            <el-icon> <Setting /> </el-icon>
+                            <el-icon>
+                                <Setting />
+                            </el-icon>
                             <span>我的</span>
                         </template>
                         <el-menu-item index="/user">个人中心</el-menu-item>
@@ -134,12 +154,7 @@ onMounted(messageLoad);
                         trigger="hover">
                         <template #reference>
                             <div class="message-trigger">
-                                <el-badge
-                                    :value="unreadCount"
-                                    :max="99"
-                                    :hidden="unreadCount === 0"
-                                    class="badge-item"
-                                >
+                                <el-badge :value="unreadCount" :max="99" :hidden="unreadCount === 0" class="badge-item">
                                     <el-icon :size="20">
                                         <Bell />
                                     </el-icon>
@@ -179,17 +194,23 @@ onMounted(messageLoad);
                     </el-popover>
 
                     <el-menu-item @click="Logout">
-                        <el-icon> <SwitchButton /> </el-icon>
+                        <el-icon>
+                            <SwitchButton />
+                        </el-icon>
                         <span>退出登录</span>
                     </el-menu-item>
                 </template>
                 <template v-else>
                     <el-menu-item index="/login">
-                        <el-icon> <User /> </el-icon>
+                        <el-icon>
+                            <User />
+                        </el-icon>
                         <span>登录</span>
                     </el-menu-item>
                     <el-menu-item index="/register">
-                        <el-icon> <Edit /> </el-icon>
+                        <el-icon>
+                            <Edit />
+                        </el-icon>
                         <span>注册</span>
                     </el-menu-item>
                 </template>

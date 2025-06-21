@@ -50,3 +50,9 @@ export const getOrderItems = async (orderId: number) => {
 export const getOrder = async (accountId: number) => {
     return await axios.get(`${ORDER_MODULE}/account/${accountId}`);
 }
+
+// 取消订单
+export const cancelOrder = async (orderId: number) => {
+    return await axios.post(`${ORDER_MODULE}/cancel/${orderId}`, { orderId: orderId },
+        { headers: { "Content-Type": "application/json" } })
+}
