@@ -1,4 +1,7 @@
-package com.example.tomatomall.util;
+package com.example.tomatomall.util.ImageStorage;
+
+import com.example.tomatomall.exception.TomatoMallException;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;
@@ -17,13 +20,23 @@ import java.util.Date;
 @Setter
 @NoArgsConstructor
 @ConfigurationProperties("aliyun.oss")  //作用是可以加载配置文件中的值到你的bean属性中
-public class OssUtil {
+public class OssStorage implements ImageStorage {
     private String endpoint;
     private String accessKeyId;
     private String accessKeySecret;
     private String bucketName;
 
-    public String upload(String objectName, InputStream inputStream) {
+    @Override
+    public String upload(MultipartFile file) {
+        try {
+            return upload(file.getOriginalFilename(), file.getInputStream());
+        }catch (Exception e){
+            e.printStackTrace();
+            throw TomatoMallException.fileUploadFail();
+        }
+    }
+
+    private String upload(String objectName, InputStream inputStream) {
         OSS ossClient = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret);
         PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, objectName, inputStream);
         try {
@@ -36,7 +49,7 @@ public class OssUtil {
         return ossClient.generatePresignedUrl(bucketName, objectName, new Date()).toString().split("\\?Expires")[0];
     }
 
-    public  String deleteFileByUrl(String url) {
+    public String delete(String url) {
         if (url == null || url.isEmpty()) {
             return "URL不能为空";
         }
@@ -66,6 +79,7 @@ public class OssUtil {
             }
         }
     }
+
     private String extractObjectKeyFromUrl(String url) {
         try {
             // 移除可能的查询参数

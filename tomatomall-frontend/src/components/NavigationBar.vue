@@ -91,24 +91,13 @@ onMounted(messageLoad);
 
 <template>
     <div class="nav-bar-container">
-        <el-menu mode="horizontal" :router="true" class="nav-bar" background-color="#ffffff" text-color="#2c3e50"
-            active-text-color="#4ecdc4">
+        <el-menu mode="horizontal" :router="true" class="nav-bar" background-color="#fff" text-color="#333"
+            active-text-color="#409EFF">
+            <el-menu-item index="/" class="logo-item">
+                <img src="/src/assets/logo.jpeg" alt="Logo" class="logo-image" />
+            </el-menu-item>
 
-            <!-- 品牌 Logo -->
-            <div class="brand-section">
-                <el-menu-item index="/" class="brand-item">
-                    <div class="nav-content">
-                        <div class="brand-icon">
-                            <el-icon size="24">
-                                <HomeFilled />
-                            </el-icon>
-                        </div>
-                        <span class="brand-text">番茄书城</span>
-                    </div>
-                </el-menu-item>
-            </div>
-
-            <!-- 中间导航 -->
+            <!-- 中间 -->
             <div class="center-menu">
                 <el-menu-item index="/cart" class="nav-item">
                     <div class="nav-content">
@@ -762,5 +751,19 @@ onMounted(messageLoad);
 
 .message-list::-webkit-scrollbar-thumb:hover {
     background: #a8a8a8;
+}
+
+.logo-item {
+    padding: 0 10px !important;
+    height: 60px !important;
+    display: flex;
+    align-items: center;
+}
+
+.logo-image {
+    height: 36px;
+    /* 根据实际图标调整 */
+    width: auto;
+    object-fit: contain;
 }
 </style>

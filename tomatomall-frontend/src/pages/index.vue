@@ -161,8 +161,8 @@ onMounted(pageInit);
         </div>
 
         <!-- 广告轮播 -->
-        <el-carousel v-if="advertisementList.length > 0" class="ad-carousel animate-scale-in" :interval="3000"
-            height="320px" indicator-position="outside" arrow="hover">
+        <el-carousel v-if="advertisementList.length > 0" class="ad-carousel" :interval="3000" height="320px"
+            indicator-position="outside" arrow="hover">
             <el-carousel-item v-for="ad in advertisementList" :key="ad.id" @click="gotoDetails(ad.productId)">
                 <div class="ad-item">
                     <el-image :src="ad.imgUrl" :alt="ad.title" class="ad-image" fit="cover">
