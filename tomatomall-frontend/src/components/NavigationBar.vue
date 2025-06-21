@@ -4,7 +4,7 @@ import { ElMenu, ElMenuItem, ElPopover, ElTabPane, ElTabs, ElBadge, ElMessage } 
 import { HomeFilled, ShoppingCart, Shop, Setting, User, Bell, SwitchButton, Edit, CirclePlus } from '@element-plus/icons-vue'
 import router from "@/router";
 import { isLogin, checkRole, isAdmin, isShopOwner, isStaff, isCustomer, messageLoad, unreadCount, receivedMessages, sentMessages } from "./LoginEvent";
-import { getUserDetails, getUserRoleById } from "@/api/account";
+import { getUserRoleById } from "@/api/account";
 import { getShopIdByOwnerId } from "@/api/shop";
 import { markMessageAsRead, Message } from "@/api/message";
 
@@ -65,14 +65,14 @@ const checkChange = async () => {
 
 const navigateToWarehouse = async () => {
     if (!isLogin.value) return;
-    const id = sessionStorage.getItem('id') as string;
-    const name = sessionStorage.getItem('name') as string;
     let shopId = 0;
     if (isStaff.value) {
-        shopId = await getUserDetails(name).then(res => res.data.data.shopId);
-    }
-    if (isShopOwner.value) {
-        shopId = await getShopIdByOwnerId(Number(id)).then(res => res.data.data);
+        shopId = Number(sessionStorage.getItem('shopId'));
+    } else {
+        const id = sessionStorage.getItem('id');
+        console.log('店主ID:', id);
+        const response = await getShopIdByOwnerId(Number(id));
+        shopId = response.data.data;
     }
     router.push(`/warehouse/${shopId}`);
 };
@@ -124,7 +124,6 @@ onMounted(messageLoad);
                     <el-menu-item v-if="isShopOwner || isStaff" @click="navigateToWarehouse">商品管理</el-menu-item>
                     <el-menu-item index="/shopManage" v-if="isAdmin">商店管理</el-menu-item>
                     <el-menu-item index="/advertisements" v-if="isAdmin || isShopOwner">广告管理</el-menu-item>
-                    <el-menu-item index="/couponManage" v-if="isAdmin">优惠券管理</el-menu-item>
                 </el-sub-menu>
             </div>
 
@@ -155,7 +154,7 @@ onMounted(messageLoad);
                         trigger="hover">
                         <template #reference>
                             <div class="message-trigger">
-                                <el-badge :value="unreadCount" :max="99" class="badge-item">
+                                <el-badge :value="unreadCount" :max="99" :hidden="unreadCount === 0" class="badge-item">
                                     <el-icon :size="20">
                                         <Bell />
                                     </el-icon>
