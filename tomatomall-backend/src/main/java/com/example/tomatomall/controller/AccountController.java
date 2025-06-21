@@ -6,7 +6,6 @@ import com.example.tomatomall.vo.AccountVO;
 import com.example.tomatomall.vo.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -76,11 +75,6 @@ public class AccountController {
     @GetMapping("/shop/{shopId}")
     public Response<List<AccountVO>> getShopStaff(@PathVariable Integer shopId) {
         return Response.buildSuccess(accountService.getShopStaff(shopId));
-    }
-
-    @PostMapping("/image")
-    public Response<String> upload(@RequestParam MultipartFile file){
-        return Response.buildSuccess(accountService.uploadImg(file));
     }
 
     @GetMapping("/fetchAdmin")

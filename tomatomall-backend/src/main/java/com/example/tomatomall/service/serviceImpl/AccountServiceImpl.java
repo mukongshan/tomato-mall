@@ -6,17 +6,13 @@ import com.example.tomatomall.po.Account;
 import com.example.tomatomall.repository.AccountRepository;
 import com.example.tomatomall.service.AccountService;
 import com.example.tomatomall.util.*;
+import com.example.tomatomall.util.ImageStorage.LocalStorage;
 import com.example.tomatomall.vo.AccountVO;
-import com.example.tomatomall.vo.Response;
-import org.apache.coyote.http11.filters.VoidOutputFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.annotation.Resource;
-import javax.persistence.criteria.CriteriaBuilder;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.List;
@@ -28,12 +24,6 @@ public class AccountServiceImpl implements AccountService {
 
     @Autowired
     AccountRepository accountRepository;
-
-    @Autowired
-    ToolUtil toolUtil;
-
-    @Autowired
-    ImageUtil imageUtil;
 
     @Autowired
     TokenUtil tokenUtil;
@@ -184,12 +174,6 @@ public class AccountServiceImpl implements AccountService {
     public List<AccountVO> getShopStaff(Integer shopId) {
         List<Account> accounts = accountRepository.findByShopId(shopId);
         return accounts.stream().map(Account::toVO).collect(Collectors.toList());
-    }
-
-
-    @Override
-    public String uploadImg(MultipartFile file){
-        return imageUtil.saveImg(file);
     }
 
     @Override
