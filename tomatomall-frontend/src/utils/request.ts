@@ -2,7 +2,6 @@ import router from '@/router'
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 
-
 //创建一个axios的实例service
 const service = axios.create({
     baseURL: "http://localhost:8080" // 在main.ts里设置不会生效 未知原因 可能是两个axios实例不同  但之前未出现此问题

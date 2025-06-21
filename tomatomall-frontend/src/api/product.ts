@@ -31,7 +31,7 @@ export interface Stockpile {
 }
 
 // 获取商品列表
-export const getProductsList = async () => {
+export const getProductList = async () => {
     return await axios.get(`${PRODUCT_MODULE}`);
 }
 

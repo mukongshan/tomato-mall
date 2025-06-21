@@ -51,7 +51,6 @@ const handleCheckout = async () => {
 }
 
 const submitAlipayForm = (formHtml: string) => {
-    console.log(formHtml)
     // 1. 解析HTML获取form数据
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = formHtml;

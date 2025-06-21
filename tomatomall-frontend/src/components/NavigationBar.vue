@@ -132,6 +132,7 @@ onMounted(messageLoad);
                             <span>我的</span>
                         </template>
                         <el-menu-item index="/user">个人中心</el-menu-item>
+                        <el-menu-item index="/order">全部订单</el-menu-item>
                         <el-menu-item @click="navigateToMyShop" v-if="isShopOwner">我的店铺</el-menu-item>
                     </el-sub-menu>
 

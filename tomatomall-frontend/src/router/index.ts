@@ -13,6 +13,7 @@ import ShopCreate from '@/pages/shopCreate.vue';
 import shopManage from '@/pages/shopManage.vue';
 import shopDetail from '@/pages/shopDetail.vue';
 import myShop from '@/pages/myShop.vue';
+import order from '@/pages/order.vue';
 
 const routes = [
     {
@@ -102,6 +103,12 @@ const routes = [
         component: myShop,
         meta: { title: '我的店铺' },
         props: true,
+    },
+    {
+        path: '/order',
+        name: 'order',
+        component: order,
+        meta: { title: '全部订单' },
     },
     //其他路由配置
 ];

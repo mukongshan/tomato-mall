@@ -31,6 +31,9 @@ public class CartServiceImpl implements CartService {
     @Resource
     private CartOrderRelationRepository cartOrderRelationRepository;
 
+    @Resource
+    private OrderItemRepository orderItemRepository;
+
     @Autowired
     SecurityUtil securityUtil;
     @Autowired
@@ -121,16 +124,21 @@ public class CartServiceImpl implements CartService {
         OrderVO orderVO = new OrderVO();
         orderVO.setAccountId(securityUtil.getCurrentAccount().getId());
         orderVO.setTotalAmount(getCart().getTotalAmount());
-        orderVO.setStatus(PaymentStatusEnum.PENDING);
         orderVO.setPaymentMethod("ALIPAY");
+        orderVO.setStatus(PaymentStatusEnum.PENDING);
         orderVO.setCreateTime(new Date());
         Order order = orderRepository.save(orderVO.toPO());
         for (int i = 0; i < checkRequestVO.cartItemIds.size(); i++){
             Integer cartItemId = checkRequestVO.cartItemIds.get(i);
-            CartOrderRelationVO cartOrderRelationVO = new CartOrderRelationVO();
-            cartOrderRelationVO.setOrderId(order.getOrderId());
-            cartOrderRelationVO.setCartItemId(cartItemId);
-            cartOrderRelationRepository.save(cartOrderRelationVO.toPO());
+            Cart cart = cartRepository.findById(cartItemId).get();
+
+            OrderItemVO orderItemVO = new OrderItemVO();
+            orderItemVO.setOrderId(order.getOrderId());
+            orderItemVO.setProductId(cart.getProductId());
+            orderItemVO.setQuantity(cart.getQuantity());
+            Product product = productRepository.findById(cart.getProductId()).get();
+            orderItemVO.setPrice(product.getPrice());
+            orderItemRepository.save(orderItemVO.toPO());
         }
         return order.toVO();
     }

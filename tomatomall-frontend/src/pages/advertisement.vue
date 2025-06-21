@@ -19,7 +19,7 @@ import router from '@/router/index';
 
 import { Edit, Delete, Plus, Picture } from '@element-plus/icons-vue';
 import { uploadImg } from "@/utils/image.ts";
-import { getProductsList } from '@/api/product';
+import { getProductList } from '@/api/product';
 
 // 当前广告列表
 const advertisementList = ref<AdvertisementUpdate[]>([]);
@@ -113,7 +113,7 @@ const validateAdvertisement = (ad: Advertisement): boolean => {
 // 提交表单 (根据模式创建或更新)
 const submitForm = async () => {
     if (!validateAdvertisement(editForm.value)) return;
-    const productList = (await getProductsList()).data.data;
+    const productList = (await getProductList()).data.data;
     const productId = editForm.value.productId;
     const product = productList.find((item: { id: number; }) => item.id === productId)
     if (!product) {

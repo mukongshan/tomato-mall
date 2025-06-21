@@ -2,13 +2,13 @@
 import { ref, onMounted } from "vue";
 import { ElMessage } from "element-plus";
 import { Product } from "@/api/product.ts";
-import { getProductsList } from "@/api/product.ts";
+import { getProductList } from "@/api/product.ts";
 import router from "@/router/index.ts";
 import { addCartProduct } from "@/api/cart.ts";
 import { getAdvertisements, AdvertisementUpdate } from "@/api/advertisements";
 import { Picture } from '@element-plus/icons-vue';
 
-const products = ref<Product[]>([]);
+const productList = ref<Product[]>([]);
 const advertisementList = ref<AdvertisementUpdate[]>([]);
 
 const loadAdvertisements = async () => {
@@ -17,9 +17,19 @@ const loadAdvertisements = async () => {
         advertisementList.value = response.data.data;
     } catch (error) {
         console.error('加载广告失败:', error);
-        ElMessage.error({ message: '加载广告失败，请稍后重试', duration: 1000 });
+        // ElMessage.error({ message: '加载广告失败，请稍后重试', duration: 1000 });
     }
 };
+
+const loadProducts = async () => {
+    try {
+        const response = await getProductList();
+        productList.value = response.data.data;
+    } catch (error) {
+        console.error('加载商品列表失败:', error);
+        // ElMessage.error({ message: '加载广告失败，请稍后重试', duration: 1000 });
+    }
+}
 
 const handleAdd = (productId: number) => {
     addCartProduct(productId, 1).then((res) => {
@@ -30,12 +40,13 @@ const handleAdd = (productId: number) => {
 }
 
 const pageInit = async () => {
-    const res = await getProductsList();
+    const res = await getProductList();
     if (res.data.code === '200') {
-        products.value = res.data.data;
+        productList.value = res.data.data;
     } else if (res.data.code === '401') {
         return;
     }
+    await loadProducts();
     await loadAdvertisements();
 };
 
@@ -71,7 +82,7 @@ onMounted(pageInit);
 
         <el-card class="product-list">
             <div class="product-grid">
-                <div v-for="product in products" :key="product.id" class="product-item">
+                <div v-for="product in productList" :key="product.id" class="product-item">
                     <div class="product-image-container" @click="gotoDetails(product.id)">
                         <el-image :src="product.cover" alt="商品图片" class="product-image">
                             <template #error>

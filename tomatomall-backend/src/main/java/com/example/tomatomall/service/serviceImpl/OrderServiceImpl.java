@@ -9,11 +9,14 @@ import com.example.tomatomall.enums.PaymentStatusEnum;
 import com.example.tomatomall.exception.TomatoMallException;
 import com.example.tomatomall.po.Account;
 import com.example.tomatomall.po.Order;
+import com.example.tomatomall.po.OrderItem;
 import com.example.tomatomall.repository.AccountRepository;
+import com.example.tomatomall.repository.OrderItemRepository;
 import com.example.tomatomall.repository.OrderRepository;
 import com.example.tomatomall.service.OrderService;
 import com.example.tomatomall.service.ProductService;
 import com.example.tomatomall.vo.AccountVO;
+import com.example.tomatomall.vo.OrderItemVO;
 import com.example.tomatomall.vo.OrderVO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,17 +28,18 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.springframework.web.bind.annotation.*;
 
 @Service
-public class    OrderServiceImpl implements OrderService {
+public class OrderServiceImpl implements OrderService {
 
     @Autowired
     OrderRepository orderRepository;
+
+    @Autowired
+    OrderItemRepository orderItemRepository;
 
     @Autowired
     ProductService productService;
@@ -183,5 +187,25 @@ public class    OrderServiceImpl implements OrderService {
 
         request.setBizContent(bizContentJson);
         return request;
+    }
+
+    @Override
+    public List<OrderItemVO> getOrderItems(Integer orderId) {
+        List<OrderItem> orderItems = orderItemRepository.findByOrderId(orderId);
+        List<OrderItemVO> orderItemsVO = new ArrayList<>();
+        for (OrderItem orderItem : orderItems) {
+            orderItemsVO.add(orderItem.toVO());
+        }
+        return orderItemsVO;
+    }
+
+    @Override
+    public List<OrderVO> getOrders(Integer accountId) {
+        List<Order> orders = orderRepository.findByAccountId(accountId);
+        List<OrderVO> ordersVO = new ArrayList<>();
+        for (Order order : orders) {
+            ordersVO.add(order.toVO());
+        }
+        return ordersVO;
     }
 }
