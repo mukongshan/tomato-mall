@@ -49,4 +49,10 @@ public class OrderController {
     @GetMapping("/account/{accountId}")
     public Response<List<OrderVO>> getOrders(@PathVariable Integer accountId) {
         return Response.buildSuccess(orderService.getOrders(accountId));
-    }}
+    }
+
+    @PostMapping("/cancel/{orderId}")
+    public Response<Void> cancelOrder(@PathVariable Integer orderId) {
+        return Response.buildSuccess(orderService.cancelOrder(orderId));
+    }
+}
