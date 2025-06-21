@@ -60,7 +60,7 @@ const receiveCoupon = async (couponId: number) => {
         receivingCoupons.value.add(couponId);
 
         const relationData: AccountCouponsRelationVO = {
-            accountId: 1, // 这里应该使用实际的用户ID
+            accountId: Number(sessionStorage.getItem("id")), // 这里应该使用实际的用户ID
             couponId: couponId,
             quantity: 1
         };
