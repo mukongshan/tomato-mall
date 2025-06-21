@@ -1,5 +1,6 @@
 package com.example.tomatomall.service.serviceImpl;
 
+import com.alipay.api.domain.CodeCouponInfo;
 import com.example.tomatomall.exception.TomatoMallException;
 import com.example.tomatomall.po.*;
 import com.example.tomatomall.repository.*;
@@ -27,6 +28,9 @@ public class CouponServiceImpl implements CouponService {
     @Override
     public List<CouponVO> getAllCoupons() {
         List<Coupon> coupons = couponRepository.findAll();
+        for (Coupon coupon : coupons){
+            checkTime(coupon);
+        }
         return coupons.stream()
                 .map(this::convertToVO)
                 .collect(Collectors.toList());
@@ -77,7 +81,9 @@ public class CouponServiceImpl implements CouponService {
         if (!opCoupon.isPresent()){
             throw new TomatoMallException("找不到优惠券实体");
         }
-        return opCoupon.get().toVO();
+        Coupon coupon = opCoupon.get();
+        checkTime(coupon);
+        return coupon.toVO();
     }
 
     /**
@@ -314,5 +320,20 @@ public class CouponServiceImpl implements CouponService {
         accountCouponsRelationRepository.save(relation);
 
         return "为账户减少优惠券数量成功，当前剩余数量：" + relation.getQuantity();
+    }
+
+    /**
+     * 检查优惠券是否在有效期内，如果过期则直接修改 isValid 字段
+     * @param coupon 要检查的优惠券对象
+     * @return 如果优惠券有效返回 true，如果过期返回 false（但 isValid 已被修改为 0）
+     */
+    private void checkTime(Coupon coupon) {
+        LocalDateTime now = LocalDateTime.now();
+        if (now.isAfter(coupon.getEndTime())) { // 当前时间 > 结束时间
+            coupon.setIsValid(0); // 设置为失效
+        } else {
+            coupon.setIsValid(1); // 保持有效
+        }
+        couponRepository.save(coupon);
     }
 }
