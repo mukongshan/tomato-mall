@@ -168,7 +168,7 @@ public class CouponServiceImpl implements CouponService {
         }
 
         // 减少Coupon中的总数量
-        coupon.setQuantity(coupon.getQuantity() - quantity);
+        coupon.setUsedQuantity(coupon.getUsedQuantity() + quantity);
         couponRepository.save(coupon);
 
         return "领取成功，获得 " + quantity + " 张优惠券";
