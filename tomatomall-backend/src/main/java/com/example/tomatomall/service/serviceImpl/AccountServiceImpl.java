@@ -138,6 +138,7 @@ public class AccountServiceImpl implements AccountService {
     public String updateAccountWithoutPassword(AccountVO accountVO) {
         Account account = accountRepository.findById(accountVO.getId())
                 .orElseThrow(() -> TomatoMallException.usernameNotExists());
+        System.out.println("Updating account with ID: " + accountVO.getId());
 
         if (!accountVO.getName().isEmpty()) {
             account.setName(accountVO.getName());

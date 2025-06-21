@@ -208,4 +208,16 @@ public class OrderServiceImpl implements OrderService {
         }
         return ordersVO;
     }
+
+    @Override
+    public Void cancelOrder(Integer orderId) {
+        Optional<Order> opOrder = orderRepository.findById(orderId);
+        if(!opOrder.isPresent()){
+            throw TomatoMallException.orderNotExists();
+        }
+        Order order = opOrder.get();
+        order.setStatus(PaymentStatusEnum.FAILED);
+        orderRepository.save(order);
+        return null;
+    }
 }
