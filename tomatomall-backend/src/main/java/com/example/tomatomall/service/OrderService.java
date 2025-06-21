@@ -12,7 +12,6 @@ import java.util.Map;
 
 public interface OrderService {
     public Map<String, Object> requestPayment(Integer orderId);
-    public Boolean updateOrderStatus(String aliOrderId, String alipayTradeNo, String amount);
     public void handleAlipayNotify(HttpServletRequest request, HttpServletResponse response)throws IOException, AlipayApiException;
     public List<OrderItemVO> getOrderItems(Integer orderId);
     public List<OrderVO> getOrders(Integer accountId);

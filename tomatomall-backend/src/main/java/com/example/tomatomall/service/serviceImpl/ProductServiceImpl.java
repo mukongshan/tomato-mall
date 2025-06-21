@@ -20,6 +20,15 @@ import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+/**
+ * 商品服务实现类
+ * 实现商品的增删改查、库存管理、消息提醒等功能
+ *
+ * @author TomatoMall Team
+ * @version 1.0
+ * @since 2024
+ */
 @Service
 public class ProductServiceImpl implements ProductService {
     @Resource
@@ -53,18 +62,32 @@ public class ProductServiceImpl implements ProductService {
 
     private int stockpileAlert = 20;
 
+    /**
+     * 获取所有商品列表
+     * @return 商品VO列表
+     */
     @Override
     public List<ProductVO> getAllProducts() {
         List<Product> products = productRepository.findAll();
         return products.stream().map(this::convertToVO).collect(Collectors.toList());
     }
+
+    /**
+     * 根据店铺ID获取商品列表
+     * @param shopId 店铺ID
+     * @return 商品VO列表
+     */
     @Override
     public List<ProductVO> getProductsByShopId(int shopId) {
         List<Product> products = productRepository.findByShopId(shopId).get();
         return products.stream().map(this::convertToVO).collect(Collectors.toList());
     }
 
-
+    /**
+     * 根据商品ID获取商品详情
+     * @param id 商品ID
+     * @return 商品VO
+     */
     @Override
     public ProductVO getProductById(int id) {
         Product product = productRepository.findById(id)
@@ -72,7 +95,11 @@ public class ProductServiceImpl implements ProductService {
         return convertToVO(product);
     }
 
-
+    /**
+     * 创建新商品
+     * @param productVO 商品VO
+     * @return 新商品VO
+     */
     @Override
     public ProductVO createProduct(ProductVO productVO) {
         Product newProduct = productVO.toPO();
@@ -85,6 +112,11 @@ public class ProductServiceImpl implements ProductService {
         return convertToVO(newProduct);
     }
 
+    /**
+     * 更新商品信息
+     * @param productVO 商品VO
+     * @return 更新结果
+     */
     @Override
     @Transactional
     public String updateProduct(ProductVO productVO) {
@@ -117,9 +149,13 @@ public class ProductServiceImpl implements ProductService {
         }
         productRepository.save(product);
         return "更新成功";
-
     }
 
+    /**
+     * 删除商品
+     * @param id 商品ID
+     * @return 删除结果
+     */
     @Override
     @Transactional
     public String deleteProduct(int id) {
@@ -136,6 +172,11 @@ public class ProductServiceImpl implements ProductService {
         return "删除成功";
     }
 
+    /**
+     * 获取商品库存信息
+     * @param id 商品ID
+     * @return 库存VO
+     */
     @Override
     public StockpileVO getStockpile(int id) {
         Stockpile stockpile = stockpileRepository.findByProductId(id);
@@ -145,7 +186,12 @@ public class ProductServiceImpl implements ProductService {
         return stockpile.toVO();
     }
 
-    
+    /**
+     * 更新商品库存
+     * @param id 商品ID
+     * @param amount 新库存
+     * @return 更新结果
+     */
     @Override
     public String updateStockpile(int id,int amount) {
         Stockpile stockpile = stockpileRepository.findByProductId(id);
@@ -181,6 +227,12 @@ public class ProductServiceImpl implements ProductService {
         return "调整库存成功";
     }
 
+    /**
+     * 增加商品库存
+     * @param id 商品ID
+     * @param amount 增加数量
+     * @return 增加结果
+     */
     @Override
     public String increaseStockpile(int id, int amount){
         StockpileVO stockpileVO = getStockpile(id);
@@ -188,6 +240,12 @@ public class ProductServiceImpl implements ProductService {
         return "添加库存成功";
     }
 
+    /**
+     * 减少商品库存
+     * @param id 商品ID
+     * @param amount 减少数量
+     * @return 减少结果
+     */
     @Override
     public String reduceStockpile(int id, int amount){
         StockpileVO stockpileVO = getStockpile(id);
@@ -195,7 +253,11 @@ public class ProductServiceImpl implements ProductService {
         return "减少库存成功";
     }
 
-
+    /**
+     * 根据订单减少商品库存
+     * @param orderIdStr 订单ID字符串
+     * @return 结果
+     */
     @Override
     public String reduceStockpileByOrder(String orderIdStr) {
         int orderId = Integer.parseInt(orderIdStr);
@@ -234,10 +296,6 @@ public class ProductServiceImpl implements ProductService {
         return "订单库存已全部扣除成功";
     }
 
-
-
-
-
     private ProductVO convertToVO(Product product) {
         ProductVO productVO = new ProductVO();
         productVO.setId(product.getId());
@@ -259,6 +317,4 @@ public class ProductServiceImpl implements ProductService {
         }
         return productVO;
     }
-
-
 }

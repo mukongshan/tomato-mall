@@ -12,12 +12,25 @@ import javax.annotation.Resource;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 评价服务实现类
+ * 实现商品和店铺评价的增删查等功能
+ *
+ * @author TomatoMall Team
+ * @version 1.0
+ * @since 2024
+ */
 @Service
 public class ReviewServiceImpl implements ReviewService {
 
     @Resource
     private ReviewRepository reviewRepository;
 
+    /**
+     * 添加商品评价
+     * @param reviewVO 评价VO
+     * @return 添加结果
+     */
     @Override
     @Transactional
     public String addProductReview(ReviewVO reviewVO) {
@@ -27,6 +40,11 @@ public class ReviewServiceImpl implements ReviewService {
         return "succ";
     }
 
+    /**
+     * 添加店铺评价
+     * @param reviewVO 评价VO
+     * @return 添加结果
+     */
     @Override
     @Transactional
     public String addShopReview(ReviewVO reviewVO) {
@@ -36,6 +54,11 @@ public class ReviewServiceImpl implements ReviewService {
         return "succ";
     }
 
+    /**
+     * 获取商品评价列表
+     * @param productId 商品ID
+     * @return 评价VO列表
+     */
     @Override
     public List<ReviewVO> getProductReviews(Integer productId) {
         List<Review> reviews = reviewRepository.findByProductId(productId);
@@ -44,6 +67,11 @@ public class ReviewServiceImpl implements ReviewService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 获取店铺评价列表
+     * @param shopId 店铺ID
+     * @return 评价VO列表
+     */
     @Override
     public List<ReviewVO> getShopReviews(Integer shopId) {
         List<Review> reviews = reviewRepository.findByShopId(shopId);
@@ -52,13 +80,18 @@ public class ReviewServiceImpl implements ReviewService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 删除评价
+     * @param reviewId 评价ID
+     * @return 删除结果
+     */
     @Override
     @Transactional
     public String deleteReview(Integer reviewId) {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(TomatoMallException::reviewNotExists);
         reviewRepository.delete(review);
-        return "评论删除成功";
+        return "评价删除成功";
     }
 
 }

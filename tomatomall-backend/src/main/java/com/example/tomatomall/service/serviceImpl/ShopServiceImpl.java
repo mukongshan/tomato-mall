@@ -20,14 +20,26 @@ import java.util.stream.Collectors;
 
 import static com.example.tomatomall.enums.RoleEnum.*;
 
+/**
+ * 店铺服务实现类
+ * 实现店铺的增删改查等功能
+ *
+ * @author TomatoMall Team
+ * @version 1.0
+ * @since 2024
+ */
 @Service
-    public class ShopServiceImpl implements ShopService {
+public class ShopServiceImpl implements ShopService {
     @Autowired
     private ShopRepository shopRepository;
 
     @Autowired
     private SecurityUtil securityUtil;
 
+    /**
+     * 获取所有店铺列表
+     * @return 店铺VO列表
+     */
     @Override
     public List<ShopVO> getAllShops() {
         List<Shop> shops = shopRepository.findAll();
@@ -36,15 +48,25 @@ import static com.example.tomatomall.enums.RoleEnum.*;
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 根据店主ID获取店铺ID
+     * @param ownerId 店主ID
+     * @return 店铺ID
+     */
     @Override
     public Integer getOwnShopId(Integer ownerId) {
         Shop shop = shopRepository.findByOwnerId(ownerId);
         if (shop==null) {
-            return 0; // 如果没有找到店铺，返回null
+            return 0; // 如果没有找到店铺，返回0
         }
         return shop.getId();  // 返回第一个店铺的ID
     }
 
+    /**
+     * 创建新店铺
+     * @param shopVO 店铺VO
+     * @return 创建结果
+     */
     @Override
     @Transactional
     public String createShop(ShopVO shopVO) {
@@ -54,7 +76,6 @@ import static com.example.tomatomall.enums.RoleEnum.*;
                 // 只有普通用户可以申请创建店铺
                 throw TomatoMallException.forbidden();
             }
-
             shopVO.setIsValid(0);
             Shop shop = shopVO.toPO();
             shopRepository.save(shop);
@@ -64,6 +85,11 @@ import static com.example.tomatomall.enums.RoleEnum.*;
         }
     }
 
+    /**
+     * 根据店铺ID获取店铺详情
+     * @param shopId 店铺ID
+     * @return 店铺VO
+     */
     @Override
     public ShopVO getShopById(Integer shopId) {
         Optional<Shop> opShop = shopRepository.findById(shopId);
@@ -73,6 +99,11 @@ import static com.example.tomatomall.enums.RoleEnum.*;
         return opShop.get().toVO();
     }
 
+    /**
+     * 更新店铺信息
+     * @param shopVO 店铺VO
+     * @return 更新结果
+     */
     @Override
     public String updateShop(ShopVO shopVO) {
         try {
@@ -82,7 +113,6 @@ import static com.example.tomatomall.enums.RoleEnum.*;
             }
             Shop shop = opShop.get();
             Account account = securityUtil.getCurrentAccount();
-
             if ((account.getRole() != SHOPKEEPER && account.getRole()!=admin)){
                 throw TomatoMallException.forbidden();
             }
@@ -102,7 +132,11 @@ import static com.example.tomatomall.enums.RoleEnum.*;
         }
     }
 
-
+    /**
+     * 删除店铺
+     * @param shopId 店铺ID
+     * @return 删除结果
+     */
     @Override
     public String deleteShop(Integer shopId) {
         try {

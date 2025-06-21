@@ -16,6 +16,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * 购物车服务实现类
+ * 实现购物车的增删改查、结算等功能
+ *
+ * @author TomatoMall Team
+ * @version 1.0
+ * @since 2024
+ */
 @Service
 public class CartServiceImpl implements CartService {
 
@@ -39,6 +47,12 @@ public class CartServiceImpl implements CartService {
     @Autowired
     private OrderRepository orderRepository;
 
+    /**
+     * 添加商品到购物车
+     * @param productId 商品ID
+     * @param quantity 数量
+     * @return 购物车项VO
+     */
     @Override
     public CartVO addCartItem(Integer productId, Integer quantity) {
         CartVO cartVO = new CartVO();
@@ -63,6 +77,11 @@ public class CartServiceImpl implements CartService {
         return cartVO;
     }
 
+    /**
+     * 删除购物车项
+     * @param cartItemId 购物车项ID
+     * @return 删除结果
+     */
     @Override
     public String deleteCartItem(Integer cartItemId) {
         if (!cartRepository.findById(cartItemId).isPresent()) {
@@ -72,6 +91,12 @@ public class CartServiceImpl implements CartService {
         return "删除成功";
     }
 
+    /**
+     * 更新购物车项数量
+     * @param cartItemId 购物车项ID
+     * @param quantity 新数量
+     * @return 更新结果
+     */
     @Override
     public String updateCartItem(Integer cartItemId, Integer quantity) {
         Optional<Cart> opCartItem = cartRepository.findById(cartItemId);
@@ -88,6 +113,10 @@ public class CartServiceImpl implements CartService {
         return "修改数量成功";
     }
 
+    /**
+     * 获取当前用户购物车列表
+     * @return 购物车列表VO
+     */
     @Override
     public CartListVO getCart() {
         Integer accountId = securityUtil.getCurrentAccount().getId();
@@ -119,6 +148,11 @@ public class CartServiceImpl implements CartService {
         return vo;
     }
 
+    /**
+     * 购物车结算，生成订单
+     * @param checkRequestVO 结算请求VO
+     * @return 订单VO
+     */
     @Override
     public OrderVO check(CheckRequestVO checkRequestVO) {
         OrderVO orderVO = new OrderVO();
@@ -143,6 +177,11 @@ public class CartServiceImpl implements CartService {
         return order.toVO();
     }
 
+    /**
+     * 根据订单删除购物车项
+     * @param orderIdStr 订单ID字符串
+     * @return 删除结果
+     */
     @Override
     public String deleteCartItemByOrder(String orderIdStr) {
         int orderId = Integer.parseInt(orderIdStr);

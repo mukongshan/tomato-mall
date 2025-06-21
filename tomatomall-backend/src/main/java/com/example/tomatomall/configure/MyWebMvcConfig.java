@@ -18,11 +18,17 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class MyWebMvcConfig implements WebMvcConfigurer {
 
+    // 注入登录拦截器
     @Autowired
     LoginInterceptor loginInterceptor;
 
+    /**
+     * 添加拦截器配置
+     * @param registry 拦截器注册表
+     */
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
+        // 注册登录拦截器
         registry.addInterceptor(loginInterceptor)
                 .addPathPatterns("/**")
                 .excludePathPatterns("/api/accounts/login")
