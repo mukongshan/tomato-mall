@@ -100,9 +100,15 @@ const getDiscountTypeText = (type: number) => {
     return type === 1 ? '百分比折扣' : '固定金额折扣';
 };
 
-// 格式化折扣值显示
+// 格式化折扣值显示 - 修复：从后端数据转换为前端显示
 const formatDiscountValue = (type: number, value: number) => {
-    return type === 1 ? `${value}%` : `¥${value}`;
+    if (type === 1) {
+        // 百分比折扣：后端 0.1 -> 前端显示 10%
+        return `${Math.round(value * 100)}%`;
+    } else {
+        // 固定金额折扣：直接显示
+        return `¥${value}`;
+    }
 };
 
 // 检查优惠券是否已过期（前端显示用）
@@ -143,13 +149,33 @@ const handleApiResponse = (response: any, fallbackMessage: string) => {
     return message;
 };
 
+// 数据转换函数：从后端数据转换为前端表单数据
+const convertFromBackend = (coupon: CouponVO): CouponVO => {
+    return {
+        ...coupon,
+        // 百分比折扣：后端 0.1 -> 前端 10
+        discountValue: coupon.discountType === 1 ? coupon.discountValue * 100 : coupon.discountValue
+    };
+};
+
+// 数据转换函数：从前端表单数据转换为后端数据
+const convertToBackend = (coupon: CouponVO): CouponVO => {
+    return {
+        ...coupon,
+        // 百分比折扣：前端 10 -> 后端 0.1
+        discountValue: coupon.discountType === 1 ? coupon.discountValue / 100 : coupon.discountValue
+    };
+};
+
 // 加载优惠券列表
 const loadCoupons = async () => {
     try {
         loading.value = true;
         const response = await getAllCoupons();
-        couponList.value = response.data.data || response.data;
-        console.log(couponList.value);
+        const rawData = response.data.data || response.data;
+        // 转换后端数据为前端显示格式
+        couponList.value = rawData.map((coupon: CouponVO) => convertFromBackend(coupon));
+        console.log('转换后的优惠券列表:', couponList.value);
     } catch (error: any) {
         console.error('加载优惠券失败:', error);
         const errorMessage = error?.response?.data?.data ||
@@ -178,6 +204,7 @@ const openCreateModal = () => {
 
 // 打开编辑优惠券模态框
 const openEditModal = (coupon: CouponVO) => {
+    // 编辑时数据已经是前端格式，直接复制
     editForm.value = { ...coupon };
     formMode.value = 'edit';
     showFormModal.value = true;
@@ -190,7 +217,7 @@ const resetFormData = () => {
         name: '',
         description: '',
         discountType: 1,
-        discountValue: 0,
+        discountValue: 0, // 前端格式：百分比折扣为 1-100，固定金额为实际金额
         startTime: '',
         endTime: '',
         quantity: 0,
@@ -225,6 +252,13 @@ const validateCoupon = (coupon: CouponVO): boolean => {
     if (coupon.discountType === 1 && coupon.discountValue > 100) {
         ElMessage.warning({
             message: '百分比折扣不能超过100%',
+            duration: 1000
+        });
+        return false;
+    }
+    if (coupon.discountType === 1 && coupon.discountValue < 1) {
+        ElMessage.warning({
+            message: '百分比折扣不能小于1%',
             duration: 1000
         });
         return false;
@@ -264,17 +298,19 @@ const submitForm = async () => {
     });
 
     try {
-        // 创建一个副本并确保isValid有默认值
-        const formData = {
+        // 转换前端数据为后端格式
+        const backendData = convertToBackend({
             ...editForm.value,
             isValid: 1, // 强制设为默认值，让后端判断
             startTime: editForm.value.startTime.replace(' ', 'T'), // 转换为ISO格式
             endTime: editForm.value.endTime.replace(' ', 'T') // 转换为ISO格式
-        };
+        });
+
+        console.log('发送给后端的数据:', backendData);
 
         let response;
         if (formMode.value === 'create') {
-            const { id, ...dataWithoutId } = formData;
+            const { id, ...dataWithoutId } = backendData;
             response = await createCoupon(dataWithoutId);
             const successMessage = handleApiResponse(response, '优惠券创建成功');
             ElMessage.success({
@@ -282,7 +318,7 @@ const submitForm = async () => {
                 duration: 1000
             });
         } else {
-            response = await updateCoupon(formData.id!, formData);
+            response = await updateCoupon(backendData.id!, backendData);
             const successMessage = handleApiResponse(response, '优惠券更新成功');
             ElMessage.success({
                 message: successMessage,
@@ -677,7 +713,7 @@ const closeAllModals = () => {
                                 <span>折扣值</span>
                                 <span class="required">*</span>
                             </label>
-                            <el-input-number v-model="editForm.discountValue" :min="0"
+                            <el-input-number v-model="editForm.discountValue" :min="editForm.discountType === 1 ? 1 : 0"
                                 :max="editForm.discountType === 1 ? 100 : undefined"
                                 :precision="editForm.discountType === 1 ? 0 : 2" controls-position="right" size="large"
                                 class="form-input">
@@ -771,6 +807,15 @@ const closeAllModals = () => {
                             </div>
                         </div>
                     </div>
+
+                    <!-- 调试信息（开发环境可以显示） -->
+                    <div v-if="formMode === 'edit'" class="debug-section"
+                        style="margin-top: 20px; padding: 16px; background: #f8f9fa; border-radius: 8px; font-size: 12px; color: #666;">
+                        <strong>调试信息：</strong><br>
+                        前端显示值: {{ editForm.discountValue }}{{ editForm.discountType === 1 ? '%' : '元' }}<br>
+                        将发送给后端:
+                        {{ editForm.discountType === 1 ? (editForm.discountValue / 100) : editForm.discountValue }}
+                    </div>
                 </el-form>
             </div>
 
@@ -792,6 +837,7 @@ const closeAllModals = () => {
 </template>
 
 <style scoped>
+/* 原有样式保持不变 */
 .container {
     padding: 20px;
 }
@@ -1295,5 +1341,15 @@ const closeAllModals = () => {
 .submit-button:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(64, 158, 255, 0.4);
+}
+
+.debug-section {
+    margin-top: 20px;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    font-size: 12px;
+    color: #666;
+    border: 1px solid #e9ecef;
 }
 </style>
