@@ -30,6 +30,8 @@ public class MyWebMvcConfig implements WebMvcConfigurer {
                 .excludePathPatterns("/api/accounts/image")
                 .excludePathPatterns("/api/advertisements")
                 .excludePathPatterns("/api/products")
+                .excludePathPatterns("/")
+                .excludePathPatterns("/api/coupons/all")
                 .order(1);
     }
 
