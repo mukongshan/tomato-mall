@@ -100,11 +100,25 @@ const getDiscountTypeText = (type: number) => {
     return type === 1 ? '百分比折扣' : '固定金额折扣';
 };
 
-// 格式化折扣值显示 - 修复：从后端数据转换为前端显示
+// 格式化折扣值显示 - 支持小数点的"几折"显示
 const formatDiscountValue = (type: number, value: number) => {
     if (type === 1) {
-        // 百分比折扣：后端 0.1 -> 前端显示 10%
-        return `${Math.round(value * 100)}%`;
+        // 百分比折扣：后端 0.1 -> 前端显示为"几折"
+        const discount = Math.round(value);
+        const fold = discount / 10;
+
+        // 处理特殊情况
+        if (discount >= 100) {
+            return '免费';
+        } else if (fold <= 0) {
+            return '原价';
+        } else if (fold % 1 === 0) {
+            // 整数折扣
+            return `${fold}折`;
+        } else {
+            // 小数折扣，保留一位小数
+            return `${fold.toFixed(1)}折`;
+        }
     } else {
         // 固定金额折扣：直接显示
         return `¥${value}`;

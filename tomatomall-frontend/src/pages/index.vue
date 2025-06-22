@@ -25,9 +25,26 @@ const validCoupons = computed(() => {
     });
 });
 
-// 格式化折扣值显示
+// 格式化折扣值显示 - 如果后端直接返回百分比数值
 const formatDiscountValue = (type: number, value: number) => {
-    return type === 1 ? `${value}%` : `¥${value}`;
+    if (type === 1) {
+        // 百分比折扣：转换为"几折"
+        console.log(value)
+        const discountPercent = value;
+        const fold = discountPercent * 10;
+        console.log(fold)
+        // 处理特殊情况
+        if (discountPercent >= 100) {
+            return '免费';
+        } else if (fold <= 0) {
+            return '原价';
+        } else {
+            return `${fold}折`;
+        }
+    } else {
+        // 固定金额折扣：保持原有格式
+        return `¥${value}`;
+    }
 };
 
 // 计算剩余数量
