@@ -41,7 +41,7 @@ public class CartController {
     }
 
     @PostMapping("/checkout")
-    public Response<OrderVO> checkout(@RequestBody CheckRequestVO checkRequestVO,@RequestParam int couponType , @RequestParam int couponValue) {
+    public Response<OrderVO> checkout(@RequestBody CheckRequestVO checkRequestVO,@RequestParam int couponType , @RequestParam double couponValue) {
         return Response.buildSuccess(cartService.check(checkRequestVO,couponType, couponValue));
     }
 }

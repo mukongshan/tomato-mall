@@ -120,7 +120,7 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public OrderVO check(CheckRequestVO checkRequestVO, int couponType, int couponValue) {
+    public OrderVO check(CheckRequestVO checkRequestVO, int couponType, double couponValue) {
         OrderVO orderVO = new OrderVO();
         orderVO.setAccountId(securityUtil.getCurrentAccount().getId());
         double totalAmount = getCart().getTotalAmount();
