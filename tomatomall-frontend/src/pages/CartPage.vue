@@ -167,8 +167,8 @@ const unusableCoupons = computed(() => {
 const calculateDiscountPrice = (originalPrice: number, coupon: CouponVO) => {
     if (coupon.discountType === 1) {
         // 百分比折扣
-        const discountAmount = originalPrice * (coupon.discountValue / 100);
-        return originalPrice - discountAmount;
+        const discountAmount = originalPrice * (coupon.discountValue);
+        return discountAmount;
     } else {
         // 固定金额折扣
         return Math.max(0, originalPrice - coupon.discountValue);
@@ -222,7 +222,7 @@ const selectBestCoupon = () => {
 // 格式化折扣显示
 const formatCouponDiscount = (coupon: CouponVO) => {
     return coupon.discountType === 1
-        ? `${coupon.discountValue}% OFF`
+        ? `${coupon.discountValue * 10} 折`
         : `立减 ¥${coupon.discountValue}`;
 };
 
