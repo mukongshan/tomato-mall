@@ -1,7 +1,13 @@
+# IntelliJ IDEA
 .idea
-tomatomall-backend/.idea
+
+# Backend
 tomatomall-backend/target
 tomatomall-backend/out
-tomatomall-frontend/node_modules/.vite/
-tomatomall-frontend/.idea
 tomatomall-backend/src/main/resources/application.yml
+
+# Frontend
+tomatomall-frontend/node_modules/.vite/
+
+# Optional: Ignore all .idea folders in submodules
+**/.idea
