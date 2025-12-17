@@ -175,6 +175,40 @@ public class OrderServiceImpl implements OrderService {
         response.getWriter().print("success");
     }
 
+
+    /**
+     * 构建支付宝支付请求对象
+     * 根据订单信息构建支付宝API所需的请求参数
+     *
+     * @param order 订单对象
+     * @return 支付宝支付请求对象
+     * @throws JsonProcessingException JSON处理异常
+     */
+    private AlipayTradePagePayRequest getAlipayTradePagePayRequest(Order order) throws JsonProcessingException {
+        // 创建支付宝页面支付请求对象
+        AlipayTradePagePayRequest request = new AlipayTradePagePayRequest();
+
+        // 设置支付宝异步通知回调地址
+        // 用户支付完成后，支付宝会向此地址发送POST请求
+        request.setNotifyUrl(notifyUrl);
+
+        // 构建业务参数
+        Map<String, String> bizContent = new HashMap<>();
+        bizContent.put("out_trade_no", String.valueOf(order.getOrderId())); // 商户订单号
+        bizContent.put("total_amount", String.valueOf(order.getTotalAmount())); // 订单总金额
+        bizContent.put("subject", "订单编号：" + order.getOrderId()); // 订单标题
+        bizContent.put("product_code", "FAST_INSTANT_TRADE_PAY"); // 产品代码，固定值
+
+        // 将业务参数序列化为JSON字符串
+        // 支付宝API要求bizContent必须是JSON格式的字符串
+        ObjectMapper objectMapper = new ObjectMapper();
+        String bizContentJson = objectMapper.writeValueAsString(bizContent);
+
+        // 设置业务参数
+        request.setBizContent(bizContentJson);
+        return request;
+    }
+
     /**
      * 更新订单状态为已支付
      * 在收到支付宝支付成功通知后调用，更新订单状态
@@ -220,38 +254,6 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
-    /**
-     * 构建支付宝支付请求对象
-     * 根据订单信息构建支付宝API所需的请求参数
-     * 
-     * @param order 订单对象
-     * @return 支付宝支付请求对象
-     * @throws JsonProcessingException JSON处理异常
-     */
-    private AlipayTradePagePayRequest getAlipayTradePagePayRequest(Order order) throws JsonProcessingException {
-        // 创建支付宝页面支付请求对象
-        AlipayTradePagePayRequest request = new AlipayTradePagePayRequest();
-        
-        // 设置支付宝异步通知回调地址
-        // 用户支付完成后，支付宝会向此地址发送POST请求
-        request.setNotifyUrl(notifyUrl);
-
-        // 构建业务参数
-        Map<String, String> bizContent = new HashMap<>();
-        bizContent.put("out_trade_no", String.valueOf(order.getOrderId())); // 商户订单号
-        bizContent.put("total_amount", String.valueOf(order.getTotalAmount())); // 订单总金额
-        bizContent.put("subject", "订单编号：" + order.getOrderId()); // 订单标题
-        bizContent.put("product_code", "FAST_INSTANT_TRADE_PAY"); // 产品代码，固定值
-
-        // 将业务参数序列化为JSON字符串
-        // 支付宝API要求bizContent必须是JSON格式的字符串
-        ObjectMapper objectMapper = new ObjectMapper();
-        String bizContentJson = objectMapper.writeValueAsString(bizContent);
-
-        // 设置业务参数
-        request.setBizContent(bizContentJson);
-        return request;
-    }
 
     /**
      * 获取订单项列表
