@@ -1,0 +1,44 @@
+@import './base.css';
+
+/* 基础样式 */
+#app {
+  max-width: 1200px;  /* 修正：从120px改为1200px或其它合适值 */
+  margin: 0 auto;
+  padding: 0 2rem;
+  font-weight: normal;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 导航链接样式 */
+a,
+.green {
+  text-decoration: none;
+  color: hsla(160, 100%, 37%, 1);
+  transition: 0.4s;
+  padding: 3px;
+}
+
+/* 悬停效果 */
+@media (hover: hover) {
+  a:hover {
+    background-color: hsla(160, 100%, 37%, 0.2);
+  }
+}
+
+/* 桌面端布局调整 */
+@media (min-width: 1024px) {
+  /* 移除对body的flex布局，除非有特殊需求 */
+  /* 保持#app的flex column布局 */
+
+  /* 如果需要，可以在这里添加导航栏的特殊样式 */
+  .navbar {
+    padding: 1rem 2rem;
+  }
+
+  /* 主要内容区域样式 */
+  .main-content {
+    padding: 2rem;
+  }
+}
